@@ -1,4 +1,4 @@
 
 
 run:
-	ansible-playbook playbook.yml -c local
+	sudo ansible-playbook playbook.yml -c local

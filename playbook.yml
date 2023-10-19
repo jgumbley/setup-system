@@ -1,11 +1,14 @@
 - hosts: localhost
   connection: local
   tasks:
-    - name: Install git
+    - name: Install basics 
       apt:
         name: 
           - git
           - make
+          - vim 
+          - wget
+          - gpg
         state: present
 
     - name: Create wip directory
@@ -13,3 +16,18 @@
         path: ~/wip
         state: directory
         mode: '0755'
+
+    - name: Download Microsoft GPG key
+      shell: wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/keyrings/packages.microsoft.gpg
+
+    - name: Add Microsoft apt repository 
+      apt_repository:
+        repo: deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main
+        filename: vscode
+        state: present
+
+    - name: Install code
+      apt:
+        name: 
+          - code
+
