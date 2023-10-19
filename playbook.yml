@@ -1,0 +1,15 @@
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Install git
+      apt:
+        name: 
+          - git
+          - make
+        state: present
+
+    - name: Create wip directory
+      file:
+        path: ~/wip
+        state: directory
+        mode: '0755'
