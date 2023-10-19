@@ -12,6 +12,7 @@
           - gpg
           - ncdu
           - htop
+          - fish
         state: present
 
     - name: Copy Git config 
