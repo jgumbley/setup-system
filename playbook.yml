@@ -2,6 +2,7 @@
   connection: local
   tasks:
     - name: Install basics 
+      become: yes
       apt:
         name: 
           - git
@@ -9,15 +10,25 @@
           - vim 
           - wget
           - gpg
+          - ncdu
+          - htop
         state: present
 
+    - name: Copy Git config 
+      become: no
+      template:
+        src: gitconfig.j2
+        dest: ~/.gitconfig
+    
     - name: Create wip directory
+      become: yes
       file:
         path: ~/wip
         state: directory
         mode: '0755'
 
     - name: Download Microsoft GPG key
+      become: yes
       shell: wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/keyrings/packages.microsoft.gpg
 
     - name: Add Microsoft apt repository 
@@ -27,6 +38,7 @@
         state: present
 
     - name: Install code
+      become: yes
       apt:
         name: 
           - code

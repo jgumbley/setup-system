@@ -1,4 +1,5 @@
 
 
 run:
-	sudo ansible-playbook playbook.yml -c local
+	ansible-playbook playbook.yml -c local
+	git commit -am "update" && git push
