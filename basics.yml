@@ -1,68 +1,65 @@
-- hosts: localhost
-  connection: local
-  tasks:
-    - name: Update APT package cache
-      become: yes
-      apt:
-        update_cache: yes
+- name: Update APT package cache
+  become: yes
+  apt:
+    update_cache: yes
 
-    - name: Install basics 
-      become: yes
-      apt:
-        name: 
-          - git
-          - make
-          - vim 
-          - wget
-          - gpg
-          - ncdu
-          - htop
-          - fish
-        state: present
+- name: Install basics
+  become: yes
+  apt:
+    name:
+      - git
+      - make
+      - vim
+      - wget
+      - gpg
+      - ncdu
+      - htop
+      - fish
+      - flatpak
+    state: present
 
-    - name: Copy Git config 
-      become: no
-      template:
-        src: gitconfig.j2
-        dest: ~/.gitconfig
-    
-    - name: Create wip directory
-      become: yes
-      file:
-        path: ~/wip
-        state: directory
-        mode: '0755'
+- name: Copy Git config
+  become: no
+  template:
+    src: gitconfig.j2
+    dest: ~/.gitconfig
 
-    - name: Download Microsoft GPG key
-      become: yes
-      shell: wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/keyrings/packages.microsoft.gpg
+- name: Create wip directory
+  become: yes
+  file:
+    path: ~/wip
+    state: directory
+    mode: "0755"
 
-    - name: Add Microsoft apt repository 
-      apt_repository:
-        repo: deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main
-        filename: vscode
-        state: present
+- name: Download Microsoft GPG key
+  become: yes
+  shell: wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > /etc/apt/keyrings/packages.microsoft.gpg
 
-    - name: Install code
-      become: yes
-      apt:
-        name: 
-          - code
+- name: Add Microsoft apt repository
+  apt_repository:
+    repo: deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main
+    filename: vscode
+    state: present
 
-    - name: Ensure Snapd is installed (Snap's daemon)
-      become: yes 
-      ansible.builtin.package:
-        name: snapd
-        state: present
+- name: Install code
+  become: yes
+  apt:
+    name:
+      - code
 
-    - name: Ensure core is installed
-      become: yes
-      community.general.snap:
-        name: core
+- name: Ensure Snapd is installed (Snap's daemon)
+  become: yes
+  ansible.builtin.package:
+    name: snapd
+    state: present
 
-    - name: Install Logseq
-      become: yes
-      community.general.snap:
-        name: logseq
-        classic: yes
+- name: Ensure core is installed
+  become: yes
+  community.general.snap:
+    name: core
 
+- name: Install Logseq
+  become: yes
+  community.general.snap:
+    name: logseq
+    classic: yes
