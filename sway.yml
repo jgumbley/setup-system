@@ -1,0 +1,23 @@
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Install sway
+      become: yes
+      apt:
+        name: 
+          - sway
+          - kitty
+        state: present
+
+    - name: Ensure the configuration directory exists
+      ansible.builtin.file:
+        path: ~/.config/sway  # or use "{{ ansible_env.HOME }}/.config/sway" for the current user home directory
+        state: directory
+        mode: '0755'
+
+    - name: Copy sway config 
+      become: no
+      template:
+        src: swayconfig.j2
+        dest: ~/.config/sway/config
+    
