@@ -8,6 +8,7 @@
       - light
       - swaybg
       - wev
+      - pavucontrol
     state: present
 
 - name: Ensure the configuration directory exists
