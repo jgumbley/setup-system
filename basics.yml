@@ -16,6 +16,8 @@
       - htop
       - fish
       - flatpak
+      - snap
+      - python3.11-venv
     state: present
 
 - name: Copy Git config
