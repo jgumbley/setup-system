@@ -1,0 +1,8 @@
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: Include basics.yml tasks
+      include_tasks: basics.yml
+
+    - name: Include sway.yml tasks
+      include_tasks: sway.yml
