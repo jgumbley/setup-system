@@ -4,6 +4,7 @@
     name: 
       - sway
       - kitty
+      - i3
     state: present
 
 - name: Ensure the configuration directory exists
