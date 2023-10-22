@@ -60,6 +60,4 @@
 
 - name: Install Logseq
   become: yes
-  community.general.snap:
-    name: logseq
-    classic: yes
+  ansible.builtin.shell: flatpak install flathub com.logseq.Logseq -y
