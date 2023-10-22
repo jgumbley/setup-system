@@ -5,6 +5,7 @@
       - sway
       - kitty
       - i3
+      - wev
     state: present
 
 - name: Ensure the configuration directory exists
