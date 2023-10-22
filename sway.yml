@@ -29,3 +29,16 @@
   template:
     src: kittyconfig.j2
     dest: ~/.config/kitty/kitty.conf
+
+- name: Ensure the fish configuration directory exists
+  ansible.builtin.file:
+    path: ~/.config/fish
+    state: directory
+    mode: '0755'
+
+- name: Copy fish config 
+  become: no
+  template:
+    src: fishconfig.j2
+    dest: ~/.config/fish/config.fish
+
