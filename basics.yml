@@ -26,9 +26,9 @@
 
 - name: Create wip directory
   become: yes
-  file:
-    path: ~/wip
-    state: directory
+  file: 
+    path: ~/wip 
+    state: directory 
     mode: "0755"
 
 - name: Download Microsoft GPG key
@@ -52,6 +52,12 @@
   ansible.builtin.package:
     name: snapd
     state: present
+
+- name: Ensure Spotify is instaled
+  become: yes
+  community.general.snap:
+    name: spotify
+    classic: yes
 
 - name: Ensure core is installed
   become: yes
