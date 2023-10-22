@@ -5,6 +5,7 @@
       - sway
       - kitty
       - i3
+      - light
       - wev
     state: present
 
