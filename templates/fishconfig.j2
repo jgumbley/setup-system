@@ -22,10 +22,11 @@ function fish_greeting
     set -l kernel (uname -r)  # Kernel release
 
     set -l uptime (uptime | cut -d' ' -f4-)
-    set -l loadavg (uptime | cut -d':' -f5 | sed s/,//g)
     set -l memused (free -m | awk 'NR==2{printf "%s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }')
 
-    # Print this information in a single line
+    set_color 555555
     echo "OS: $os | Host: $host | Kernel: $kernel"
-    echo "Uptime: $uptime | LoadAvg: $loadavg | Memusd: $memused"
+    echo "Uptime: $uptime "
+    echo "Memusd: $memused"
+    set_color normal
 end
