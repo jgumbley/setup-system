@@ -7,7 +7,7 @@ function fish_prompt
     set_color green
 
     # Print a fish emoji and classic ASCII art, you can choose any character you like for the ASCII art
-    echo -n "🐟> "
+    echo -n "🐟 > "
 
     # Reset color to default
     set_color normal
@@ -26,5 +26,6 @@ function fish_greeting
     set -l memused (free -m | awk 'NR==2{printf "%s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }')
 
     # Print this information in a single line
-    echo "OS: $os | Host: $host | Kernel: $kernel | Uptime: $uptime | LoadAvg: $loadavg | Memusd: $memused"
+    echo "OS: $os | Host: $host | Kernel: $kernel"
+    echo "Uptime: $uptime | LoadAvg: $loadavg | Memusd: $memused"
 end
