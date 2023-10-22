@@ -8,7 +8,7 @@
 
 - name: Ensure the configuration directory exists
   ansible.builtin.file:
-    path: ~/.config/sway  # or use "{{ ansible_env.HOME }}/.config/sway" for the current user home directory
+    path: ~/.config/sway 
     state: directory
     mode: '0755'
 
@@ -17,3 +17,15 @@
   template:
     src: swayconfig.j2
     dest: ~/.config/sway/config
+
+- name: Ensure the kitty configuration directory exists
+  ansible.builtin.file:
+    path: ~/.config/kitty
+    state: directory
+    mode: '0755'
+
+- name: Copy kitty config 
+  become: no
+  template:
+    src: kittyconfig.j2
+    dest: ~/.config/kitty/kitty.conf
