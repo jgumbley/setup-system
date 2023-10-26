@@ -55,11 +55,31 @@
     name: snapd
     state: present
 
+- name: Ensure Discord is instaled
+  become: yes
+  community.general.snap:
+    name: discord 
+    classic: yes
+
+- name: Ensure Steam is instaled
+  become: yes
+  community.general.snap:
+    name: steam 
+    classic: yes
+
 - name: Ensure Spotify is instaled
   become: yes
   community.general.snap:
     name: spotify
     classic: yes
+
+- name: Install apps etc
+  become: yes
+  apt:
+    name:
+      - shotwell
+    state: present
+
 
 - name: Ensure core is installed
   become: yes
