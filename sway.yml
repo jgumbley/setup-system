@@ -3,6 +3,7 @@
   apt:
     name: 
       - sway
+      - swayidle
       - kitty
       - i3
       - light
