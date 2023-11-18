@@ -18,6 +18,8 @@
       - flatpak
       - snap
       - python3.11-venv
+      - mc
+      - udiskie
     state: present
 
 - name: Copy Git config
