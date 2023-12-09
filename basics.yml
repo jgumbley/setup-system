@@ -20,6 +20,7 @@
       - python3.11-venv
       - mc
       - udiskie
+      - jack-midi-clock
     state: present
 
 - name: Copy Git config
