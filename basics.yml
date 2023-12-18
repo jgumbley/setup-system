@@ -21,6 +21,8 @@
       - mc
       - udiskie
       - jack-midi-clock
+      - build-essential
+      - clang
     state: present
 
 - name: Copy Git config
