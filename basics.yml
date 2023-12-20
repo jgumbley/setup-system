@@ -23,6 +23,7 @@
       - jack-midi-clock
       - build-essential
       - clang
+      - nfs-common
     state: present
 
 - name: Copy Git config
