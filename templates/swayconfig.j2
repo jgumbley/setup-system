@@ -47,6 +47,7 @@ output DP-2 {
 	resolution 1920x1080
 }
 	
+exec wl-mirror output DP-1 output DP-2 
 
 ### Idle configuration
 #
@@ -221,7 +222,7 @@ mode "resize" {
 }
 bindsym $mod+r mode "resize"
 
-assign [class="Firefox"] workspace 2
+for_window [app_id="firefox"] move to workspace 2
 
 #
 # Status Bar:

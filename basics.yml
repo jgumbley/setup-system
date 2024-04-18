@@ -24,6 +24,7 @@
       - build-essential
       - clang
       - nfs-common
+      - wl-mirror
     state: present
 
 - name: Copy Git config
