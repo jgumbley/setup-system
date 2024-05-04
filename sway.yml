@@ -4,6 +4,7 @@
     name: 
       - sway
       - swayidle
+      - waybar
       - kitty
       - i3
       - light
@@ -11,6 +12,12 @@
       - wev
       - pavucontrol
     state: present
+
+- name: Ensure the waybar configuration directory exists
+  ansible.builtin.file:
+    path: ~/.config/waybar
+    state: directory
+    mode: '0755'
 
 - name: Ensure the configuration directory exists
   ansible.builtin.file:
@@ -29,6 +36,12 @@
     path: ~/.config/kitty
     state: directory
     mode: '0755'
+
+- name: Copy config 
+  become: no
+  template:
+    src: waybar.j2
+    dest: ~/.config/waybar/config.jsonc
 
 - name: Copy kitty config 
   become: no
