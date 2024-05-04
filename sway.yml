@@ -4,6 +4,7 @@
     name: 
       - sway
       - swayidle
+      - fonts-font-awesome
       - waybar
       - kitty
       - i3
