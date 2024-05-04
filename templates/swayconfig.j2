@@ -20,7 +20,6 @@ set $term kitty
 # on the original workspace that the command was run on.
 # set $menu dmenu_path | dmenu | xargs swaymsg exec --
 
-exec waybar 
 
 set $menu --no-startup-id i3-dmenu-desktop
 
@@ -225,20 +224,8 @@ for_window [app_id="firefox"] move to workspace 2
 #
 # Status Bar:
 #
-# Read `man 5 sway-bar` for more information about this section.
-bar {
-    position top
 
-    # When the status_command prints a new line to stdout, swaybar updates.
-    # The default just shows the current date and time.
-    status_command while date +'%Y-%m-%d %I:%M:%S %p'; do sleep 1; done
-
-    colors {
-        statusline #ffffff
-        background #323232
-        inactive_workspace #32323200 #32323200 #5c5c5c
-    }
-}
+exec waybar 
 
 exec swaybg -i /home/system/Pictures/53174805501_5d5948adaf_6k.jpg
 
