@@ -24,7 +24,7 @@
       - build-essential
       - clang
       - nfs-common
-      - wl-mirror
+      - wofi
     state: present
 
 - name: Copy Git config
@@ -86,7 +86,6 @@
     name:
       - shotwell
     state: present
-
 
 - name: Ensure core is installed
   become: yes
