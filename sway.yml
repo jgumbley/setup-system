@@ -38,11 +38,17 @@
     state: directory
     mode: '0755'
 
-- name: Copy config 
+- name: Copy waybar config 
   become: no
   template:
     src: waybar.j2
     dest: ~/.config/waybar/config.jsonc
+
+- name: Copy waybar style  
+  become: no
+  template:
+    src: waybar_style.j2
+    dest: ~/.config/waybar/style.css
 
 - name: Copy kitty config 
   become: no
