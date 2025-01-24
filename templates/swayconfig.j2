@@ -40,7 +40,7 @@ output eDP-1 resolution 1920x1080 position 0,0
 output DP-1 resolution 1920x1080 position 1920,0
 
 # Mirror eDP-1 to DP-1 when connected
-exec_always --no-startup-id "sh -c 'swaymsg -t subscribe \"[\"output\"\"\" | while read -r line; do if echo $line | grep -q \"DP-1 connected\"; then wl-mirror --fullscreen --output DP-1 eDP-1; fi; done'"
+exec_always --no-startup-id "sh -c 'wlr-randr | grep -q \"DP-1 connected\" && wl-mirror --fullscreen --output DP-1 eDP-1'"
 
 ### Idle configuration
 #
