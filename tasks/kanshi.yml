@@ -1,0 +1,52 @@
+- block:
+    - name: Install Kanshi build dependencies
+      become: true
+      apt:
+        name:
+          - meson
+          - scdoc
+          - libwayland-dev
+          - wayland-protocols
+        state: present
+
+    - name: Clone Kanshi repository
+      git:
+        repo: https://github.com/emersion/kanshi
+        dest: /tmp/kanshi
+        version: v1.2.0
+
+    - name: Configure build
+      command: meson setup build
+      args:
+        chdir: /tmp/kanshi
+
+    - name: Build Kanshi
+      command: ninja -C build
+      args:
+        chdir: /tmp/kanshi
+
+    - name: Install Kanshi
+      become: true
+      command: ninja -C build install
+      args:
+        chdir: /tmp/kanshi
+
+    - name: Create Kanshi config directory
+      file:
+        path: ~/.config/kanshi
+        state: directory
+        mode: '0755'
+
+    - name: Deploy Kanshi configuration
+      template:
+        src: kanshi-config.j2
+        dest: ~/.config/kanshi/config
+        mode: '0644'
+
+    - name: Enable Kanshi user service
+      become: false
+      shell: |
+        mkdir -p ~/.config/systemd/user/
+        cp {{ playbook_dir }}/templates/kanshi.service.j2 ~/.config/systemd/user/kanshi.service
+        systemctl --user daemon-reload
+        systemctl --user enable --now kanshi.service

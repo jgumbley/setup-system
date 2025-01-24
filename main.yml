@@ -1,8 +1,13 @@
 - hosts: localhost
   connection: local
+  handlers:
+    - include_tasks: handlers/main.yml
   tasks:
     - name: Include basics.yml tasks
       include_tasks: basics.yml
 
     - name: Include sway.yml tasks
       include_tasks: sway.yml
+
+    - name: Include kanshi.yml tasks
+      include_tasks: tasks/kanshi.yml
