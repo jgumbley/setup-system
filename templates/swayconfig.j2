@@ -40,7 +40,7 @@ output eDP-1 resolution 1920x1080 position 0,0
 output DP-1 resolution 1920x1080 position 1920,0
 
 # Mirror eDP-1 to DP-1 when connected
-exec_always --no-startup-id "sh -c 'wlr-randr | grep -q \"DP-1 connected\" && wl-mirror --fullscreen-output DP-1 eDP-1'"
+exec_always --no-startup-id "sh -c 'wlr-randr | grep -q \"DP-1 connected\" && wl-mirror --fullscreen-output DP-1 eDP-1 --show-cursor'"
 
 ### Idle configuration
 #
