@@ -32,3 +32,5 @@ function fish_greeting
 end
 
 set -U fish_user_paths /home/linuxbrew/.linuxbrew/bin $fish_user_paths
+
+status --is-interactive; and rbenv init - fish | source

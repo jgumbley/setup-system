@@ -26,11 +26,14 @@
     state: directory
     mode: '0755'
 
-- name: Copy sway config 
+- name: Copy sway config
   become: no
   template:
     src: swayconfig.j2
     dest: ~/.config/sway/config
+
+- name: Include wallpaper tasks
+  include_tasks: tasks/wallpaper.yml
 
 - name: Ensure the kitty configuration directory exists
   ansible.builtin.file:

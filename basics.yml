@@ -3,6 +3,11 @@
   apt:
     update_cache: yes
 
+- name: Upgrade all packages
+  become: yes
+  apt:
+    upgrade: yes
+
 - name: Install basics
   become: yes
   apt:
@@ -26,6 +31,9 @@
       - clang
       - nfs-common
       - wofi
+      - grim
+      - slurp
+      - swaybg
     state: present
 
 - name: Copy Git config
@@ -36,9 +44,23 @@
 
 - name: Create wip directory
   become: yes
-  file: 
-    path: ~/wip 
-    state: directory 
+  file:
+    path: ~/wip
+    state: directory
+    mode: "0755"
+
+- name: Create screenshots directory
+  become: no
+  file:
+    path: ~/Pictures/screenshots
+    state: directory
+    mode: "0755"
+
+- name: Create Wallpapers directory
+  become: no
+  file:
+    path: ~/Pictures/Wallpapers
+    state: directory
     mode: "0755"
 
 - name: Ensure /etc/apt/keyrings directory exists
@@ -85,19 +107,19 @@
     name: snapd
     state: present
 
-- name: Ensure Discord is instaled
+- name: Ensure Discord is installed
   become: yes
   community.general.snap:
-    name: discord 
+    name: discord
     classic: yes
 
-- name: Ensure Steam is instaled
+- name: Ensure Steam is installed
   become: yes
   community.general.snap:
-    name: steam 
+    name: steam
     classic: yes
 
-- name: Ensure Spotify is instaled
+- name: Ensure Spotify is installed
   become: yes
   community.general.snap:
     name: spotify
