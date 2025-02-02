@@ -11,3 +11,6 @@
 
     - name: Include kanshi.yml tasks
       include_tasks: tasks/kanshi.yml
+
+    - name: Include development tools tasks
+      include_tasks: tasks/development.yml
