@@ -12,7 +12,14 @@
     state: present
 
 - name: Initialize rustup with stable toolchain
+  become: true
   ansible.builtin.shell: rustup default stable
   args:
     creates: "{{ ansible_env.HOME }}/.rustup"
   changed_when: false
+
+- name: Install tig
+  become: true
+  package:
+    name: tig
+    state: present
