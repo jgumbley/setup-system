@@ -1,4 +1,4 @@
-.PHONY: run push
+.PHONY: run push check-thumb
 
 run:
 	ansible-playbook main.yml -c local -K
