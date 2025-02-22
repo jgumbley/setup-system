@@ -24,3 +24,8 @@ unmount:
 ps2: thumb
 	sudo mkdir -p /mnt/thumb/psrom
 	sudo find /home/system/wip/games/roms/ps2 -name "*.7z" -exec 7z x {} -o/mnt/thumb/psrom \;
+
+sillytavern:
+	cd ~/wip/gen-ai/SillyTavern/ && \
+	git pull && \
+	./start.sh
