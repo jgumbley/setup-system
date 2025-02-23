@@ -6,8 +6,21 @@ function fish_prompt
     # Set color to green, common in old-school displays
     set_color green
 
-    # Print a fish emoji and classic ASCII art, you can choose any character you like for the ASCII art
-    echo -n "🐟 > "
+    # Define an array with only the proper fish emojis
+    set -l fish_emojis "🐟" "🐠" "🐡"
+
+    # Count the number of fish emojis
+    set -l count (count $fish_emojis)
+
+    # Generate a random number from /dev/urandom and calculate a valid 1-indexed array index
+    set -l rand (od -An -N2 -tu2 /dev/urandom | tr -d ' ')
+    set -l index (math "($rand % $count) + 1")
+
+    # Select a random fish emoji from the array
+    set -l fish_icon $fish_emojis[$index]
+
+    # Print the fish emoji followed by the prompt symbol
+    echo -n "$fish_icon > "
 
     # Reset color to default
     set_color normal
