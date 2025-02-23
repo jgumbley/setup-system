@@ -20,8 +20,6 @@
       - ncdu
       - htop
       - fish
-      - flatpak
-      - snap
       - python3
       - python3-venv
       - mc
@@ -33,7 +31,6 @@
       - wofi
       - grim
       - slurp
-      - swaybg
     state: present
 
 - name: Copy Git config
@@ -46,20 +43,6 @@
   become: yes
   file:
     path: ~/wip
-    state: directory
-    mode: "0755"
-
-- name: Create screenshots directory
-  become: no
-  file:
-    path: ~/Pictures/screenshots
-    state: directory
-    mode: "0755"
-
-- name: Create Wallpapers directory
-  become: no
-  file:
-    path: ~/Pictures/Wallpapers
     state: directory
     mode: "0755"
 
@@ -100,43 +83,3 @@
   apt:
     name:
       - code
-
-- name: Ensure Snapd is installed (Snap's daemon)
-  become: yes
-  ansible.builtin.package:
-    name: snapd
-    state: present
-
-- name: Ensure Discord is installed
-  become: yes
-  community.general.snap:
-    name: discord
-    classic: yes
-
-- name: Ensure Steam is installed
-  become: yes
-  community.general.snap:
-    name: steam
-    classic: yes
-
-- name: Ensure Spotify is installed
-  become: yes
-  community.general.snap:
-    name: spotify
-    classic: yes
-
-- name: Install apps etc
-  become: yes
-  apt:
-    name:
-      - shotwell
-    state: present
-
-- name: Ensure core is installed
-  become: yes
-  community.general.snap:
-    name: core
-
-- name: Install Logseq
-  become: yes
-  ansible.builtin.shell: flatpak install flathub com.logseq.Logseq -y

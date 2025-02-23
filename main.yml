@@ -6,11 +6,11 @@
     - name: Include basics.yml tasks
       include_tasks: basics.yml
 
+    - name: Include applications.yml tasks
+      include_tasks: applications.yml
+
     - name: Include sway.yml tasks
       include_tasks: sway.yml
-
-    - name: Include kanshi.yml tasks
-      include_tasks: tasks/kanshi.yml
 
     - name: Include development tools tasks
       include_tasks: tasks/development.yml

@@ -1,0 +1,44 @@
+- name: Install Flatpak and Snap
+  become: yes
+  apt:
+    name:
+      - flatpak
+      - snap
+    state: present
+
+- name: Ensure Snapd is installed (Snap's daemon)
+  become: yes
+  ansible.builtin.package:
+    name: snapd
+    state: present
+
+- name: Ensure Discord is installed
+  become: yes
+  community.general.snap:
+    name: discord
+    classic: yes
+
+- name: Ensure Steam is installed
+  become: yes
+  community.general.snap:
+    name: steam
+    classic: yes
+
+- name: Ensure Spotify is installed
+  become: yes
+  community.general.snap:
+    name: spotify
+    classic: yes
+
+- name: Ensure core is installed
+  become: yes
+  community.general.snap:
+    name: core
+
+- name: Install Logseq
+  become: yes
+  ansible.builtin.shell: flatpak install flathub com.logseq.Logseq -y
+
+- name: Update Flatpak applications
+  become: yes
+  ansible.builtin.command: flatpak update -y
