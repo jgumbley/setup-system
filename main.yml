@@ -17,3 +17,6 @@
 
     - name: Include Android tools tasks
       include_tasks: tasks/android.yml
+
+    - name: Include music.yml tasks
+      include_tasks: music.yml

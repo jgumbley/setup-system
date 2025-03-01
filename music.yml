@@ -1,0 +1,7 @@
+- name: Install Carla and PyQt5
+  become: yes
+  apt:
+    name:
+      - carla
+      - python3-pyqt5
+    state: present

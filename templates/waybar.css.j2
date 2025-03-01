@@ -1,0 +1,36 @@
+#waybar {
+    font-family: 'Iosevka Term SS07';
+    background-color: #002b36; /* Dark green background */
+    color: #00ff00; /* Bright green text */
+    border: 1px solid #003b36; /* Slightly darker border */
+}
+
+#waybar .module {
+    color: #00ff00; /* Bright green for all text */
+}
+
+#waybar .module:hover {
+    background-color: #004b36; /* Slightly lighter background on hover */
+}
+
+/* Specific styling for the workspace module */
+#workspaces button {
+    color: #00ff00; /* Bright green text */
+    background: none;
+}
+
+#workspaces button.focused {
+    background-color: #003b36; /* Dark green background for focused workspace */
+    border: 1px solid #00ff00; /* Bright green border */
+    color: #00ff00; /* Bright green text */
+}
+
+#workspaces button.urgent {
+    background-color: #ff0000; /* Red background for urgent workspace */
+    color: #ffffff; /* White text */
+}
+
+/* Style the clock */
+#clock {
+    color: #00ff00; /* Bright green text */
+}
