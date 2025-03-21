@@ -1,0 +1,8 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    fixed_font_family: "DejaVu Sans Mono"
+  tasks:
+    - name: Include sway.yml tasks
+      include_tasks: sway.yml

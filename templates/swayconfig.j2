@@ -7,6 +7,8 @@ set $right l
 set $term kitty
 set $menu wofi --show drun
 
+font pango:{{ fixed_font_family }} 10
+
 include /etc/sway/config-vars.d/*
 
 ### Output configuration
@@ -19,6 +21,12 @@ output eDP-1 {
 }
 
 output DP-1 {
+    resolution 1920x1080@60hz
+    position 1920,0
+    scale 1
+}
+
+output DP-2 {
     resolution 1920x1080@60hz
     position 1920,0
     scale 1

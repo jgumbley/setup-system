@@ -16,3 +16,4 @@
     path: "{{ ansible_env.HOME }}/Pictures/wallpapers"
     state: directory
     mode: '0755'
+    force: no

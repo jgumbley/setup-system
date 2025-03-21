@@ -1,7 +1,11 @@
-.PHONY: run push check-thumb
+.PHONY: run push check-thumb config
 
-run:
+run: config
 	ansible-playbook main.yml -c local -K
+	swaymsg reload
+
+config:
+	ansible-playbook config.yml -c local -K
 	swaymsg reload
 
 push:
