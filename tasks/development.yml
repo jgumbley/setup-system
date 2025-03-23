@@ -1,9 +1,17 @@
 ---
+- name: Setup Node.js 20.x repository
+  become: true
+  ansible.builtin.shell: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  args:
+    creates: /etc/apt/sources.list.d/nodesource.list
+  register: nodejs_repo_setup
+  
 - name: Install npm
   become: true
   package:
-    name: npm
+    name: nodejs
     state: present
+  register: npm_install
 
 - name: Install rustup
   become: true
