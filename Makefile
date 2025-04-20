@@ -11,3 +11,9 @@ config:
 push:
 	git add -A 
 	git commit -am "update" && git push
+
+mac:
+	su admin -c "make mac-brew"
+
+mac-brew:
+	./setup-mac/bootstrap.sh
