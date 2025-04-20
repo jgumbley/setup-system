@@ -1,4 +1,8 @@
+{% if is_mac %}
+shell /opt/homebrew/bin/fish
+{% else %}
 shell /usr/bin/fish
+{% endif %}
 font_family {{ fixed_font_family }}
 font_size 11
 disable_ligatures never

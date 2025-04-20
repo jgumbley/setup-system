@@ -1,7 +1,10 @@
-.PHONY: run push check-thumb config
+.PHONY: run push config linux mac mac-brew
 
-run: config
-	ansible-playbook main.yml -c local -K
+run:
+	ansible-playbook shared.yml -c local -K
+
+linux: run
+	ansible-playbook linux.yml -c local -K
 	swaymsg reload
 
 config:

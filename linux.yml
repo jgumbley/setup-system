@@ -1,0 +1,22 @@
+---
+- hosts: localhost
+  connection: local
+  vars:
+    fixed_font_family: "DejaVu Sans Mono"
+  handlers:
+    - include_tasks: handlers/main.yml
+  tasks:
+    - name: Include applications.yml tasks
+      include_tasks: tasks/applications.yml
+
+    - name: Include development tools tasks
+      include_tasks: tasks/development.yml
+
+    - name: Include Android tools tasks
+      include_tasks: tasks/android.yml
+      
+    - name: Include Sway window manager tasks
+      include_tasks: tasks/sway.yml
+      
+    - name: Include Kanshi display manager tasks
+      include_tasks: tasks/kanshi.yml

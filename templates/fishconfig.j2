@@ -30,24 +30,18 @@ set -g fish_greeting
 
 function fish_greeting
     # Get operating system, hostname, and kernel information
-    set -l os (uname -o)  # Operating system name
-    set -l host (uname -n)  # Hostname
+    set -l os (uname -s)  # Operating system name
+    set -l host (hostname)  # Hostname
     set -l kernel (uname -r)  # Kernel release
-
-    set -l uptime (uptime | cut -d' ' -f4-)
-    set -l memused (free -m | awk 'NR==2{printf "%s/%sMB (%.2f%%)\n", $3,$2,$3*100/$2 }')
+    set -l uptime (uptime)
 
     set_color 555555
     echo "OS: $os | Host: $host | Kernel: $kernel"
-    echo "Uptime: $uptime "
-    echo "Memusd: $memused"
+    echo "Uptime: $uptime"
     set_color normal
 end
 
-set -U fish_user_paths /home/linuxbrew/.linuxbrew/bin $fish_user_paths
-
-status --is-interactive; and rbenv init - fish | source
-
+# Git aliases
 alias add "git add -A"
 alias commit "git commit"
 alias log "git lg"
