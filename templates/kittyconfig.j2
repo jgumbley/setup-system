@@ -9,3 +9,9 @@ disable_ligatures never
 adjust_line_height 125%
 adjust_column_width 100%
 start_as_fullscreen yes
+
+map cmd+shift+c  copy_to_clipboard
+map cmd+shift+v  paste_from_clipboard
+
+map cmd+c        send_text all \x03
+map cmd+z        send_text all \x1A
