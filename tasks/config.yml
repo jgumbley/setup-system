@@ -6,3 +6,9 @@
   tasks:
     - name: Include sway.yml tasks
       include_tasks: sway.yml
+      
+    - name: Configure Vim
+      copy:
+        src: ../templates/vimrc.j2
+        dest: ~/.vimrc
+        mode: '0644'

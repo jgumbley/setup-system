@@ -1,0 +1,25 @@
+set nocompatible        " use Vim features, not strict vi
+syntax on               " turn on syntax highlighting
+set background=dark     " tell Vim you prefer a dark background
+colorscheme murphy      " built-in dark scheme; try others below
+
+set number              " show line numbers
+set expandtab           " use spaces instead of tabs
+set tabstop=4           " number of spaces for a tab
+set shiftwidth=4        " number of spaces for each indent
+set autoindent          " auto indent new lines
+set smartindent         " smart indent
+
+set ruler               " show cursor position
+set hlsearch            " highlight search results
+set incsearch           " incremental search
+set ignorecase          " ignore case when searching
+set smartcase           " override ignorecase when pattern has upper case
+
+set backspace=indent,eol,start  " allow backspacing over everything
+set showcmd             " show incomplete commands
+set wildmenu            " enhanced command line completion
+set laststatus=2        " always show status line
+
+" Save file with sudo if needed
+command W w !sudo tee % > /dev/null

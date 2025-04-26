@@ -53,3 +53,10 @@
         src: templates/tmux.conf.j2
         dest: ~/.tmux.conf
         mode: '0644'
+        
+    # Vim configuration
+    - name: Configure Vim
+      copy:
+        src: templates/vimrc.j2
+        dest: ~/.vimrc
+        mode: '0644'
