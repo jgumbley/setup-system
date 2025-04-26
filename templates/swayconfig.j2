@@ -5,9 +5,17 @@ set $down j
 set $up k
 set $right l
 set $term kitty
-set $menu wofi --show drun
+set $menu wofi --show drun --style ~/.config/wofi/style.css
 
 font pango:{{ fixed_font_family }} 10
+
+# Color scheme (based on theme)
+# class                 border  backgr. text    indicator child_border
+client.focused          #555555 #252526 #E6E6E6 #555555   #555555
+client.focused_inactive #333333 #1E1E1E #BBBBBB #484E50   #333333
+client.unfocused        #333333 #1E1E1E #888888 #292D2E   #222222
+client.urgent           #E06C75 #E06C75 #E6E6E6 #E06C75   #E06C75
+client.placeholder      #000000 #0C0C0C #E6E6E6 #000000   #0C0C0C
 
 include /etc/sway/config-vars.d/*
 

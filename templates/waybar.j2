@@ -13,7 +13,7 @@
         "tray"
     ],
 
-    "style": "background: #002b36; color:rgb(123, 255, 0); border: 1px solid #003b36;",
+    "style": "background: #1E1E1E; color:#E6E6E6; border: 1px solid #333;",
 
     "sway/workspaces": {
         "disable-scroll": true,
@@ -30,12 +30,12 @@
             "8": "8",
             "9": "9",
             "10": "10",
-            "urgent": "",
-            "focused": "",
+            "urgent": "",
+            "focused": "",
             "default": "•"
         },
-        "format-urgent": " {name}",
-        "format-focused": " {name}",
+        "format-urgent": " {name}",
+        "format-focused": " {name}",
         "format-default": "• {name}"
     },
 
@@ -51,9 +51,11 @@
     },
 
     "network": {
-        "format-wifi": "{essid} ({signalStrength}%) ",
-        "format-ethernet": "{ipaddr}/{cidr} ",
-        "format-disconnected": "Disconnected ⚠"
+        "format-wifi": "WiFi: {essid}",
+        "format-ethernet": "Eth",
+        "format-disconnected": "Disconnected",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+        "tooltip-format-ethernet": "{ipaddr}/{cidr}"
     },
 
     "battery": {
@@ -62,12 +64,12 @@
             "critical": 15
         },
         "format": "{capacity}% {icon}",
-        "format-icons": ["", "", "", "", ""]
+        "format-icons": ["", "", "", "", ""]
     },
 
     "clock": {
-        "format": "{:%Y-%m-%d %H:%M:%S}",
-        "tooltip-format": "<big>{:%Y %B}</big>\n<tt><small>{calendar}</small></tt>"
+        "format": "{:%H:%M}",
+        "tooltip-format": "{:%Y-%m-%d}\n<tt><small>{calendar}</small></tt>"
     },
 
     "tray": {

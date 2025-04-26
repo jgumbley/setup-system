@@ -5,6 +5,7 @@
       - sway
       - swayidle
       - fonts-font-awesome
+      - fonts-oxygen
       - waybar
       - kitty
       - i3
@@ -84,6 +85,22 @@
     path: ~/Pictures/Wallpapers
     state: directory
     mode: "0755"
+
+- name: Ensure wofi configuration directory exists
+  ansible.builtin.file:
+    path: ~/.config/wofi
+    state: directory
+    mode: '0755'
+
+- name: Copy wofi config file
+  template:
+    src: wofi-config.j2
+    dest: ~/.config/wofi/config
+
+- name: Copy wofi style file
+  template:
+    src: wofi-style.css.j2
+    dest: ~/.config/wofi/style.css
 
 - block:
     - name: Install Kanshi build dependencies

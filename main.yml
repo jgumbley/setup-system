@@ -2,7 +2,7 @@
 - hosts: localhost
   connection: local
   vars:
-    fixed_font_family: "DejaVu Sans Mono"
+    fixed_font_family: "Oxygen Mono"
   handlers:
     - include_tasks: handlers/main.yml
   tasks:
