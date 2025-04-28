@@ -1,0 +1,26 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: no
+  vars:
+    fixed_font_family: "Menlo"
+  pre_tasks:
+    - name: Gather facts manually
+      setup:
+      become: no
+    - name: Set OS facts
+      set_fact:
+        is_mac: "{{ ansible_facts['os_family'] == 'Darwin' }}"
+  vars_prompt:
+    - name: nas_password
+      prompt: "Enter NAS password (if mounting NAS)"
+      private: yes
+  handlers:
+    - include_tasks: handlers/main.yml
+  tasks:
+    # Mac specifics can be added or moved here from setup-mac/bootstrap.sh
+    # For now, just include NAS mounting for Mac
+    - name: Mount Mac NAS Share
+      include_tasks: tasks/nas_mount.yml
+      when: is_mac

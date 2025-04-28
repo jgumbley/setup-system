@@ -1,0 +1,93 @@
+---
+
+- name: "Detect platform"
+  set_fact:
+    is_mac:   "{{ ansible_facts['os_family'] == 'Darwin' }}"
+    is_linux: "{{ ansible_facts['os_family'] in ['Debian', 'RedHat'] }}"
+
+########################################################################
+# macOS – autofs
+########################################################################
+- block:
+    - name: "Create mount-point"
+      become: yes
+      become_method: sudo
+      file:
+        path: /Volumes/{{ nas_share }}
+        state: directory
+        owner: "{{ ansible_user_id }}"
+        mode: "0755"
+
+    - name: "Ensure /etc/auto_master references our custom map"
+      become: yes
+      become_method: sudo
+      lineinfile:
+        path: /etc/auto_master
+        line: "/-    auto_smb    -nosuid"
+        create: no
+        state: present
+        regexp: '^/-\s+auto_smb'
+
+    - name: "Deploy /etc/auto_smb"
+      become: yes
+      template:
+        src: templates/auto_smb.j2
+        dest: /etc/auto_smb
+        owner: root
+        group: wheel
+        mode: "0644"
+
+    - name: "Reload autofs"
+      become: yes
+      command: automount -vc
+  when: is_mac
+
+########################################################################
+# Linux – fstab + systemd.automount
+########################################################################
+- block:
+    - name: "Install CIFS utilities"
+      become: yes
+      package:
+        name: cifs-utils
+        state: present
+
+    - name: "Create mount-point"
+      become: yes
+      file:
+        path: /mnt/{{ nas_share }}
+        state: directory
+        owner: "{{ ansible_user_uid }}"
+        group: "{{ ansible_user_gid }}"
+        mode: "0755"
+
+    - name: "Create credentials file"
+      become: yes
+      copy:
+        dest: /etc/samba/cred_{{ nas_share }}
+        content: |
+          username={{ nas_user }}
+          password={{ nas_pass }}
+        owner: root
+        group: root
+        mode: "0600"
+
+    - name: "Ensure fstab entry exists"
+      become: yes
+      lineinfile:
+        path: /etc/fstab
+        create: yes
+        regexp: '^//{{ nas_host }}/{{ nas_share }}'
+        line: >
+          //{{ nas_host }}/{{ nas_share }}  /mnt/{{ nas_share }}   cifs
+          _netdev,noauto,x-systemd.automount,iocharset=utf8,credentials=/etc/samba/cred_{{ nas_share }},uid={{ ansible_user_uid }},gid={{ ansible_user_gid }},vers=3.0  0  0
+
+    - name: "Reload systemd units"
+      become: yes
+      systemd:
+        daemon_reload: yes
+
+    - name: "Activate the automount"
+      become: yes
+      command: systemctl restart remote-fs.target
+  when: is_linux

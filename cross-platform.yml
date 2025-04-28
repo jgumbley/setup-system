@@ -1,24 +1,17 @@
 ---
 - hosts: localhost
   connection: local
-  become: yes
+  become: no
   gather_facts: no
   vars:
     fixed_font_family: "DejaVu Sans Mono"
   pre_tasks:
     - name: Gather facts manually
       setup:
-      become: no
     - name: Set OS facts
       set_fact:
         is_mac: "{{ ansible_facts['os_family'] == 'Darwin' }}"
-        is_linux: "{{ ansible_facts['os_family'] == 'Debian' or ansible_facts['os_family'] == 'RedHat' }}"
-  vars_prompt:
-    - name: nas_password
-      prompt: "Enter NAS password"
-      private: yes
-  handlers:
-    - include_tasks: handlers/main.yml
+        is_linux: "{{ ansible_facts['os_family'] in ['Debian', 'RedHat'] }}"
   tasks:
     - name: Ensure .config directory exists
       file:
@@ -72,7 +65,3 @@
         src: templates/vimrc.j2
         dest: ~/.vimrc
         mode: '0644'
-        
-    # NAS Mount configuration
-    - name: Mount Synology share
-      include_tasks: tasks/nas_mount.yml

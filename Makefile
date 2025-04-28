@@ -1,11 +1,15 @@
-.PHONY: run push config linux mac mac-brew
+.PHONY: cross-platform linux mac config push
 
-run:
-	ansible-playbook shared.yml -c local -K
+cross-platform:
+	ansible-playbook cross-platform.yml -c local
 
-linux: run
+linux: cross-platform
 	ansible-playbook linux.yml -c local -K
 	swaymsg reload
+
+mac: cross-platform
+	ansible-playbook mac.yml -c local -K
+	./setup-mac/bootstrap.sh
 
 config:
 	ansible-playbook config.yml -c local -K
@@ -14,9 +18,3 @@ config:
 push:
 	git add -A 
 	git commit -am "update" && git push
-
-mac:
-	su admin -c "make mac-brew"
-
-mac-brew:
-	./setup-mac/bootstrap.sh

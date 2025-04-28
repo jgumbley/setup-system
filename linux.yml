@@ -1,11 +1,27 @@
 ---
 - hosts: localhost
   connection: local
+  become: yes
+  gather_facts: no
   vars:
     fixed_font_family: "DejaVu Sans Mono"
+  pre_tasks:
+    - name: Gather facts manually
+      setup:
+      become: no
+    - name: Set OS facts
+      set_fact:
+        is_linux: "{{ ansible_facts['os_family'] in ['Debian', 'RedHat'] }}"
+  vars_prompt:
+    - name: nas_password
+      prompt: "Enter NAS password (if mounting NAS)"
+      private: yes
   handlers:
     - include_tasks: handlers/main.yml
   tasks:
+    - name: Include basics tasks
+      include_tasks: tasks/basics.yml
+      
     - name: Include applications.yml tasks
       include_tasks: tasks/applications.yml
 
@@ -20,3 +36,10 @@
       
     - name: Include Kanshi display manager tasks
       include_tasks: tasks/kanshi.yml
+      
+    - name: Include wallpaper tasks
+      include_tasks: tasks/wallpaper.yml
+      
+    - name: Mount Linux NAS Share
+      include_tasks: tasks/nas_mount.yml
+      when: is_linux
