@@ -1,0 +1,66 @@
+---
+# Global theme colors used across all roles and applications
+# Based on VS Code Dark+ theme with custom enhancements
+
+# Base colors
+theme_colors:
+  # Primary colors
+  background: "#1E1E1E"
+  foreground: "#E6E6E6"
+  surface: "#252526"
+  border: "#333333"
+  
+  # Accent colors
+  primary: "#E06C75"    # red/pink accent
+  secondary: "#9CDCFE"  # blue accent
+  
+  # Semantic colors
+  success: "#B5CEA8"    # green
+  warning: "#CE9178"    # orange
+  error: "#E06C75"      # red
+  info: "#4FC1FF"       # light blue
+  
+  # UI element colors
+  selection: "#252526"
+  search: "#333333"
+  cursor: "#E6E6E6"
+  
+  # Syntax highlighting colors
+  syntax:
+    comment: "#666666"
+    string: "#B5CEA8"
+    number: "#4EC9B0"
+    keyword: "#4FC1FF"
+    function: "#9CDCFE"
+    variable: "#E06C75"
+    constant: "#E06C75"
+    type: "#4EC9B0"
+    operator: "#BBBBBB"
+    preprocessor: "#CE9178"
+
+# Legacy color scheme for backward compatibility
+default_terminal_colors:
+  foreground: "{{ theme_colors.foreground }}"
+  background: "{{ theme_colors.background }}"
+  cursor: "{{ theme_colors.cursor }}"
+
+color_scheme:
+  normal:
+    black: "{{ theme_colors.background }}"
+    red: "{{ theme_colors.primary }}"
+    green: "{{ theme_colors.success }}"
+    yellow: "{{ theme_colors.warning }}"
+    blue: "{{ theme_colors.secondary }}"
+    magenta: "#C678DD"
+    cyan: "{{ theme_colors.syntax.number }}"
+    white: "{{ theme_colors.syntax.operator }}"
+  bright:
+    black: "{{ theme_colors.syntax.comment }}"
+    red: "{{ theme_colors.primary }}"
+    green: "{{ theme_colors.success }}"
+    yellow: "{{ theme_colors.warning }}"
+    blue: "{{ theme_colors.secondary }}"
+    magenta: "#C678DD"
+    cyan: "{{ theme_colors.syntax.number }}"
+    white: "#F8F8F8"
+  url: "{{ theme_colors.secondary }}"
