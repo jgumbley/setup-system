@@ -1,4 +1,4 @@
-.PHONY: cross-platform linux mac config push term
+.PHONY: cross-platform linux mac config push term core-tools
 
 cross-platform:
 	ansible-playbook cross-platform.yml -c local
@@ -14,6 +14,9 @@ mac: cross-platform
 config:
 	ansible-playbook config.yml -c local -K
 	swaymsg reload
+
+core-tools:
+	ansible-playbook core-tools.yml -c local -K
 
 term:
 	ansible-playbook terminal.yml

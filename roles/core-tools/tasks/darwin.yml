@@ -1,0 +1,19 @@
+---
+- name: Check if Homebrew is installed
+  stat:
+    path: /opt/homebrew/bin/brew
+  register: homebrew_check
+
+- name: Fail if Homebrew is not installed
+  fail:
+    msg: "Homebrew is not installed. Please install Homebrew first by running: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
+  when: not homebrew_check.stat.exists
+
+- name: Update Homebrew package list
+  homebrew:
+    update_homebrew: yes
+
+- name: Install core packages with Homebrew
+  homebrew:
+    name: "{{ core_packages }}"
+    state: present

@@ -1,0 +1,19 @@
+---
+- name: Update apt cache
+  apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+
+- name: Install core packages with apt
+  apt:
+    name: "{{ core_packages }}"
+    state: present
+  become: yes
+
+- name: Add fish shell to /etc/shells
+  lineinfile:
+    path: /etc/shells
+    line: /usr/bin/fish
+    state: present
+  become: yes

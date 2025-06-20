@@ -1,0 +1,26 @@
+---
+- name: Check if admin user exists on macOS
+  user:
+    name: admin
+    state: present
+  check_mode: yes
+  register: admin_user_check
+  when: ansible_os_family == 'Darwin'
+  ignore_errors: yes
+
+- name: Fail if no admin user found on macOS
+  fail:
+    msg: "No admin user found, required for privilege escalation on macOS"
+  when: 
+    - ansible_os_family == 'Darwin'
+    - admin_user_check.failed
+
+- name: Set platform name fact
+  set_fact:
+    platform_name: "{{ 'ubuntu' if ansible_os_family == 'Debian' else ansible_os_family | lower }}"
+
+- name: Load platform-specific variables
+  include_vars: "{{ platform_name }}.yml"
+
+- name: Include platform-specific tasks
+  include_tasks: "{{ platform_name }}.yml"
