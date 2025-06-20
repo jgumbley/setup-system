@@ -1,5 +1,8 @@
 .PHONY: cross-platform linux mac config push term core-tools
 
+.bootstrapped:
+	su admin -c "cd $(PWD) && ./setup-mac/bootstrap.sh" && touch .bootstrapped
+
 cross-platform:
 	ansible-playbook cross-platform.yml -c local
 
@@ -14,7 +17,7 @@ config:
 	ansible-playbook config.yml -c local -K
 	swaymsg reload
 
-core-tools:
+core-tools: .bootstrapped
 	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core-tools.yml -c local"
 
 term:
