@@ -4,21 +4,21 @@ set background=dark     " tell Vim you prefer a dark background
 set termguicolors       " enable true colors support
 colorscheme default     " use default, will customize colors below
 
-" Custom colors to match kitty terminal
-hi Normal guifg=#E6E6E6 guibg=#1E1E1E
-hi Cursor guifg=#1E1E1E guibg=#E6E6E6
-hi Comment guifg=#666666
-hi Constant guifg=#E06C75
-hi String guifg=#98C379
-hi Identifier guifg=#9CDCFE
-hi Statement guifg=#C678DD
-hi PreProc guifg=#E5C07B
-hi Type guifg=#56B6C2
-hi Special guifg=#BBBBBB
-hi Error guifg=#F8F8F8 guibg=#E06C75
+" Conservative readable colors
+hi Normal guifg=#F5F5F5 guibg=#262626
+hi Cursor guifg=#262626 guibg=#F5F5F5
+hi Comment guifg=#A8A8A8
+hi Constant guifg=#FFAFD7
+hi String guifg=#AFD787
+hi Identifier guifg=#87CEEB
+hi Statement guifg=#DDA0DD
+hi PreProc guifg=#FFD787
+hi Type guifg=#87CEEB
+hi Special guifg=#D0D0D0
+hi Error guifg=#FFFFFF guibg=#D75F5F
 
 set number              " show line numbers
-hi LineNr guifg=#666666     " set line numbers to dark grey
+hi LineNr guifg=#B0B0B0     " set line numbers to readable grey
 set expandtab           " use spaces instead of tabs
 set tabstop=4           " number of spaces for a tab
 set shiftwidth=4        " number of spaces for each indent
