@@ -1,13 +1,18 @@
 ---
-- name: Check if Homebrew is installed
+- name: Check if Homebrew is installed (Apple Silicon)
   stat:
     path: /opt/homebrew/bin/brew
-  register: homebrew_check
+  register: homebrew_check_arm
+
+- name: Check if Homebrew is installed (Intel)
+  stat:
+    path: /usr/local/bin/brew
+  register: homebrew_check_intel
 
 - name: Fail if Homebrew is not installed
   fail:
     msg: "Homebrew is not installed. Please install Homebrew first by running: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
-  when: not homebrew_check.stat.exists
+  when: not homebrew_check_arm.stat.exists and not homebrew_check_intel.stat.exists
 
 
 - name: Update Homebrew package list
