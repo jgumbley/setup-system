@@ -9,6 +9,7 @@
     msg: "Homebrew is not installed. Please install Homebrew first by running: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
   when: not homebrew_check.stat.exists
 
+
 - name: Update Homebrew package list
   homebrew:
     update_homebrew: yes

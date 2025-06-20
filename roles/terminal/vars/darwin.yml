@@ -12,9 +12,9 @@ fixed_font_family: "SF Mono"
 
 # Key bindings for macOS (cmd-based)
 key_bindings:
-  copy: "cmd+shift+c"
-  paste: "cmd+shift+v"
-  interrupt: "cmd+c"
+  copy: "cmd+c"
+  paste: "cmd+v"
+  interrupt: "cmd+shift+c"
   suspend: "cmd+z"
 
 # macOS-specific tmux settings

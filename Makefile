@@ -7,8 +7,7 @@ linux: cross-platform
 	ansible-playbook linux.yml -c local -K
 	swaymsg reload
 
-mac: cross-platform
-	ansible-playbook mac.yml -c local -K
+mac: 
 	./setup-mac/bootstrap.sh
 
 config:
@@ -16,7 +15,7 @@ config:
 	swaymsg reload
 
 core-tools:
-	ansible-playbook core-tools.yml -c local -K
+	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core-tools.yml -c local"
 
 term:
 	ansible-playbook terminal.yml
