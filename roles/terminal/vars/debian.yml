@@ -1,0 +1,26 @@
+---
+# Ubuntu/Debian-specific terminal configuration variables
+
+# Shell paths
+shell_paths:
+  fish: "/usr/bin/fish"
+
+# Font configuration for Ubuntu
+font_family: "Ubuntu Mono"
+fixed_font_family: "Ubuntu Mono"
+
+# Key bindings for Linux (ctrl+shift-based)
+key_bindings:
+  copy: "ctrl+shift+c"
+  paste: "ctrl+shift+v"
+  interrupt: "ctrl+c"
+  suspend: "ctrl+z"
+
+# Linux-specific tmux settings
+tmux_shell: "/usr/bin/fish"
+
+# Platform detection
+is_mac: false
+
+# No homebrew on Linux
+homebrew_shellenv: ""

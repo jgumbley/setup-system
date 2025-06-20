@@ -37,14 +37,9 @@ set -g status-right-length 50
 set -g status-left-length 20
 
 # Increase scrollback buffer size
-set -g history-limit 10000
+set -g history-limit {{ terminal_settings.history_limit }}
 
 # Set terminal to support 256 colors
 set -g default-terminal "screen-256color"
-{% if is_mac %}
-# Mac-specific configuration
-set-option -g default-shell /opt/homebrew/bin/fish
-{% else %}
-# Linux-specific configuration  
-set-option -g default-shell /usr/bin/fish
-{% endif %}
+# Set default shell
+set-option -g default-shell {{ shell_paths.fish }}

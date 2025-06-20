@@ -1,0 +1,10 @@
+---
+- name: Configure terminal environment
+  hosts: localhost
+  connection: local
+  gather_facts: yes
+  become: no
+  
+  roles:
+    - role: terminal
+      tags: ['always', 'terminal']

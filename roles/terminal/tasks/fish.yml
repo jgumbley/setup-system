@@ -1,0 +1,22 @@
+---
+- name: Check if fish is installed
+  command: which fish
+  register: fish_check
+  failed_when: false
+  changed_when: false
+
+- name: Configure fish shell
+  when: fish_check.rc == 0
+  block:
+    - name: Create fish config directory
+      file:
+        path: "{{ ansible_env.HOME }}/.config/fish"
+        state: directory
+        mode: '0755'
+
+    - name: Deploy fish configuration
+      template:
+        src: fishconfig.j2
+        dest: "{{ ansible_env.HOME }}/.config/fish/config.fish"
+        mode: '0644'
+      tags: fish

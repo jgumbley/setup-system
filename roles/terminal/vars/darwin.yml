@@ -1,0 +1,27 @@
+---
+# macOS-specific terminal configuration variables
+
+# Shell paths
+shell_paths:
+  fish: "/opt/homebrew/bin/fish"
+  homebrew_prefix: "/opt/homebrew"
+
+# Font configuration for macOS
+font_family: "SF Mono"
+fixed_font_family: "SF Mono"
+
+# Key bindings for macOS (cmd-based)
+key_bindings:
+  copy: "cmd+shift+c"
+  paste: "cmd+shift+v"
+  interrupt: "cmd+c"
+  suspend: "cmd+z"
+
+# macOS-specific tmux settings
+tmux_shell: "/opt/homebrew/bin/fish"
+
+# Platform detection
+is_mac: true
+
+# Homebrew evaluation command
+homebrew_shellenv: 'eval "$(/opt/homebrew/bin/brew shellenv)"'

@@ -1,0 +1,16 @@
+---
+- name: Check if vim is installed
+  command: which vim
+  register: vim_check
+  failed_when: false
+  changed_when: false
+
+- name: Configure vim
+  when: vim_check.rc == 0
+  block:
+    - name: Deploy vim configuration
+      template:
+        src: vimrc.j2
+        dest: "{{ ansible_env.HOME }}/.vimrc"
+        mode: '0644'
+      tags: vim

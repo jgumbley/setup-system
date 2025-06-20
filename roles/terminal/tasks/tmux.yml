@@ -1,0 +1,16 @@
+---
+- name: Check if tmux is installed
+  command: which tmux
+  register: tmux_check
+  failed_when: false
+  changed_when: false
+
+- name: Configure tmux
+  when: tmux_check.rc == 0
+  block:
+    - name: Deploy tmux configuration
+      template:
+        src: tmux.conf.j2
+        dest: "{{ ansible_env.HOME }}/.tmux.conf"
+        mode: '0644'
+      tags: tmux

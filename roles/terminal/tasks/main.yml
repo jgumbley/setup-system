@@ -1,0 +1,17 @@
+---
+- name: Load common variables
+  include_vars: common.yml
+
+- name: Load OS-specific variables (Darwin)
+  include_vars: darwin.yml
+  when: ansible_system == 'Darwin'
+
+- name: Load OS-specific variables (Debian/Ubuntu)
+  include_vars: debian.yml
+  when: ansible_system == 'Linux' and ansible_os_family == 'Debian'
+
+- name: Configure terminal components
+  include_tasks: "{{ item }}.yml"
+  loop: "{{ terminal_components }}"
+  tags: 
+    - terminal

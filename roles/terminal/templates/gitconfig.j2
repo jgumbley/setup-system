@@ -1,9 +1,9 @@
 [init]
 	defaultBranch = main
 [user]
-	email = j.gumbley@gmail.com
-	name = JGumbley
+	email = {{ git_user_email }}
+	name = {{ git_user_name }}
 [core]
-	editor = vi
+	editor = {{ git_default_editor }}
 [alias]
 	lg = log --oneline --decorate --graph --all --max-count=12
