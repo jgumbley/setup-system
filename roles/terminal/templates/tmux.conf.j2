@@ -1,7 +1,7 @@
-# Set prefix key to Ctrl-a
-unbind C-b
-set -g prefix C-a
-bind C-a send-prefix
+# Set prefix key (keeping default C-b for now, uncomment to change)
+# set -g prefix C-a
+# unbind C-b
+# bind C-a send-prefix
 
 # Enable mouse mode
 set -g mouse on
@@ -19,16 +19,47 @@ bind - split-window -v
 unbind '"'
 unbind %
 
-# Switch panes using Alt-arrow without prefix
-bind -n M-Left select-pane -L
-bind -n M-Right select-pane -R
-bind -n M-Up select-pane -U
-bind -n M-Down select-pane -D
+# New tab (window) with C-t
+bind-key -n C-t new-window
+
+# Switch windows with C-\ and C-]
+bind-key -n C-\\ previous-window
+bind-key -n C-] next-window
+
+# Quick pane cycling
+unbind ^A
+bind ^A select-pane -t :.+
+
+# Clear history and screen
+bind-key -n C-k send-keys -R \; clear-history\; send-keys "Enter"
 
 # Enable vi mode
 setw -g mode-keys vi
 
-# Set status bar
+# Setup 'v' to begin selection as in Vim
+bind-key -Tcopy-mode-vi 'v' send -X begin-selection
+bind-key -Tcopy-mode-vi 'y' send -X copy-selection
+
+# Smart pane switching with awareness of vim splits
+bind -n C-h run "(tmux display-message -p '#{pane_current_command}' | grep -iqE '(^|\/)vim && tmux send-keys C-h) || tmux select-pane -L"
+bind -n C-j run "(tmux display-message -p '#{pane_current_command}' | grep -iqE '(^|\/)vim && tmux send-keys C-j) || tmux select-pane -D"
+bind -n C-k run "(tmux display-message -p '#{pane_current_command}' | grep -iqE '(^|\/)vim && tmux send-keys C-k) || tmux select-pane -U"
+bind -n C-l run "(tmux display-message -p '#{pane_current_command}' | grep -iqE '(^|\/)vim && tmux send-keys C-l) || tmux select-pane -R"
+
+# Increase scrollback buffer size
+set -g history-limit 10000
+
+# Set terminal to support 256 colors
+set -g default-terminal "screen-256color"
+
+# Set shell based on platform
+{% if is_mac %}
+set-option -g default-shell {{ shell_paths.fish }}
+{% else %}
+set-option -g default-shell {{ shell_paths.fish }}
+{% endif %}
+
+# Status bar
 set -g status-position bottom
 set -g status-style bg=colour234,fg=colour137
 set -g status-left ''
@@ -36,10 +67,16 @@ set -g status-right '#[fg=colour233,bg=colour241,bold] %d/%m #[fg=colour233,bg=c
 set -g status-right-length 50
 set -g status-left-length 20
 
-# Increase scrollback buffer size
-set -g history-limit {{ terminal_settings.history_limit }}
+# Window status
+setw -g window-status-format "#[fg=white,bg=colour234]  #I #W  "
+setw -g window-status-current-format "#[fg=colour234,bg=colour39]#[fg=colour25,bg=colour39,noreverse,bold] #I #W #[fg=colour39,bg=colour234,nobold]"
 
-# Set terminal to support 256 colors
-set -g default-terminal "screen-256color"
-# Set default shell
-set-option -g default-shell {{ shell_paths.fish }}
+# Messages
+set -g message-style fg=white,bg=blue,bold
+
+# Pane borders
+set -g pane-border-style fg=default
+set -g pane-active-border-style fg=default
+
+# No delay for escape key press
+set -sg escape-time 0
