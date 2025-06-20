@@ -1,7 +1,7 @@
 .PHONY: cross-platform linux mac config push term core-tools
 
 .bootstrapped:
-	su admin -c "cd $(PWD) && ./setup-mac/bootstrap.sh" && touch .bootstrapped
+	su admin -c "cd $(PWD) && ./bootstrap/darwin.sh" && touch .bootstrapped
 
 cross-platform:
 	ansible-playbook cross-platform.yml -c local
