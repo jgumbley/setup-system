@@ -23,5 +23,3 @@ tmux_shell: "/opt/homebrew/bin/fish"
 # Platform detection
 is_mac: true
 
-# Homebrew evaluation command
-homebrew_shellenv: 'eval "$(/opt/homebrew/bin/brew shellenv)"'

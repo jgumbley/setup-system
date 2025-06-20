@@ -6,6 +6,28 @@
   include_vars: darwin.yml
   when: ansible_system == 'Darwin'
 
+- name: Check if Homebrew is installed (Apple Silicon)
+  stat:
+    path: /opt/homebrew/bin/brew
+  register: homebrew_check_arm
+  when: ansible_system == 'Darwin'
+
+- name: Check if Homebrew is installed (Intel)
+  stat:
+    path: /usr/local/bin/brew
+  register: homebrew_check_intel
+  when: ansible_system == 'Darwin'
+
+- name: Set homebrew shellenv command
+  set_fact:
+    homebrew_shellenv: 'eval "$(/opt/homebrew/bin/brew shellenv)"'
+  when: ansible_system == 'Darwin' and homebrew_check_arm.stat.exists
+
+- name: Set homebrew shellenv command (Intel)
+  set_fact:
+    homebrew_shellenv: 'eval "$(/usr/local/bin/brew shellenv)"'
+  when: ansible_system == 'Darwin' and homebrew_check_intel.stat.exists
+
 - name: Load OS-specific variables (Debian/Ubuntu)
   include_vars: debian.yml
   when: ansible_system == 'Linux' and ansible_os_family == 'Debian'
