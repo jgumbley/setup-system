@@ -4,6 +4,7 @@
 # Shell paths
 shell_paths:
   fish: "/usr/bin/fish"
+  tmux: "/usr/bin/tmux"
 
 # Font configuration for Ubuntu
 font_family: "Ubuntu Mono"

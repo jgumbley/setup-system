@@ -5,5 +5,4 @@ core_packages:
   - kitty
   - git
   - vim
-  - npm
   - python3
