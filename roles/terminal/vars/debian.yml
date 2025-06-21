@@ -20,8 +20,5 @@ key_bindings:
 # Linux-specific tmux settings
 tmux_shell: "/usr/bin/fish"
 
-# Platform detection
-is_mac: false
-
 # No homebrew on Linux
 homebrew_shellenv: ""
