@@ -7,14 +7,11 @@ else
 	./bootstrap.sh && touch .bootstrapped
 endif
 
-
-
-
-core-tools: .bootstrapped
+core: .bootstrapped
 ifeq ($(shell uname -s),Darwin)
-	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core-tools.yml -c local"
+	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core.yml -c local"
 else
-	ansible-playbook core-tools.yml -c local
+	ansible-playbook core.yml -c local
 endif
 
 term:

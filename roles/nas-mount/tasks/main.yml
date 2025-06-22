@@ -31,7 +31,7 @@
     - name: "Deploy /etc/auto_smb"
       become: yes
       template:
-        src: templates/auto_smb.j2
+        src: auto_smb.j2
         dest: /etc/auto_smb
         owner: root
         group: wheel
