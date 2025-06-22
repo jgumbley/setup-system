@@ -7,19 +7,8 @@ else
 	./bootstrap.sh && touch .bootstrapped
 endif
 
-cross-platform:
-	ansible-playbook cross-platform.yml -c local
 
-linux: cross-platform
-	ansible-playbook linux.yml -c local -K
-	swaymsg reload
 
-mac: 
-	./setup-mac/bootstrap.sh
-
-config:
-	ansible-playbook config.yml -c local -K
-	swaymsg reload
 
 core-tools: .bootstrapped
 ifeq ($(shell uname -s),Darwin)
@@ -33,7 +22,3 @@ term:
 
 setup: .bootstrapped
 	ansible-playbook setup.yml -c local -K
-
-push:
-	git add -A 
-	git commit -am "update" && git push

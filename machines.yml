@@ -6,7 +6,8 @@ machine_configs:
     
   # Full desktop/laptop with GUI
   "jim-laptop":
-    - basics
+    - core-tools
+    - terminal
     - sway-desktop
     - development
     - applications
@@ -15,11 +16,13 @@ machine_configs:
   
   # Minimal Raspberry Pi setup
   "pi-*":
-    - basics
+    - core-tools
+    - terminal
   
   # Example: Development server
   "dev-server":
-    - basics
+    - core-tools
+    - terminal
     - development
   
   # Default fallback configuration
