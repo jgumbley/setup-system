@@ -11,7 +11,7 @@ core: .bootstrapped
 ifeq ($(shell uname -s),Darwin)
 	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core.yml -c local"
 else
-	ansible-playbook core.yml -c local
+	ansible-playbook core.yml -c local -K
 endif
 
 term:

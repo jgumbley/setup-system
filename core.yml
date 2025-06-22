@@ -4,3 +4,4 @@
   roles:
     - core-tools
     - nas-mount
+    - kitty

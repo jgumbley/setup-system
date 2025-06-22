@@ -10,7 +10,6 @@ git_default_editor: "vi"
 terminal_components:
   - git
   - fish
-  - kitty
   - tmux
   - vim
 
