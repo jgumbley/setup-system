@@ -1,28 +1,44 @@
-Setup machine for Jim 
+# Setup machine for Jim 
 ---------------------
 
 Ideally not doing this too often but you never know
 
-Classic problem is bootstrap. Imagine we can curl bootstrap and run from there
-
-You'll need to manually install 1password and login to Github, create keys and upload them
-
 ## Usage
 
-The setup is now organized into three playbooks:
+The setup is organized into cross-platform terminal preferences, dotfiles and basic tools, and linux-specific whole machine setups.
 
-1. `cross-platform.yml` - Sets up configuration for tools used on both Mac and Linux (no sudo required)
-   - Git, Fish, Kitty, Tmux, Vim configs
+### Cross-platform commands (Mac & Linux)
 
-2. `linux.yml` - Linux-specific setup (requires sudo)
-   - Applications, development tools, window managers, NAS mounting
+```bash
+make core-tools   # Install basic tools (automatically runs bootstrap if needed)
+make term         # Configure dotfiles essentially (fish, tmux, vim, git, kitty)
+make nas          # Mount NAS (prompts for password)
+```
 
-3. `mac.yml` - Mac-specific setup (requires sudo)
-   - Mac-specific configurations, NAS mounting
+### Linix specific full machine setups
 
-### Make targets
+```bash
+make setup # Full Linux setup based on hostname
+```
 
-- `make cross-platform` - Run only the cross-platform setup
-- `make linux` - Run Linux setup (includes cross-platform setup)
-- `make mac` - Run Mac setup (includes cross-platform setup)
-- `make config` - Run minimal configuration setup and reload Sway
+## Linux Machine Archetypes
+
+Linux machines get different configurations based on hostname. 
+
+### Configure machines.yml
+
+```yaml
+machine_configs:
+  # Laptop/desktop with full GUI
+  "jim-laptop":
+    - sway           # Window manager + waybar
+    - development    # Rust, Node, dev tools
+    - applications   # Discord, Steam, Spotify, VS Code
+  
+  # Minimal Raspberry Pi
+  "pi-*":
+    - basic-tools    # Just essentials
+```
+
+The `make setup` command detects hostname and applies matching configs automatically. Wildcards supported.
+
