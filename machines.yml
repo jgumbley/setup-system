@@ -1,15 +1,17 @@
 ---
 machine_configs:
   # Full desktop/laptop with GUI
+  "system":
+    - sway-desktop 
+    
+  # Full desktop/laptop with GUI
   "jim-laptop":
     - basics
-    - sway
+    - sway-desktop
     - development
     - applications
     - music
     - android
-    - kanshi
-    - wallpaper
   
   # Minimal Raspberry Pi setup
   "pi-*":

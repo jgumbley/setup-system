@@ -1,3 +1,4 @@
+---
 - block:
     - name: Install Kanshi build dependencies
       become: true

@@ -1,0 +1,68 @@
+#waybar {
+    font-family: '{{ fixed_font_family }}';
+    background-color: #1E1E1E;
+    color: #E6E6E6;
+    border: 1px solid #333;
+}
+
+#waybar .module {
+    color: #E6E6E6;
+    margin: 0 4px;
+    padding: 0 6px;
+}
+
+#waybar .module:hover {
+    background-color: #252526;
+}
+
+/* Specific styling for the workspace module */
+#workspaces button {
+    color: #E6E6E6;
+    background: none;
+}
+
+#workspaces button.focused {
+    background-color: #252526;
+    border: 1px solid #E06C75;
+    color: #E06C75;
+}
+
+#workspaces button.urgent {
+    background-color: #E06C75;
+    color: #E6E6E6;
+}
+
+/* Module styling */
+#clock {
+    color: #9CDCFE;
+}
+
+#battery {
+    color: #4EC9B0;
+}
+
+#battery.warning {
+    color: #CE9178;
+}
+
+#battery.critical {
+    color: #E06C75;
+}
+
+#network {
+    color: #B5CEA8;
+}
+
+#pulseaudio {
+    color: #4FC1FF;
+}
+
+a {
+    color: #9CDCFE;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+a:hover {
+    color: #CE9178;
+}

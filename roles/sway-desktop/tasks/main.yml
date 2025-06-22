@@ -1,0 +1,85 @@
+---
+- name: Install sway
+  become: yes
+  apt:
+    name: 
+      - sway
+      - swayidle
+      - fonts-font-awesome
+      - fonts-oxygen
+      - waybar
+      - kitty
+      - i3
+      - light
+      - swaybg
+      - wev
+      - pavucontrol
+    state: present
+
+- name: Ensure the waybar configuration directory exists
+  ansible.builtin.file:
+    path: ~/.config/waybar
+    state: directory
+    mode: '0755'
+
+- name: Ensure the configuration directory exists
+  ansible.builtin.file:
+    path: ~/.config/sway 
+    state: directory
+    mode: '0755'
+
+- name: Copy sway config
+  become: no
+  template:
+    src: swayconfig.j2
+    dest: ~/.config/sway/config
+
+- name: Include wallpaper tasks
+  include_tasks: wallpaper.yml
+
+
+- name: Copy config 
+  become: no
+  template:
+    src: waybar.j2
+    dest: ~/.config/waybar/config.jsonc
+
+- name: Copy waybar style
+  become: no
+  template:
+    src: waybar.css.j2
+    dest: ~/.config/waybar/style.css
+
+
+- name: Create screenshots directory
+  become: no
+  file:
+    path: ~/Pictures/screenshots
+    state: directory
+    mode: "0755"
+
+- name: Create Wallpapers directory
+  become: no
+  file:
+    path: ~/Pictures/Wallpapers
+    state: directory
+    mode: "0755"
+
+- name: Ensure wofi configuration directory exists
+  ansible.builtin.file:
+    path: ~/.config/wofi
+    state: directory
+    mode: '0755'
+
+- name: Copy wofi config file
+  template:
+    src: wofi-config.j2
+    dest: ~/.config/wofi/config
+
+- name: Copy wofi style file
+  template:
+    src: wofi-style.css.j2
+    dest: ~/.config/wofi/style.css
+
+- name: Include kanshi tasks
+  include_tasks: kanshi.yml

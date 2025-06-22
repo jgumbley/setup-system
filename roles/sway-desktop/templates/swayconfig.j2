@@ -1,0 +1,162 @@
+### Variables
+set $mod Mod5
+set $left h
+set $down j
+set $up k
+set $right l
+set $term kitty
+set $menu wofi --show drun --style ~/.config/wofi/style.css
+
+font pango:{{ fixed_font_family }} 10
+
+# Color scheme (based on theme)
+# class                 border  backgr. text    indicator child_border
+client.focused          #555555 #252526 #E6E6E6 #555555   #555555
+client.focused_inactive #333333 #1E1E1E #BBBBBB #484E50   #333333
+client.unfocused        #333333 #1E1E1E #888888 #292D2E   #222222
+client.urgent           #E06C75 #E06C75 #E6E6E6 #E06C75   #E06C75
+client.placeholder      #000000 #0C0C0C #E6E6E6 #000000   #0C0C0C
+
+include /etc/sway/config-vars.d/*
+
+### Output configuration
+exec ~/.local/bin/wallpaper-rotate.sh ~/Pictures/wallpapers 300
+
+output eDP-1 {
+    resolution 1920x1080
+    position 0,0
+    scale 1
+}
+
+output DP-1 {
+    resolution 1920x1080@60hz
+    position 1920,0
+    scale 1
+}
+
+output DP-2 {
+    resolution 1920x1080@60hz
+    position 1920,0
+    scale 1
+}
+
+focus_follows_mouse no
+
+### Idle configuration
+exec swayidle -w \
+    timeout 300 'swaylock -f -c 000000' \
+    timeout 600 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
+    before-sleep 'swaylock -f -c 000000'
+
+### Input configuration
+input "1739:0:Synaptics_TM3289-021" {
+    dwt enabled
+    tap enabled
+    natural_scroll enabled
+    middle_emulation enabled
+}
+
+input "type:keyboard" {
+    xkb_layout gb
+    xkb_options lv3:lalt_switch,compose:ralt
+}
+
+input "1452:613:Apple_Inc._Magic_Trackpad" {
+    dwt enabled
+    tap enabled
+    natural_scroll enabled
+    middle_emulation enabled
+    pointer_accel 0.5
+    scroll_factor 1.0
+}
+
+### Key bindings
+# Basic controls
+bindsym $mod+space exec $menu
+bindsym $mod+Shift+q kill
+bindsym $mod+Return exec $term
+floating_modifier Mod4 normal
+bindsym $mod+Shift+c reload
+bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+
+# Focus and movement
+bindsym $mod+$left focus left
+bindsym $mod+$down focus down
+bindsym $mod+$up focus up
+bindsym $mod+$right focus right
+bindsym $mod+Left focus left
+bindsym $mod+Down focus down
+bindsym $mod+Up focus up
+bindsym $mod+Right focus right
+
+bindsym $mod+Shift+$left move left
+bindsym $mod+Shift+$down move down
+bindsym $mod+Shift+$up move up
+bindsym $mod+Shift+$right move right
+bindsym $mod+Shift+Left move left
+bindsym $mod+Shift+Down move down
+bindsym $mod+Shift+Up move up
+bindsym $mod+Shift+Right move right
+
+# Workspace management
+bindsym $mod+1 workspace number 1
+bindsym $mod+2 workspace number 2
+bindsym $mod+3 workspace number 3
+bindsym $mod+4 workspace number 4
+bindsym $mod+5 workspace number 5
+bindsym $mod+6 workspace number 6
+bindsym $mod+7 workspace number 7
+bindsym $mod+8 workspace number 8
+bindsym $mod+9 workspace number 9
+bindsym $mod+0 workspace number 10
+
+bindsym $mod+Shift+1 move container to workspace number 1
+bindsym $mod+Shift+2 move container to workspace number 2
+bindsym $mod+Shift+3 move container to workspace number 3
+bindsym $mod+Shift+4 move container to workspace number 4
+bindsym $mod+Shift+5 move container to workspace number 5
+bindsym $mod+Shift+6 move container to workspace number 6
+bindsym $mod+Shift+7 move container to workspace number 7
+bindsym $mod+Shift+8 move container to workspace number 8
+bindsym $mod+Shift+9 move container to workspace number 9
+bindsym $mod+Shift+0 move container to workspace number 10
+
+# Layout controls
+bindsym $mod+b splith
+bindsym $mod+v splitv
+bindsym $mod+s layout stacking
+bindsym $mod+w layout tabbed
+bindsym $mod+e layout toggle split
+bindsym $mod+f fullscreen
+bindsym $mod+Shift+space floating toggle
+bindsym $mod+d focus mode_toggle
+bindsym $mod+a focus parent
+
+# Scratchpad
+bindsym $mod+Shift+minus move scratchpad
+bindsym $mod+minus scratchpad show
+
+# Resize mode
+mode "resize" {
+    bindsym $left resize shrink width 10px
+    bindsym $down resize grow height 10px
+    bindsym $up resize shrink height 10px
+    bindsym $right resize grow width 10px
+
+    bindsym Left resize shrink width 10px
+    bindsym Down resize grow height 10px
+    bindsym Up resize shrink height 10px
+    bindsym Right resize grow width 10px
+
+    bindsym Return mode "default"
+    bindsym Escape mode "default"
+}
+bindsym $mod+r mode "resize"
+
+# Screenshot
+bindsym $mod+Print exec grim -g "$(slurp)" ~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%m-%s).png
+
+# Status Bar
+exec waybar
+
+include /etc/sway/config.d/*

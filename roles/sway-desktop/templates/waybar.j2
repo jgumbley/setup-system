@@ -1,0 +1,78 @@
+{
+    "height": 30, 
+    "spacing": 4,
+    "modules-left": [
+        "sway/workspaces"
+    ],
+    "modules-center": [],
+    "modules-right": [
+        "pulseaudio",
+        "network",
+        "battery",
+        "clock",
+        "tray"
+    ],
+
+    "style": "background: #1E1E1E; color:#E6E6E6; border: 1px solid #333;",
+
+    "sway/workspaces": {
+        "disable-scroll": true,
+        "all-outputs": true,
+        "format": "{name}",
+        "format-icons": {
+            "1": "1",
+            "2": "2",
+            "3": "3",
+            "4": "4",
+            "5": "5",
+            "6": "6",
+            "7": "7",
+            "8": "8",
+            "9": "9",
+            "10": "10",
+            "urgent": "",
+            "focused": "",
+            "default": "•"
+        },
+        "format-urgent": " {name}",
+        "format-focused": " {name}",
+        "format-default": "• {name}"
+    },
+
+    "pulseaudio": {
+        "format": "{volume}% {icon}",
+        "format-bluetooth": "{volume}% {icon}",
+        "format-bluetooth-muted": "\uf6a9 {icon}",
+        "format-muted": "\uf6a9",
+        "format-icons": {
+            "default": ["\uf026", "\uf027", "\uf028"]
+        },
+        "on-click": "pavucontrol"
+    },
+
+    "network": {
+        "format-wifi": "WiFi: {essid}",
+        "format-ethernet": "Eth",
+        "format-disconnected": "Disconnected",
+        "tooltip-format-wifi": "{essid} ({signalStrength}%)",
+        "tooltip-format-ethernet": "{ipaddr}/{cidr}"
+    },
+
+    "battery": {
+        "states": {
+            "warning": 30,
+            "critical": 15
+        },
+        "format": "{capacity}% {icon}",
+        "format-icons": ["", "", "", "", ""]
+    },
+
+    "clock": {
+        "format": "{:%H:%M}",
+        "tooltip-format": "{:%Y-%m-%d}\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "tray": {
+        "spacing": 10
+    }
+}
