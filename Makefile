@@ -31,6 +31,9 @@ endif
 term:
 	ansible-playbook terminal.yml
 
+setup: .bootstrapped
+	ansible-playbook setup.yml -c local -K
+
 push:
 	git add -A 
 	git commit -am "update" && git push

@@ -1,0 +1,37 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: yes
+  vars_files:
+    - machines.yml
+  vars:
+    fixed_font_family: "DejaVu Sans Mono"
+  handlers:
+    - include_tasks: handlers/main.yml
+  tasks:
+    - name: Get current hostname
+      set_fact:
+        current_hostname: "{{ ansible_hostname }}"
+    
+    - name: Find matching machine configuration
+      set_fact:
+        matched_config: "{{ item.value }}"
+      when: current_hostname is match(item.key)
+      loop: "{{ machine_configs | dict2items }}"
+    
+    - name: Use default config if no match found
+      set_fact:
+        matched_config: "{{ machine_configs['default'] }}"
+      when: matched_config is not defined
+    
+    - name: Display detected configuration
+      debug:
+        msg: "Hostname: {{ current_hostname }}, applying config: {{ matched_config }}"
+    
+    - name: Apply configuration components
+      include_role:
+        name: "{{ component }}"
+      loop: "{{ matched_config }}"
+      loop_control:
+        loop_var: component
