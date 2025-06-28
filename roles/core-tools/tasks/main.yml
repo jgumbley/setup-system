@@ -28,3 +28,6 @@
 
 - name: Setup system-wide secret environment support
   include_tasks: secret_env_system.yml
+
+- name: Configure kitty terminal emulator
+  include_tasks: kitty.yml

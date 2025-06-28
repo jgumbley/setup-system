@@ -1,4 +1,15 @@
 ---
+- name: Load common terminal variables
+  include_vars: ../../terminal/vars/common.yml
+
+- name: Load OS-specific terminal variables (Darwin)
+  include_vars: ../../terminal/vars/darwin.yml
+  when: is_mac
+
+- name: Load OS-specific terminal variables (Debian)
+  include_vars: ../../terminal/vars/debian.yml
+  when: is_linux and ansible_os_family == 'Debian'
+
 - name: Check if kitty is installed
   command: which kitty
   register: kitty_check
