@@ -1,18 +1,18 @@
 ---
 - name: Install/Update Claude Code globally
-  become: yes
   npm:
     name: "@anthropic-ai/claude-code"
     global: yes
     state: latest
+  become: "{{ ansible_os_family != 'Darwin' }}"
   register: claude_install_result
 
 - name: Install/Update Gemini CLI globally
-  become: yes
   npm:
     name: "@google/gemini-cli"
     global: yes
     state: latest
+  become: "{{ ansible_os_family != 'Darwin' }}"
   register: gemini_install_result
 
 - name: Display Claude Code installation status

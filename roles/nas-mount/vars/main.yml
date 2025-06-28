@@ -1,4 +1,4 @@
-nas_host:   "donatello.local"   # mDNS name or static IP
+nas_host:   "donatello.smeg"   # mDNS name or static IP
 nas_share:  "iceburg"
 nas_user:   "jg"
 # Password will be prompted during playbook execution

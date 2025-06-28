@@ -7,36 +7,28 @@
 ########################################################################
 - block:
     - name: "Create native mount-point on macOS"
-      become: yes
-      become_method: sudo
       file:
         path: /Volumes/{{ nas_share }}
         state: directory
         owner: "{{ ansible_user_id }}"
         mode: "0755"
 
-    - name: "Create /mnt directory on macOS for consistency"
-      become: yes
-      become_method: sudo
+    - name: "Create /usr/local/mnt directory on macOS for consistency"
       file:
-        path: /mnt
+        path: /usr/local/mnt
         state: directory
         owner: root
         group: wheel
         mode: "0755"
 
     - name: "Create consistent symlink on macOS"
-      become: yes
-      become_method: sudo
       file:
         src: /Volumes/{{ nas_share }}
-        dest: /mnt/{{ nas_share }}
+        dest: /usr/local/mnt/{{ nas_share }}
         state: link
         force: yes
 
     - name: "Ensure /etc/auto_master references our custom map"
-      become: yes
-      become_method: sudo
       lineinfile:
         path: /etc/auto_master
         line: "/-    auto_nfs    -nosuid"
@@ -45,7 +37,6 @@
         regexp: '^/-\s+auto_nfs'
 
     - name: "Deploy /etc/auto_nfs"
-      become: yes
       template:
         src: auto_nfs.j2
         dest: /etc/auto_nfs
@@ -54,9 +45,8 @@
         mode: "0644"
 
     - name: "Reload autofs"
-      become: yes
       command: automount -vc
-
+  become: yes
   rescue:
     - name: Display NFS mount failure hint
       ansible.builtin.debug:
@@ -75,7 +65,6 @@
 ########################################################################
 - block:
     - name: "Create mount-point"
-      become: yes
       file:
         path: /mnt/{{ nas_share }}
         state: directory
@@ -84,7 +73,6 @@
         mode: "0755"
 
     - name: "Ensure fstab entry exists for NFS"
-      become: yes
       lineinfile:
         path: /etc/fstab
         create: yes
@@ -94,14 +82,27 @@
           nfsvers=4.1,_netdev,noauto,x-systemd.automount  0  0
 
     - name: "Reload systemd units"
-      become: yes
       systemd:
         daemon_reload: yes
 
     - name: "Activate the automount"
-      become: yes
       command: systemctl restart remote-fs.target
 
+    - name: "Create /usr/local/mnt directory for consistency"
+      file:
+        path: /usr/local/mnt
+        state: directory
+        owner: root
+        group: root
+        mode: "0755"
+
+    - name: "Create consistent symlink on Linux"
+      file:
+        src: /mnt/{{ nas_share }}
+        dest: /usr/local/mnt/{{ nas_share }}
+        state: link
+        force: yes
+  become: "{{ ansible_os_family != 'Darwin' }}"
   rescue:
     - name: Display NFS mount failure hint
       ansible.builtin.debug:

@@ -9,7 +9,7 @@ endif
 
 core: .bootstrapped
 ifeq ($(shell uname -s),Darwin)
-	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core.yml -c local"
+	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core.yml -c local --ask-become-pass"
 else
 	ansible-playbook core.yml -c local -K
 endif
