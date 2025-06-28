@@ -1,4 +1,4 @@
-.PHONY: cross-platform linux mac config push term core-tools
+.PHONY: cross-platform linux mac config push term core-tools backup
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -19,3 +19,7 @@ term:
 
 setup: .bootstrapped
 	ansible-playbook setup.yml -c local -K
+
+backup:
+	mkdir -p /usr/local/mnt/iceburg/backup/$$(hostname).smeg/wip
+	rsync -av --update ~/wip/ /usr/local/mnt/iceburg/backup/$$(hostname).smeg/wip/
