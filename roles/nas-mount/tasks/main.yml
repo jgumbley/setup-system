@@ -1,12 +1,12 @@
 ---
 - name: Include platform detection
-  include_tasks: platform_detection.yml
+  include_tasks: roles/core-tools/tasks/platform_detection.yml
 
 ########################################################################
 # macOS – autofs
 ########################################################################
 - block:
-    - name: "Create mount-point"
+    - name: "Create native mount-point on macOS"
       become: yes
       become_method: sudo
       file:
@@ -15,21 +15,40 @@
         owner: "{{ ansible_user_id }}"
         mode: "0755"
 
+    - name: "Create /mnt directory on macOS for consistency"
+      become: yes
+      become_method: sudo
+      file:
+        path: /mnt
+        state: directory
+        owner: root
+        group: wheel
+        mode: "0755"
+
+    - name: "Create consistent symlink on macOS"
+      become: yes
+      become_method: sudo
+      file:
+        src: /Volumes/{{ nas_share }}
+        dest: /mnt/{{ nas_share }}
+        state: link
+        force: yes
+
     - name: "Ensure /etc/auto_master references our custom map"
       become: yes
       become_method: sudo
       lineinfile:
         path: /etc/auto_master
-        line: "/-    auto_smb    -nosuid"
+        line: "/-    auto_nfs    -nosuid"
         create: no
         state: present
-        regexp: '^/-\s+auto_smb'
+        regexp: '^/-\s+auto_nfs'
 
-    - name: "Deploy /etc/auto_smb"
+    - name: "Deploy /etc/auto_nfs"
       become: yes
       template:
-        src: auto_smb.j2
-        dest: /etc/auto_smb
+        src: auto_nfs.j2
+        dest: /etc/auto_nfs
         owner: root
         group: wheel
         mode: "0644"
@@ -37,18 +56,24 @@
     - name: "Reload autofs"
       become: yes
       command: automount -vc
+
+  rescue:
+    - name: Display NFS mount failure hint
+      ansible.builtin.debug:
+        msg:
+          - "--------------------------------------------------------------------"
+          - "NFS MOUNT FAILED"
+          - "This often means the NAS is not configured to allow access from this host."
+          - "Please ensure this computer's hostname is added to the NFS Host Access list for the '{{ nas_share }}' share on your QNAP."
+          - "The hostname the NAS needs to see is likely: {{ ansible_hostname }}.smeg"
+          - "--------------------------------------------------------------------"
+      failed_when: true
   when: is_mac
 
 ########################################################################
 # Linux – fstab + systemd.automount
 ########################################################################
 - block:
-    - name: "Install CIFS utilities"
-      become: yes
-      package:
-        name: cifs-utils
-        state: present
-
     - name: "Create mount-point"
       become: yes
       file:
@@ -58,26 +83,15 @@
         group: "{{ ansible_user_gid }}"
         mode: "0755"
 
-    - name: "Create credentials file"
-      become: yes
-      copy:
-        dest: /etc/samba/cred_{{ nas_share }}
-        content: |
-          username={{ nas_user }}
-          password={{ nas_pass }}
-        owner: root
-        group: root
-        mode: "0600"
-
-    - name: "Ensure fstab entry exists"
+    - name: "Ensure fstab entry exists for NFS"
       become: yes
       lineinfile:
         path: /etc/fstab
         create: yes
-        regexp: '^//{{ nas_host }}/{{ nas_share }}'
+        regexp: '^{{ nas_host }}:/{{ nas_share }}'
         line: >
-          //{{ nas_host }}/{{ nas_share }}  /mnt/{{ nas_share }}   cifs
-          _netdev,noauto,x-systemd.automount,iocharset=utf8,credentials=/etc/samba/cred_{{ nas_share }},uid={{ ansible_user_uid }},gid={{ ansible_user_gid }},vers=3.0  0  0
+          {{ nas_host }}:/{{ nas_share }}  /mnt/{{ nas_share }}   nfs
+          nfsvers=4.1,_netdev,noauto,x-systemd.automount  0  0
 
     - name: "Reload systemd units"
       become: yes
@@ -87,4 +101,16 @@
     - name: "Activate the automount"
       become: yes
       command: systemctl restart remote-fs.target
+
+  rescue:
+    - name: Display NFS mount failure hint
+      ansible.builtin.debug:
+        msg:
+          - "--------------------------------------------------------------------"
+          - "NFS MOUNT FAILED"
+          - "This often means the NAS is not configured to allow access from this host."
+          - "Please ensure this computer's hostname is added to the NFS Host Access list for the '{{ nas_share }}' share on your QNAP."
+          - "The hostname the NAS needs to see is likely: {{ ansible_hostname }}.smeg"
+          - "--------------------------------------------------------------------"
+      failed_when: true
   when: is_linux

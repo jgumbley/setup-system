@@ -14,3 +14,4 @@ core_packages:
   - ncdu
   - htop
   - mc
+  - nfs-common
