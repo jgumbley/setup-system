@@ -3,5 +3,5 @@
   connection: local
   roles:
     - core-tools
-    - nas-mount
+    # - nas-mount
     - kitty

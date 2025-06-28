@@ -1,0 +1,22 @@
+---
+- name: Install/Update Claude Code globally
+  npm:
+    name: "@anthropic-ai/claude-code"
+    global: yes
+    state: latest
+  register: claude_install_result
+
+- name: Install/Update Gemini CLI globally  
+  npm:
+    name: "@google/gemini-cli"
+    global: yes
+    state: latest
+  register: gemini_install_result
+
+- name: Display Claude Code installation status
+  debug:
+    msg: "Claude Code {{ 'updated' if claude_install_result.changed else 'already up to date' }}"
+
+- name: Display Gemini CLI installation status
+  debug:
+    msg: "Gemini CLI {{ 'updated' if gemini_install_result.changed else 'already up to date' }}"

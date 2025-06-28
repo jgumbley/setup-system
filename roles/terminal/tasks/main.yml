@@ -1,36 +1,28 @@
 ---
+- name: Include platform detection
+  include_tasks: ../../../tasks/platform_detection.yml
+
 - name: Load common variables
   include_vars: common.yml
 
 - name: Load OS-specific variables (Darwin)
   include_vars: darwin.yml
-  when: ansible_system == 'Darwin'
+  when: is_mac
 
-- name: Check if Homebrew is installed (Apple Silicon)
+- name: Check if Homebrew is installed
   stat:
-    path: /opt/homebrew/bin/brew
-  register: homebrew_check_arm
-  when: ansible_system == 'Darwin'
-
-- name: Check if Homebrew is installed (Intel)
-  stat:
-    path: /usr/local/bin/brew
-  register: homebrew_check_intel
-  when: ansible_system == 'Darwin'
+    path: "{{ homebrew_prefix }}/bin/brew"
+  register: homebrew_check
+  when: is_mac
 
 - name: Set homebrew shellenv command
   set_fact:
-    homebrew_shellenv: 'eval "$(/opt/homebrew/bin/brew shellenv)"'
-  when: ansible_system == 'Darwin' and homebrew_check_arm.stat.exists
-
-- name: Set homebrew shellenv command (Intel)
-  set_fact:
-    homebrew_shellenv: 'eval "$(/usr/local/bin/brew shellenv)"'
-  when: ansible_system == 'Darwin' and homebrew_check_intel.stat.exists
+    homebrew_shellenv: 'eval "$({{ homebrew_prefix }}/bin/brew shellenv)"'
+  when: is_mac and homebrew_check.stat.exists
 
 - name: Load OS-specific variables (Debian/Ubuntu)
   include_vars: debian.yml
-  when: ansible_system == 'Linux' and ansible_os_family == 'Debian'
+  when: is_linux and ansible_os_family == 'Debian'
 
 - name: Configure terminal components
   include_tasks: "{{ item }}.yml"

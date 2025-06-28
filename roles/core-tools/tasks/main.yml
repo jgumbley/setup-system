@@ -1,4 +1,7 @@
 ---
+- name: Include platform detection
+  include_tasks: ../../../tasks/platform_detection.yml
+
 - name: Check if admin user exists on macOS
   user:
     name: admin
@@ -15,11 +18,13 @@
     - ansible_os_family == 'Darwin'
     - admin_user_check.failed
 
-- name: Set platform name fact
-  set_fact:
-    platform_name: "{{ 'ubuntu' if ansible_os_family == 'Debian' else ansible_os_family | lower }}"
-
 # Variables loaded from vars/main.yml automatically
 
 - name: Include platform-specific tasks
   include_tasks: "{{ platform_name }}.yml"
+
+- name: Install coding agents
+  include_tasks: coding_agents.yml
+
+- name: Setup system-wide secret environment support
+  include_tasks: secret_env_system.yml

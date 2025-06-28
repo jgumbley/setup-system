@@ -3,9 +3,8 @@
 
 # Shell paths
 shell_paths:
-  fish: "{% if ansible_architecture == 'arm64' %}/opt/homebrew/bin/fish{% else %}/usr/local/bin/fish{% endif %}"
-  tmux: "{% if ansible_architecture == 'arm64' %}/opt/homebrew/bin/tmux{% else %}/usr/local/bin/tmux{% endif %}"
-  homebrew_prefix: "{% if ansible_architecture == 'arm64' %}/opt/homebrew{% else %}/usr/local{% endif %}"
+  fish: "{{ homebrew_prefix }}/bin/fish"
+  tmux: "{{ homebrew_prefix }}/bin/tmux"
 
 # Font configuration for macOS
 font_family: "SF Mono"
@@ -19,8 +18,6 @@ key_bindings:
   suspend: "cmd+z"
 
 # macOS-specific tmux settings
-tmux_shell: "{% if ansible_architecture == 'arm64' %}/opt/homebrew/bin/fish{% else %}/usr/local/bin/fish{% endif %}"
+tmux_shell: "{{ homebrew_prefix }}/bin/fish"
 
-# Platform detection
-is_mac: true
 
