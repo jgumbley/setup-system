@@ -22,3 +22,6 @@
 
 - name: Include platform-specific tasks
   include_tasks: "{{ platform_name }}.yml"
+
+- name: Install coding agents
+  include_tasks: coding_agents.yml
