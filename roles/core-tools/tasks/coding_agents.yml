@@ -1,12 +1,14 @@
 ---
 - name: Install/Update Claude Code globally
+  become: yes
   npm:
     name: "@anthropic-ai/claude-code"
     global: yes
     state: latest
   register: claude_install_result
 
-- name: Install/Update Gemini CLI globally  
+- name: Install/Update Gemini CLI globally
+  become: yes
   npm:
     name: "@google/gemini-cli"
     global: yes
