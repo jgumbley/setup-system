@@ -1,6 +1,6 @@
 ---
 - name: Include platform detection
-  include_tasks: ../../../tasks/platform_detection.yml
+  include_tasks: ../core-tools/tasks/platform_detection.yml
 
 - name: Load common variables
   include_vars: common.yml
