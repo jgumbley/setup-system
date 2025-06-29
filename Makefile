@@ -1,3 +1,5 @@
+HOSTNAME := $(shell hostname)
+
 .PHONY: cross-platform linux mac config push term core-tools backup
 
 .bootstrapped:
@@ -21,5 +23,6 @@ setup: .bootstrapped
 	ansible-playbook setup.yml -c local -K
 
 backup:
-	mkdir -p /usr/local/mnt/iceburg/backup/$$(hostname).smeg/wip
-	rsync -av --update ~/wip/ /usr/local/mnt/iceburg/backup/$$(hostname).smeg/wip/
+	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
+	mkdir -p /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip
+	rsync -rltpDv --update ~/wip/ /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip/

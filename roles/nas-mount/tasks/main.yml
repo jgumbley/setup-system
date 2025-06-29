@@ -92,8 +92,8 @@
       file:
         path: /usr/local/mnt
         state: directory
-        owner: root
-        group: root
+        owner: "{{ ansible_user_uid }}"
+        group: "{{ ansible_user_gid }}"
         mode: "0755"
 
     - name: "Create consistent symlink on Linux"
