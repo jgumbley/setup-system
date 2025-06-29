@@ -157,6 +157,8 @@ bindsym $mod+r mode "resize"
 bindsym $mod+Print exec grim -g "$(slurp)" ~/Pictures/screenshots/$(date +%Y-%m-%d_%H-%m-%s).png
 
 # Status Bar
-exec waybar
+bar {
+    swaybar_command waybar
+}
 
 include /etc/sway/config.d/*
