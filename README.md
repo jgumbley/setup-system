@@ -1,44 +1,55 @@
-# Setup machine for Jim 
----------------------
+# System Setup
 
-Ideally not doing this too often but you never know
+This repository contains Ansible playbooks and configurations to automate the setup of my development environments on both macOS and Linux.
 
-## Usage
+## Quick Start
 
-The setup is organized into cross-platform terminal preferences, dotfiles and basic tools, and linux-specific whole machine setups.
+The setup process is primarily driven by `make` commands which wrap Ansible playbooks.
 
-### Cross-platform commands (Mac & Linux)
+1.  **Bootstrap:** Run the appropriate bootstrap script for your OS. This installs essential dependencies like Ansible.
+    *   **Ubuntu:** `./bootstrap/ubuntu.sh`
+    *   **macOS:** `./bootstrap/darwin.sh`
 
-```bash
-make core-tools   # Install basic tools (automatically runs bootstrap if needed)
-make term         # Configure dotfiles essentially (fish, tmux, vim, git, kitty)
-make nas          # Mount NAS (prompts for password)
-```
+2.  **Core System:** Install core tools and configure the system.
+    ```bash
+    make core
+    ```
 
-### Linix specific full machine setups
+3.  **Terminal:** Configure the terminal environment (fish, tmux, vim, git, kitty).
+    ```bash
+    make term
+    ```
 
-```bash
-make setup # Full Linux setup based on hostname
-```
+4.  **Full Setup (Linux Only):** Apply a full machine setup based on its hostname.
+    ```bash
+    make setup
+    ```
 
-## Linux Machine Archetypes
+## Makefile Commands
 
-Linux machines get different configurations based on hostname. 
+*   `make core`: Runs the `core.yml` playbook to install essential tools and mount the NAS. This requires `sudo` and will prompt for a password.
+*   `make term`: Runs the `terminal.yml` playbook to configure the terminal environment.
+*   `make setup`: (Linux only) Runs the `setup.yml` playbook, which applies a machine-specific configuration based on the hostname.
+*   `make backup`: Backs up the `~/wip` directory to the NAS.
 
-### Configure machines.yml
+## Ansible Structure
 
-```yaml
-machine_configs:
-  # Laptop/desktop with full GUI
-  "jim-laptop":
-    - sway           # Window manager + waybar
-    - development    # Rust, Node, dev tools
-    - applications   # Discord, Steam, Spotify, VS Code
-  
-  # Minimal Raspberry Pi
-  "pi-*":
-    - basic-tools    # Just essentials
-```
+The configuration is managed by Ansible playbooks and roles.
 
-The `make setup` command detects hostname and applies matching configs automatically. Wildcards supported.
+### Playbooks
 
+*   `core.yml`: The main playbook for core system setup. Installs `core-tools` and mounts the NAS.
+*   `terminal.yml`: Configures the terminal environment using the `terminal` role.
+*   `setup.yml`: A Linux-only playbook that dynamically applies roles based on the machine's hostname. The hostname-to-role mapping is defined in `machines.yml`.
+
+### Roles
+
+*   `core-tools`: Installs common command-line tools, coding agents, and configures the kitty terminal.
+*   `nas-mount`: Mounts the network-attached storage.
+*   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
+*   `terminal`: Configures fish, tmux, vim, git, and other terminal applications.
+
+### Configuration
+
+*   `machines.yml`: Defines which roles to apply to which machine based on hostname patterns.
+*   `group_vars/all/theme.yml`: Contains a centralized color scheme used across various applications like kitty and Waybar.
