@@ -7,3 +7,4 @@ core_packages:
   - vim
   - npm
   - python
+  - uv

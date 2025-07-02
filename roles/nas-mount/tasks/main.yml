@@ -10,7 +10,6 @@
       file:
         path: /Volumes/{{ nas_share }}
         state: directory
-        owner: "{{ ansible_user_id }}"
         mode: "0755"
 
     - name: "Create /usr/local/mnt directory on macOS for consistency"

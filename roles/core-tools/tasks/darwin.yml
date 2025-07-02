@@ -24,3 +24,8 @@
     name: "{{ core_packages }}"
     state: present
 
+- name: Install uv with Homebrew
+  homebrew:
+    name: uv
+    state: present
+
