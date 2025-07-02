@@ -1,0 +1,40 @@
+shell {{ shell_paths.tmux }}
+font_family {{ font_family }}
+font_size {{ terminal_settings.font_size }}
+disable_ligatures never
+adjust_line_height {{ terminal_settings.line_height }}
+adjust_column_width {{ terminal_settings.column_width }}
+start_as_fullscreen yes
+
+map {{ key_bindings.copy }}  copy_to_clipboard
+map {{ key_bindings.paste }}  paste_from_clipboard
+
+map {{ key_bindings.interrupt }}        send_text all \x03
+map {{ key_bindings.suspend }}        send_text all \x1A
+
+# Theme colors
+foreground {{ default_terminal_colors.foreground }}
+background {{ default_terminal_colors.background }}
+cursor {{ default_terminal_colors.cursor }}
+
+# Normal colors
+color0 {{ color_scheme.normal.black }}
+color1 {{ color_scheme.normal.red }}
+color2 {{ color_scheme.normal.green }}
+color3 {{ color_scheme.normal.yellow }}
+color4 {{ color_scheme.normal.blue }}
+color5 {{ color_scheme.normal.magenta }}
+color6 {{ color_scheme.normal.cyan }}
+color7 {{ color_scheme.normal.white }}
+
+# Bright colors 
+color8 {{ color_scheme.bright.black }}
+color9 {{ color_scheme.bright.red }}
+color10 {{ color_scheme.bright.green }}
+color11 {{ color_scheme.bright.yellow }}
+color12 {{ color_scheme.bright.blue }}
+color13 {{ color_scheme.bright.magenta }}
+color14 {{ color_scheme.bright.cyan }}
+color15 {{ color_scheme.bright.white }}
+
+url_color {{ color_scheme.url }}

@@ -1,0 +1,22 @@
+---
+- name: Check if kitty is installed
+  command: which kitty
+  register: kitty_check
+  failed_when: false
+  changed_when: false
+
+- name: Configure kitty terminal
+  when: kitty_check.rc == 0
+  block:
+    - name: Create kitty config directory
+      file:
+        path: "{{ ansible_env.HOME }}/.config/kitty"
+        state: directory
+        mode: '0755'
+
+    - name: Deploy kitty configuration
+      template:
+        src: kittyconfig.j2
+        dest: "{{ ansible_env.HOME }}/.config/kitty/kitty.conf"
+        mode: '0644'
+      tags: kitty

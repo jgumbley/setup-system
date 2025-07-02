@@ -13,6 +13,7 @@ terminal_components:
   - fish
   - tmux
   - vim
+  - kitty
 
 # Default terminal settings
 default_terminal_colors:
