@@ -21,8 +21,9 @@
 
 - name: Install core packages with Homebrew
   homebrew:
-    name: "{{ core_packages }}"
+    name: "{{ item }}"
     state: present
+  loop: "{{ core_packages }}"
 
 - name: Install uv with Homebrew
   homebrew:

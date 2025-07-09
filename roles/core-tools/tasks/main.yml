@@ -20,6 +20,9 @@
 
 # Variables loaded from vars/main.yml automatically
 
+- name: Include platform-specific variables
+  include_vars: "{{ platform_name }}.yml"
+
 - name: Include platform-specific tasks
   include_tasks: "{{ platform_name }}.yml"
 
