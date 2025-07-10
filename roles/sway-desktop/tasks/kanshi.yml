@@ -59,10 +59,10 @@
         scope: user
         daemon_reload: yes
 
-    - name: Enable and start Kanshi user service
+    - name: Disable Kanshi user service
       become: no
       systemd:
         scope: user
         name: kanshi.service
-        enabled: yes
-        state: started
+        enabled: no
+        state: stopped
