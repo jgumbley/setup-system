@@ -19,13 +19,8 @@
       - slurp
     state: present
 
-- name: Ensure the waybar configuration directory exists
-  ansible.builtin.file:
-    path: ~/.config/waybar
-    state: directory
-    mode: '0755'
-
-- name: Ensure the configuration directory exists
+- name: Ensure the sway configuration directory exists
+  become: no
   ansible.builtin.file:
     path: ~/.config/sway 
     state: directory
@@ -36,6 +31,13 @@
   template:
     src: swayconfig.j2
     dest: ~/.config/sway/config
+
+- name: Ensure the waybar configuration directory exists
+  become: no
+  ansible.builtin.file:
+    path: ~/.config/waybar
+    state: directory
+    mode: '0755'
 
 - name: Include wallpaper tasks
   include_tasks: wallpaper.yml

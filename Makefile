@@ -6,7 +6,7 @@ HOSTNAME := $(shell hostname)
 ifeq ($(shell uname -s),Darwin)
 	su admin -c "cd $(PWD) && ./bootstrap/darwin.sh" && touch .bootstrapped
 else
-	./bootstrap.sh && touch .bootstrapped
+	sudo ./bootstrap/ubuntu.sh && touch .bootstrapped
 endif
 
 core: .bootstrapped

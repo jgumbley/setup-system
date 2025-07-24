@@ -25,6 +25,12 @@ machine_configs:
     - terminal
     - development
   
+  # HAL machine configuration
+  "hal":
+    - core-tools
+    - terminal
+    - sway-desktop
+  
   # Default fallback configuration
   "default":
     - terminal

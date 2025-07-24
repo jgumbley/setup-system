@@ -8,6 +8,7 @@
           - scdoc
           - libwayland-dev
           - wayland-protocols
+          - pkg-config
         state: present
 
     - name: Clone Kanshi repository
@@ -46,23 +47,3 @@
         dest: ~/.config/kanshi/config
         mode: '0644'
 
-    - name: Deploy Kanshi systemd service
-      become: no
-      template:
-        src: kanshi.service.j2
-        dest: ~/.config/systemd/user/kanshi.service
-        mode: '0644'
-
-    - name: Reload systemd user daemon
-      become: no
-      systemd:
-        scope: user
-        daemon_reload: yes
-
-    - name: Disable Kanshi user service
-      become: no
-      systemd:
-        scope: user
-        name: kanshi.service
-        enabled: no
-        state: stopped
