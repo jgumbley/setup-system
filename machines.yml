@@ -30,6 +30,7 @@ machine_configs:
     - core-tools
     - terminal
     - sway-desktop
+    - inference
   
   # Default fallback configuration
   "default":
