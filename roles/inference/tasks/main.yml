@@ -15,6 +15,10 @@
       - python3-venv
       - libopenblas-dev
       - libcurl4-openssl-dev
+      - lm-sensors
+      - linux-tools-common
+      - linux-tools-generic
+      - libgtk-3-dev
     state: present
   become: yes
 
@@ -36,6 +40,31 @@
   args:
     chdir: /opt/llama.cpp
   become: yes
+
+- name: Set CPU governor to performance mode
+  shell: echo "performance" > /sys/devices/system/cpu/cpu{{ item }}/cpufreq/scaling_governor
+  become: yes
+  loop: "{{ range(0, ansible_processor_vcpus) | list }}"
+  failed_when: false
+
+- name: Set AMD P-State energy performance preference to performance
+  shell: echo "performance" > /sys/devices/system/cpu/cpu{{ item }}/cpufreq/energy_performance_preference
+  become: yes
+  loop: "{{ range(0, ansible_processor_vcpus) | list }}"
+  failed_when: false
+
+- name: Install additional monitoring tools
+  apt:
+    name:
+      - htop
+      - iotop
+      - powertop
+      - sysstat
+      - s-tui
+      - stress
+    state: present
+  become: yes
+
 
 - name: Create symlinks in /usr/local/bin for easy access
   file:
