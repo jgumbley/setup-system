@@ -19,3 +19,117 @@
   become: yes
   loop: "{{ range(0, ansible_processor_vcpus) | list }}"
   failed_when: false
+
+# GPU Configuration
+- name: Remove all ROCm-related packages
+  shell: apt-get remove --purge -y $(dpkg -l | grep -E "(rocm|hip)" | awk '{print $2}') || true
+  become: yes
+  failed_when: false
+
+- name: Clean package cache and autoremove
+  apt:
+    autoremove: yes
+    autoclean: yes
+    update_cache: yes
+  become: yes
+
+- name: Add AMD ROCm repository key
+  apt_key:
+    url: https://repo.radeon.com/rocm/rocm.gpg.key
+    state: present
+  become: yes
+
+- name: Add AMD ROCm repository
+  apt_repository:
+    repo: "deb [arch=amd64] https://repo.radeon.com/rocm/apt/6.4.2 noble main"
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Create apt preferences for ROCm packages
+  copy:
+    content: |
+      Package: *
+      Pin: origin repo.radeon.com
+      Pin-Priority: 1001
+    dest: /etc/apt/preferences.d/rocm
+  become: yes
+
+- name: Install ROCm packages for RX 7900 XT/XTX
+  apt:
+    name:
+      - rocm
+      - rocm-hip-sdk
+      - rocblas
+      - hipblas
+      - hipblaslt
+      - rocwmma-dev
+    state: present
+    update_cache: yes
+    force: yes
+  become: yes
+
+- name: Set GPU power management to performance mode
+  shell: echo "performance" > /sys/class/drm/card{{ item }}/device/power_dpm_force_performance_level
+  become: yes
+  loop: [0, 1]
+  failed_when: false
+
+- name: Set GPU power profile to compute workload
+  shell: echo "1" > /sys/class/drm/card{{ item }}/device/pp_compute_power_profile
+  become: yes
+  loop: [0, 1]
+  failed_when: false
+
+- name: Set GPU memory clock to high performance
+  shell: echo "high" > /sys/class/drm/card{{ item }}/device/power_dpm_state
+  become: yes
+  loop: [0, 1]
+  failed_when: false
+
+- name: Add user to render group for GPU access
+  user:
+    name: "{{ ansible_user_id }}"
+    groups: render
+    append: yes
+  become: yes
+
+- name: Add user to video group for GPU access
+  user:
+    name: "{{ ansible_user_id }}"
+    groups: video
+    append: yes
+  become: yes
+
+- name: Create ROCm environment configuration
+  lineinfile:
+    path: /etc/environment
+    line: "{{ item }}"
+    create: yes
+  become: yes
+  loop:
+    - "ROC_ENABLE_PRE_VEGA=1"
+    - "HIP_VISIBLE_DEVICES=0,1"
+    - "ROCM_PATH=/opt/rocm"
+
+# ROCm Verification
+- name: Verify ROCm installation
+  command: rocminfo
+  register: rocm_info
+  become: yes
+  failed_when: false
+
+- name: Check for gfx1100 GPU target
+  shell: rocminfo | grep gfx | head -1
+  register: gpu_target
+  become: yes
+  failed_when: false
+
+- name: Display GPU target information
+  debug:
+    msg: "GPU Target: {{ gpu_target.stdout }}"
+  when: gpu_target.stdout is defined
+
+- name: Display ROCm status
+  debug:
+    msg: "ROCm installation completed. Reboot may be required for full functionality."
