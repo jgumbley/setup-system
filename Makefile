@@ -22,6 +22,9 @@ term:
 setup: .bootstrapped
 	ansible-playbook setup.yml -c local -K
 
+claude:
+	sudo -E claude
+
 backup:
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
 	mkdir -p /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip
