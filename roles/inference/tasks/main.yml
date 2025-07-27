@@ -4,6 +4,11 @@
     update_cache: yes
   become: yes
 
+- name: Check if ROCm is installed
+  stat:
+    path: /opt/rocm
+  register: rocm_installed
+
 - name: Install dependencies
   apt:
     name:
@@ -26,18 +31,81 @@
     version: HEAD
   become: yes
 
-- name: Configure llama.cpp build with CMake
-  command: cmake -B build -DLLAMA_OPENBLAS=ON -DGGML_CPU_AARCH64=OFF
+- name: Remove existing build directory
+  file:
+    path: /opt/llama.cpp/build
+    state: absent
+  become: yes
+
+- name: Configure llama.cpp build with ROCm support
+  command: cmake -B build -DLLAMA_HIPBLAS=ON -DLLAMA_OPENBLAS=OFF -DAMDGPU_TARGETS=gfx1100
+  args:
+    chdir: /opt/llama.cpp
+  environment:
+    ROCM_PATH: /opt/rocm
+    HIP_PATH: /opt/rocm
+    PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
+  become: yes
+  when: rocm_installed.stat.exists
+
+- name: Configure llama.cpp build without ROCm support
+  command: cmake -B build -DLLAMA_OPENBLAS=ON
   args:
     chdir: /opt/llama.cpp
   become: yes
+  when: not rocm_installed.stat.exists
 
-- name: Build llama.cpp with CMake
+- name: Build llama.cpp with ROCm support
+  command: cmake --build build -j{{ ansible_processor_vcpus }}
+  args:
+    chdir: /opt/llama.cpp
+  environment:
+    ROCM_PATH: /opt/rocm
+    HIP_PATH: /opt/rocm
+    PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
+  become: yes
+  when: rocm_installed.stat.exists
+
+- name: Build llama.cpp without ROCm support
   command: cmake --build build -j{{ ansible_processor_vcpus }}
   args:
     chdir: /opt/llama.cpp
   become: yes
+  when: not rocm_installed.stat.exists
 
+
+- name: Remove distro btop package if present (ROCm systems)
+  apt:
+    name: btop
+    state: absent
+  become: yes
+  when: rocm_installed.stat.exists
+
+- name: Clone btop repository (ROCm systems)
+  git:
+    repo: https://github.com/aristocratos/btop.git
+    dest: /opt/btop
+    version: HEAD
+  become: yes
+  when: rocm_installed.stat.exists
+
+- name: Build btop with ROCm GPU support
+  command: make GPU_SUPPORT=true ROCM_PATH=/opt/rocm
+  args:
+    chdir: /opt/btop
+  environment:
+    ROCM_PATH: /opt/rocm
+    HIP_PATH: /opt/rocm
+    PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
+  become: yes
+  when: rocm_installed.stat.exists
+
+- name: Install btop with ROCm support
+  command: make install PREFIX=/usr/local
+  args:
+    chdir: /opt/btop
+  become: yes
+  when: rocm_installed.stat.exists
 
 - name: Install additional monitoring tools
   apt:
@@ -50,6 +118,13 @@
       - stress
     state: present
   become: yes
+
+- name: Install btop package (non-ROCm systems)
+  apt:
+    name: btop
+    state: present
+  become: yes
+  when: not rocm_installed.stat.exists
 
 
 - name: Create symlinks in /usr/local/bin for easy access
