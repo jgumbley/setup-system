@@ -1,0 +1,21 @@
+---
+- name: Install hardware-specific dependencies
+  apt:
+    name:
+      - lm-sensors
+      - linux-tools-common
+      - linux-tools-generic
+    state: present
+  become: yes
+
+- name: Set CPU governor to performance mode
+  shell: echo "performance" > /sys/devices/system/cpu/cpu{{ item }}/cpufreq/scaling_governor
+  become: yes
+  loop: "{{ range(0, ansible_processor_vcpus) | list }}"
+  failed_when: false
+
+- name: Set AMD P-State energy performance preference to performance
+  shell: echo "performance" > /sys/devices/system/cpu/cpu{{ item }}/cpufreq/energy_performance_preference
+  become: yes
+  loop: "{{ range(0, ansible_processor_vcpus) | list }}"
+  failed_when: false
