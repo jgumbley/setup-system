@@ -1,0 +1,6 @@
+---
+- name: restart ssh
+  systemd:
+    name: ssh
+    state: restarted
+  when: ansible_os_family == "Debian"

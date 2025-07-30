@@ -32,6 +32,7 @@ machine_configs:
     - sway-desktop
     - inference
     - hal_hardware
+    - ssh_host
   
   # Default fallback configuration
   "default":

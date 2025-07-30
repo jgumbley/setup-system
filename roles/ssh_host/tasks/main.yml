@@ -1,0 +1,46 @@
+---
+- name: Install OpenSSH server
+  package:
+    name: openssh-server
+    state: present
+  when: ansible_os_family == "Debian"
+
+- name: Ensure SSH service is enabled and running
+  systemd:
+    name: ssh
+    enabled: yes
+    state: started
+  when: ansible_os_family == "Debian"
+
+- name: Configure SSH daemon
+  lineinfile:
+    path: /etc/ssh/sshd_config
+    regexp: "{{ item.regexp }}"
+    line: "{{ item.line }}"
+    backup: yes
+  loop:
+    - { regexp: '^#?PasswordAuthentication', line: 'PasswordAuthentication no' }
+    - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
+    - { regexp: '^#?AuthorizedKeysFile', line: 'AuthorizedKeysFile .ssh/authorized_keys' }
+    - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+  notify: restart ssh
+
+- name: Ensure .ssh directory exists for current user
+  file:
+    path: "{{ ansible_env.HOME }}/.ssh"
+    state: directory
+    mode: '0700'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+
+- name: Copy authorized SSH public keys
+  copy:
+    src: "{{ item }}"
+    dest: "{{ ansible_env.HOME }}/.ssh/authorized_keys"
+    mode: '0600'
+    owner: "{{ ansible_user_id }}"
+    group: "{{ ansible_user_gid }}"
+    backup: yes
+  with_fileglob:
+    - "files/ssh_keys/*.pub"
+  when: ansible_env.HOME is defined
