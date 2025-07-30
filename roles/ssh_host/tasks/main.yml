@@ -12,6 +12,14 @@
     state: started
   when: ansible_os_family == "Debian"
 
+- name: Copy SSH banner
+  copy:
+    src: ssh_banner
+    dest: /etc/ssh/ssh_banner
+    mode: '0644'
+    owner: root
+    group: root
+
 - name: Configure SSH daemon
   lineinfile:
     path: /etc/ssh/sshd_config
@@ -23,6 +31,7 @@
     - { regexp: '^#?PubkeyAuthentication', line: 'PubkeyAuthentication yes' }
     - { regexp: '^#?AuthorizedKeysFile', line: 'AuthorizedKeysFile .ssh/authorized_keys' }
     - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
+    - { regexp: '^#?Banner', line: 'Banner /etc/ssh/ssh_banner' }
   notify: restart ssh
 
 - name: Ensure .ssh directory exists for system user
