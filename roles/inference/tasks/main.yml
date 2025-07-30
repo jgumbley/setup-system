@@ -42,7 +42,7 @@
     path: /opt/llama.cpp/build
     state: absent
   become: yes
-  when: llama_cloned.changed or not llama_binary_exists.stat.exists
+  when: not llama_binary_exists.stat.exists
 
 - name: Configure llama.cpp build with ROCm support
   command: cmake -B build -DGGML_HIP=ON -DGGML_OPENBLAS=OFF -DAMDGPU_TARGETS=gfx1100
@@ -54,14 +54,14 @@
     HIPCXX: "/opt/rocm/lib/llvm/bin/clang++"
     PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
   become: yes
-  when: rocm_installed.stat.exists and (llama_cloned.changed or not llama_binary_exists.stat.exists)
+  when: rocm_installed.stat.exists and not llama_binary_exists.stat.exists
 
 - name: Configure llama.cpp build without ROCm support
   command: cmake -B build -DGGML_OPENBLAS=ON
   args:
     chdir: /opt/llama.cpp
   become: yes
-  when: not rocm_installed.stat.exists and (llama_cloned.changed or not llama_binary_exists.stat.exists)
+  when: not rocm_installed.stat.exists and not llama_binary_exists.stat.exists
 
 - name: Build llama.cpp with ROCm support
   command: cmake --build build -j{{ ansible_processor_vcpus }}
@@ -73,14 +73,14 @@
     HIPCXX: "/opt/rocm/lib/llvm/bin/clang++"
     PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
   become: yes
-  when: rocm_installed.stat.exists and (llama_cloned.changed or not llama_binary_exists.stat.exists)
+  when: rocm_installed.stat.exists and not llama_binary_exists.stat.exists
 
 - name: Build llama.cpp without ROCm support
   command: cmake --build build -j{{ ansible_processor_vcpus }}
   args:
     chdir: /opt/llama.cpp
   become: yes
-  when: not rocm_installed.stat.exists and (llama_cloned.changed or not llama_binary_exists.stat.exists)
+  when: not rocm_installed.stat.exists and not llama_binary_exists.stat.exists
 
 
 - name: Remove distro btop package if present (ROCm systems)
@@ -90,13 +90,18 @@
   become: yes
   when: rocm_installed.stat.exists
 
+- name: Check if btop binary exists
+  stat:
+    path: /usr/local/bin/btop
+  register: btop_binary_exists
+
 - name: Clone btop repository (ROCm systems)
   git:
     repo: https://github.com/aristocratos/btop.git
     dest: /opt/btop
     version: HEAD
   become: yes
-  when: rocm_installed.stat.exists
+  when: rocm_installed.stat.exists and not btop_binary_exists.stat.exists
 
 - name: Build btop with ROCm GPU support
   command: make GPU_SUPPORT=true ROCM_PATH=/opt/rocm
@@ -107,14 +112,14 @@
     HIP_PATH: /opt/rocm
     PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
   become: yes
-  when: rocm_installed.stat.exists
+  when: rocm_installed.stat.exists and not btop_binary_exists.stat.exists
 
 - name: Install btop with ROCm support
   command: make install PREFIX=/usr/local
   args:
     chdir: /opt/btop
   become: yes
-  when: rocm_installed.stat.exists
+  when: rocm_installed.stat.exists and not btop_binary_exists.stat.exists
 
 - name: Install additional monitoring tools
   apt:

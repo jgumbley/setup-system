@@ -25,22 +25,23 @@
     - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
   notify: restart ssh
 
-- name: Ensure .ssh directory exists for current user
+- name: Ensure .ssh directory exists for system user
   file:
-    path: "{{ ansible_env.HOME }}/.ssh"
+    path: "/home/system/.ssh"
     state: directory
     mode: '0700'
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: system
+    group: system
 
-- name: Copy authorized SSH public keys
-  copy:
-    src: "{{ item }}"
-    dest: "{{ ansible_env.HOME }}/.ssh/authorized_keys"
+- name: Add authorized SSH public keys
+  blockinfile:
+    path: "/home/system/.ssh/authorized_keys"
+    block: "{{ lookup('file', item) }}"
+    marker: "# {mark} ANSIBLE MANAGED BLOCK - {{ item | basename }}"
+    create: yes
     mode: '0600'
-    owner: "{{ ansible_user_id }}"
-    group: "{{ ansible_user_gid }}"
+    owner: system
+    group: system
     backup: yes
   with_fileglob:
     - "files/ssh_keys/*.pub"
-  when: ansible_env.HOME is defined

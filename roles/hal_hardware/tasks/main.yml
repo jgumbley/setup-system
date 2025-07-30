@@ -21,10 +21,22 @@
   failed_when: false
 
 # GPU Configuration
+- name: Check if ROCm is already installed and working
+  stat:
+    path: /opt/rocm/bin/rocminfo
+  register: rocm_installed
+
+- name: Test ROCm functionality if installed
+  command: /opt/rocm/bin/rocminfo
+  register: rocm_working
+  failed_when: false
+  when: rocm_installed.stat.exists
+
 - name: Remove all ROCm-related packages
   shell: apt-get remove --purge -y $(dpkg -l | grep -E "(rocm|hip)" | awk '{print $2}') || true
   become: yes
   failed_when: false
+  when: not rocm_installed.stat.exists or rocm_working.rc != 0
 
 - name: Clean package cache and autoremove
   apt:
@@ -32,12 +44,14 @@
     autoclean: yes
     update_cache: yes
   become: yes
+  when: not rocm_installed.stat.exists or rocm_working.rc != 0
 
 - name: Add AMD ROCm repository key
   apt_key:
     url: https://repo.radeon.com/rocm/rocm.gpg.key
     state: present
   become: yes
+  when: not rocm_installed.stat.exists or rocm_working.rc != 0
 
 - name: Add AMD ROCm repository
   apt_repository:
@@ -45,6 +59,7 @@
     state: present
     update_cache: yes
   become: yes
+  when: not rocm_installed.stat.exists or rocm_working.rc != 0
 
 - name: Create apt preferences for ROCm packages
   copy:
@@ -54,6 +69,7 @@
       Pin-Priority: 1001
     dest: /etc/apt/preferences.d/rocm
   become: yes
+  when: not rocm_installed.stat.exists or rocm_working.rc != 0
 
 - name: Install ROCm packages for RX 7900 XT/XTX
   apt:
@@ -68,6 +84,7 @@
     update_cache: yes
     force: yes
   become: yes
+  when: not rocm_installed.stat.exists or rocm_working.rc != 0
 
 - name: Set GPU power management to performance mode
   shell: echo "performance" > /sys/class/drm/card{{ item }}/device/power_dpm_force_performance_level
