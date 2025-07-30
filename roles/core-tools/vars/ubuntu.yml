@@ -21,3 +21,4 @@ core_packages:
   - npm
   - network-manager
   - wireless-tools
+  - bandwhich

@@ -9,3 +9,4 @@ core_packages:
   - python
   - uv
   - lazygit
+  - bandwhich

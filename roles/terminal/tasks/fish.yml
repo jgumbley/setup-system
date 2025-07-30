@@ -14,9 +14,60 @@
         state: directory
         mode: '0755'
 
+    - name: Create fish functions directory
+      file:
+        path: "{{ ansible_env.HOME }}/.config/fish/functions"
+        state: directory
+        mode: '0755'
+
     - name: Deploy fish configuration
       template:
         src: fishconfig.j2
         dest: "{{ ansible_env.HOME }}/.config/fish/config.fish"
+        mode: '0644'
+      tags: fish
+
+
+
+    - name: Create opencode config directory
+      file:
+        path: "{{ ansible_env.HOME }}/.config/opencode"
+        state: directory
+        mode: '0755'
+
+    - name: Create opencode configuration
+      copy:
+        dest: "{{ ansible_env.HOME }}/.config/opencode/opencode.json"
+        content: |
+          {
+            "$schema": "https://opencode.ai/config.json",
+
+            "provider": {
+              "moonshot": {
+                "npm": "@ai-sdk/openai-compatible",
+
+                "options": {
+                  "baseURL": "https://api.moonshot.ai/v1",
+                  "apiKey": "${env:MOONSHOT_API_KEY}"
+                },
+
+                "models": {
+                  "kimi-k2-0711-preview": {}
+                }
+              }
+            },
+
+            "model": "moonshot/kimi-k2-0711-preview"
+          }
+        mode: '0644'
+      tags: fish
+
+    - name: Create claude-yolo fish function
+      copy:
+        dest: "{{ ansible_env.HOME }}/.config/fish/functions/claude-yolo.fish"
+        content: |
+          function claude-yolo --description "Run claude with dangerously skip permissions"
+              claude --dangerously-skip-permissions $argv
+          end
         mode: '0644'
       tags: fish
