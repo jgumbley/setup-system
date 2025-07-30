@@ -32,6 +32,7 @@
     - { regexp: '^#?AuthorizedKeysFile', line: 'AuthorizedKeysFile .ssh/authorized_keys' }
     - { regexp: '^#?PermitRootLogin', line: 'PermitRootLogin no' }
     - { regexp: '^#?Banner', line: 'Banner /etc/ssh/ssh_banner' }
+    - { regexp: '^#?PrintMotd', line: 'PrintMotd no' }
   notify: restart ssh
 
 - name: Ensure .ssh directory exists for current user
