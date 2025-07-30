@@ -5,6 +5,7 @@
     name: 
       - sway
       - swayidle
+      - swaylock
       - fonts-font-awesome
       - fonts-oxygen
       - waybar
