@@ -27,6 +27,13 @@
     state: directory
     mode: '0755'
 
+- name: Set WLR_DRM_DEVICES environment variable for sway
+  become: no
+  lineinfile:
+    path: ~/.profile
+    line: 'export WLR_DRM_DEVICES=/dev/dri/card2'
+    create: yes
+
 - name: Copy sway config
   become: no
   template:
