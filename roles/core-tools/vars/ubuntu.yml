@@ -18,6 +18,5 @@ core_packages:
   - mc
   - nfs-common
   - lazygit
-  - npm
   - network-manager
   - wireless-tools

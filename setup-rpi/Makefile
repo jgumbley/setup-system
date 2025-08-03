@@ -1,4 +1,4 @@
-IMAGE_URL = https://cdimage.ubuntu.com/releases/22.04/release/ubuntu-22.04.5-preinstalled-server-arm64+raspi.img.xz
+IMAGE_URL = https://cdimage.ubuntu.com/releases/24.04/release/ubuntu-24.04.2-preinstalled-server-arm64+raspi.img.xz
 IMAGE_FILENAME = $(notdir $(IMAGE_URL))
 EXTRACTED_IMAGE = $(basename $(IMAGE_FILENAME))
 SDCARD = /dev/sda

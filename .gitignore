@@ -2,3 +2,4 @@ flashing/
 mount/
 .bootstrapped
 .secret_env
+ps2
