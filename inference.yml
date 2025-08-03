@@ -1,0 +1,15 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: yes
+  vars:
+    inference_roles:
+      - inference
+  tasks:
+    - name: Apply inference roles
+      include_role:
+        name: "{{ role_name }}"
+      loop: "{{ inference_roles }}"
+      loop_control:
+        loop_var: role_name

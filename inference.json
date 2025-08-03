@@ -1,0 +1,71 @@
+{
+  "inference_environment": {
+    "timestamp": "2025-08-03T15:56:35+01:00",
+    "rocm": {
+      "version": "",
+      "runtime_version": "1.15",
+      "packages": [
+        {
+          "package": "rocm",
+          "version": "6.4.2.60402-120~24.04"
+        },
+        {
+          "package": "rocm-cmake",
+          "version": "0.14.0.60402-120~24.04"
+        },
+        {
+          "package": "rocm-core",
+          "version": "6.4.2.60402-120~24.04"
+        },
+        {
+          "package": "rocm-dbgapi",
+          "version": "0.77.2.60402-120~24.04"
+        },
+        {
+          "package": "rocm-debug-agent",
+          "version": "2.0.4.60402-120~24.04"
+        },
+        {
+          "package": "rocm-developer-tools",
+          "version": "6.4.2.60402-120~24.04"
+        },
+        {
+          "package": "rocm-device-libs",
+          "version": "1.0.0.60402-120~24.04"
+        },
+        {
+          "package": "rocm-gdb",
+          "version": "15.2.60402-120~24.04"
+        },
+        {
+          "package": "rocm-hip-libraries",
+          "version": "6.4.2.60402-120~24.04"
+        },
+        {
+          "package": "rocm-hip-runtime",
+          "version": "6.4.2.60402-120~24.04"
+        }
+      ]
+    },
+    "llama_cpp": {
+      "commit_hash": "6c7a441161080551ce8a52ba32563b6295067192",
+      "commit_date": "2025-08-03 07:23:57 -0500",
+      "commit_message": "vulkan: Use coopmat2 for conv2d (#14982)",
+      "build_config": "ROCm HIP support, gfx1100 target"
+    },
+    "btop": {
+      "commit_hash": "65c7d0b814fd3a4b6cba8b4aa032c8bf329665fb",
+      "commit_date": "2025-07-29 14:04:58 +0200",
+      "commit_message": "Update CODE_OF_CONDUCT.md",
+      "build_config": "ROCm GPU support enabled"
+    },
+    "gpu_devices": [
+      "Vendor Name:             CPU                                ",
+      "--"
+    ],
+    "system_info": {
+      "cpu": "AMD Ryzen 7 9700X 8-Core Processor",
+      "memory_gb": "60"
+    }
+  }
+}

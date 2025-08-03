@@ -1,6 +1,6 @@
 HOSTNAME := $(shell hostname)
 
-.PHONY: cross-platform linux mac config push term core-tools backup caffeinate
+.PHONY: cross-platform linux mac config push term core-tools backup inference status caffeinate
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -25,10 +25,16 @@ setup: .bootstrapped
 claude:
 	sudo -E claude
 
+inference:
+	ansible-playbook inference.yml -c local -K
+
 backup:
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
 	mkdir -p /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip
 	rsync -rlptDvz --progress --update --no-group --exclude='node_modules' --exclude='__pycache__' --exclude='.DS_Store' --exclude='venv' --exclude='.venv' ~/wip/ /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip/
+
+status:
+	@bash scripts/inference-status.sh
 
 caffeinate:
 	sudo systemd-inhibit --what=sleep:idle:handle-lid-switch --who="Make Caffeinate" --why="Preventing system sleep and suspend" --mode=block sleep infinity

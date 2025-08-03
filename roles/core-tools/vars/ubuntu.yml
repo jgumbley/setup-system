@@ -20,3 +20,4 @@ core_packages:
   - lazygit
   - network-manager
   - wireless-tools
+  - cowsay

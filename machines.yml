@@ -30,7 +30,6 @@ machine_configs:
     - core-tools
     - terminal
     - sway-desktop
-    - inference
     - hal_hardware
     - ssh_host
   
