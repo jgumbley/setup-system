@@ -1,6 +1,6 @@
 {
   "inference_environment": {
-    "timestamp": "2025-08-03T15:56:35+01:00",
+    "timestamp": "2025-08-03T16:06:42+01:00",
     "rocm": {
       "version": "",
       "runtime_version": "1.15",
@@ -48,15 +48,15 @@
       ]
     },
     "llama_cpp": {
-      "commit_hash": "6c7a441161080551ce8a52ba32563b6295067192",
-      "commit_date": "2025-08-03 07:23:57 -0500",
-      "commit_message": "vulkan: Use coopmat2 for conv2d (#14982)",
+      "commit_hash": "unknown",
+      "commit_date": "unknown",
+      "commit_message": "unknown",
       "build_config": "ROCm HIP support, gfx1100 target"
     },
     "btop": {
-      "commit_hash": "65c7d0b814fd3a4b6cba8b4aa032c8bf329665fb",
-      "commit_date": "2025-07-29 14:04:58 +0200",
-      "commit_message": "Update CODE_OF_CONDUCT.md",
+      "commit_hash": "unknown",
+      "commit_date": "unknown",
+      "commit_message": "unknown",
       "build_config": "ROCm GPU support enabled"
     },
     "gpu_devices": [
