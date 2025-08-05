@@ -9,6 +9,29 @@
     name: system
     groups: docker
     append: yes
+  register: docker_group_result
+
+- name: Debug docker group addition result
+  debug:
+    var: docker_group_result
+
+- name: Verify user is in docker group
+  command: groups system
+  register: user_groups
+  changed_when: false
+
+- name: Display user groups
+  debug:
+    msg: "User groups: {{ user_groups.stdout }}"
+
+- name: Check if docker group exists
+  command: getent group docker
+  register: docker_group_check
+  changed_when: false
+
+- name: Display docker group members
+  debug:
+    msg: "Docker group: {{ docker_group_check.stdout }}"
 
 - name: Start Docker service
   systemd:
