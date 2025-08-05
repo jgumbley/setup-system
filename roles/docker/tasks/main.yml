@@ -1,0 +1,17 @@
+---
+- name: Install Docker
+  package:
+    name: docker.io
+    state: present
+
+- name: Add user to docker group
+  user:
+    name: system
+    groups: docker
+    append: yes
+
+- name: Start Docker service
+  systemd:
+    name: docker
+    state: started
+    enabled: yes
