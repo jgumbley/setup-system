@@ -22,6 +22,7 @@
       - lm-sensors
       - linux-tools-common
       - linux-tools-generic
+      - alsa-utils
     state: present
   become: yes
 
@@ -178,6 +179,27 @@
     state: present
   become: yes
 
+# Asterisk PBX Installation
+- name: Install Asterisk PBX packages
+  apt:
+    name:
+      - asterisk
+      - asterisk-core-sounds-en
+      - asterisk-core-sounds-en-gsm
+      - asterisk-moh-opsound-gsm
+      - asterisk-modules
+      - asterisk-config
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Start and enable Asterisk service
+  systemd:
+    name: asterisk
+    enabled: yes
+    state: started
+  become: yes
+
 # User permissions and system configuration
 - name: Add user to render and video groups for GPU access
   user:
@@ -219,6 +241,33 @@
   failed_when: false
 
 # Create symlinks for easy access
+# whisper.cpp Installation - Always from scratch
+- name: Remove existing whisper.cpp directory
+  file:
+    path: /opt/whisper.cpp
+    state: absent
+  become: yes
+
+- name: Clone whisper.cpp repository from latest HEAD
+  git:
+    repo: https://github.com/ggerganov/whisper.cpp.git
+    dest: /opt/whisper.cpp
+    version: HEAD
+    force: yes
+  become: yes
+
+- name: Configure whisper.cpp build
+  command: cmake -B build
+  args:
+    chdir: /opt/whisper.cpp
+  become: yes
+
+- name: Build whisper.cpp
+  command: cmake --build build -j{{ ansible_processor_vcpus }}
+  args:
+    chdir: /opt/whisper.cpp
+  become: yes
+
 - name: Create symlinks in /usr/local/bin for easy access
   file:
     src: /opt/llama.cpp/build/bin/{{ item }}
@@ -229,6 +278,14 @@
   loop:
     - llama-cli
     - llama-server
+
+- name: Create whisper.cpp symlink in /usr/local/bin
+  file:
+    src: /opt/whisper.cpp/build/bin/main
+    dest: /usr/local/bin/whisper-cpp
+    state: link
+    force: yes
+  become: yes
 
 # Verification
 - name: Verify ROCm installation
