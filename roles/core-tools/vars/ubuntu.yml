@@ -21,3 +21,4 @@ core_packages:
   - network-manager
   - wireless-tools
   - cowsay
+  - net-tools
