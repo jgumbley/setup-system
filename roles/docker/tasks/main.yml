@@ -38,3 +38,31 @@
     name: docker
     state: started
     enabled: yes
+
+- name: Install Docker buildx plugin
+  package:
+    name: docker-buildx-plugin
+    state: present
+
+- name: Create buildx builder instance
+  command: docker buildx create --name mybuilder --driver docker-container --bootstrap
+  become_user: system
+  register: buildx_create_result
+  failed_when: buildx_create_result.rc != 0 and "already exists" not in buildx_create_result.stderr
+  changed_when: buildx_create_result.rc == 0
+
+- name: Set buildx builder as default
+  command: docker buildx use mybuilder
+  become_user: system
+  register: buildx_use_result
+  changed_when: buildx_use_result.rc == 0
+
+- name: Verify buildx is working
+  command: docker buildx version
+  become_user: system
+  register: buildx_version
+  changed_when: false
+
+- name: Display buildx version
+  debug:
+    msg: "Docker buildx version: {{ buildx_version.stdout }}"
