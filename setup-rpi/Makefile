@@ -41,5 +41,5 @@ setup-cloudinit:
 	sudo sync
 	@echo "Unmounting boot partition..."
 	sudo umount /mnt/rpi-boot
-	@echo "Setup complete. RPi will create 'system' user, wait for network, install make/git, clone repo, and run 'make setup'."
+	@echo "Setup complete. You can now boot your Raspberry Pi and connect with username 'system' and your password."
 

@@ -1,14 +1,13 @@
 #cloud-config
 hostname: pi-new
+
 users:
   - name: system
-    passwd: $6$8PEvvahRpEB.dhjw$2pIf5qqvzktFn/wr1xCfB0V64p7vWk2gHdROuMEgVfGfV5n7fsXM.EkVCLk2F7rAi/iNpuRKJdlo2C5jEzBmv0
+    groups: [sudo]
+    passwd: '$6$8PEvvahRpEB.dhjw$VDYblGK0JfAMED9aLSFQu4BEkqZ4LO44ZWbpjwd2wrQLFgTbHj0P7ZQ9sWxAEQ51lvvmJNNb8Ud1OfhATen6N0'
     lock_passwd: false
-    shell: /bin/bash
     sudo: ALL=(ALL) NOPASSWD:ALL
-    groups: sudo
-
-ssh_pwauth: true
+    shell: /bin/bash
 
 package_update: true
 packages:
@@ -30,5 +29,4 @@ runcmd:
     cd wip
     git clone https://github.com/jgumbley/setup-system.git
     cd setup-system
-    make setup
     chown -R system:system /home/system
