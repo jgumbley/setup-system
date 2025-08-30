@@ -39,7 +39,7 @@ setup-ssh:
 	@echo "Creating SSH file to enable SSH server..."
 	sudo touch /mnt/rpi-boot/ssh
 	@echo "Creating userconf file for password authentication..."
-	sudo bash -c "echo 'ubuntu:ubuntu' > /mnt/rpi-boot/userconf"
+	sudo bash -c "echo 'system:$6$8PEvvahRpEB.dhjw$2pIf5qqvzktFn/wr1xCfB0V64p7vWk2gHdROuMEgVfGfV5n7fsXM.EkVCLk2F7rAi/iNpuRKJdlo2C5jEzBmv0' > /mnt/rpi-boot/userconf"
 	sudo sync
 	@echo "Unmounting boot partition..."
 	sudo umount /mnt/rpi-boot
