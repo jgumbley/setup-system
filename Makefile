@@ -19,14 +19,11 @@ endif
 term:
 	ansible-playbook terminal.yml
 
-setup: .bootstrapped
+setup: core
 	ansible-playbook setup.yml -c local -K
 
 claude:
 	sudo -E claude
-
-inference:
-	ansible-playbook inference.yml -c local -K
 
 backup:
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"

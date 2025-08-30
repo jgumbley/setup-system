@@ -58,6 +58,14 @@
     - /etc/update-motd.d/95-hwe-eol
   ignore_errors: yes
 
+- name: Ensure system user exists
+  user:
+    name: system
+    home: /home/system
+    shell: /bin/bash
+    create_home: yes
+    state: present
+
 - name: Ensure .ssh directory exists for system user
   file:
     path: "/home/system/.ssh"
