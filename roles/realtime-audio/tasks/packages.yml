@@ -1,0 +1,24 @@
+---
+- name: Install JACK and audio packages
+  apt:
+    name:
+      - jackd2
+      - jack-tools
+      - qjackctl
+      - libjack-jackd2-dev
+      - pulseaudio-module-jack
+      - a2jmidid
+      - ffmpeg
+      - alsa-utils
+      - linux-lowlatency  # Optional low-latency kernel
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install Python packages for audio development
+  pip:
+    name:
+      - jack-client
+      - soundfile
+      - numpy
+    state: present

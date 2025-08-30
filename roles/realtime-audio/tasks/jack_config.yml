@@ -1,0 +1,22 @@
+---
+- name: Create .jackdrc configuration
+  template:
+    src: jackdrc.j2
+    dest: "/home/system/.jackdrc"
+    mode: '0755'
+
+- name: Create JACK configuration directory
+  file:
+    path: "/home/system/.config/jack"
+    state: directory
+    mode: '0755'
+
+- name: Test JACK installation
+  shell: which jackd
+  register: jack_test
+  failed_when: false
+
+- name: Display JACK installation status
+  debug:
+    msg: "JACK installed at: {{ jack_test.stdout }}"
+  when: jack_test.rc == 0

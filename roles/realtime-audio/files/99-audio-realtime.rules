@@ -1,0 +1,7 @@
+# Real-time audio device rules
+KERNEL=="rtc0", GROUP="audio"
+KERNEL=="hpet", GROUP="audio"
+DEVPATH=="/devices/virtual/misc/cpu_dma_latency", OWNER="root", GROUP="audio", MODE="0660"
+
+# USB audio device permissions
+SUBSYSTEM=="usb", ATTRS{idVendor}=="1397", ATTRS{idProduct}=="0507", GROUP="audio", MODE="0666"

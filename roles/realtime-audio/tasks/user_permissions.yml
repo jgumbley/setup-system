@@ -1,0 +1,29 @@
+---
+- name: Add system user to audio group
+  user:
+    name: system
+    groups: audio
+    append: yes
+  become: yes
+
+- name: Add system user to pulse-access group (if exists)
+  user:
+    name: system
+    groups: pulse-access
+    append: yes
+  become: yes
+  failed_when: false
+
+- name: Ensure system user can access real-time scheduling
+  lineinfile:
+    path: /etc/security/limits.d/audio.conf
+    line: "system - rtprio 95"
+    create: yes
+  become: yes
+
+- name: Ensure system user can lock memory for audio buffers
+  lineinfile:
+    path: /etc/security/limits.d/audio.conf
+    line: "system - memlock unlimited"
+    create: yes
+  become: yes

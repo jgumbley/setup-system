@@ -1,0 +1,3 @@
+#!/bin/bash
+# JACK daemon configuration
+/usr/bin/jackd -P 80 -d alsa -d {{ jack_device | default('hw:1,0') }} -r {{ jack_sample_rate | default('48000') }} -p {{ jack_buffer_size | default('256') }} -n {{ jack_periods | default('2') }}

@@ -1,0 +1,7 @@
+# Audio subsystem configuration
+options snd_hda_intel power_save=0
+options snd_ac97_codec power_save=0
+options snd_usb_audio nrpacks=1
+
+# USB audio optimizations
+options snd_usb_audio vid=0x1397 pid=0x0507 device_setup=1

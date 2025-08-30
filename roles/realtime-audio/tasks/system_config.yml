@@ -1,0 +1,36 @@
+---
+- name: Configure audio limits for real-time processing
+  template:
+    src: limits.conf.j2
+    dest: /etc/security/limits.d/audio.conf
+    backup: yes
+  become: yes
+
+- name: Configure audio subsystem parameters
+  template:
+    src: audio.conf.j2
+    dest: /etc/modprobe.d/audio.conf
+    backup: yes
+  become: yes
+
+- name: Install udev rules for audio devices
+  copy:
+    src: 99-audio-realtime.rules
+    dest: /etc/udev/rules.d/99-audio-realtime.rules
+  become: yes
+  notify: reload udev
+
+- name: Set CPU governor to performance (if available)
+  shell: |
+    for cpu in /sys/devices/system/cpu/cpu*/cpufreq/scaling_governor; do
+      echo performance | tee $cpu
+    done
+  become: yes
+  failed_when: false
+
+- name: Disable audio card power management
+  lineinfile:
+    path: /etc/modprobe.d/audio.conf
+    line: "options snd_hda_intel power_save=0"
+    create: yes
+  become: yes

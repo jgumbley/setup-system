@@ -1,0 +1,15 @@
+---
+# JACK Audio Configuration
+jack_device: "hw:1,0"  # Default to UMC1820
+jack_sample_rate: 48000
+jack_buffer_size: 256
+jack_periods: 2
+
+# System tuning
+enable_lowlatency_kernel: true
+cpu_governor: "performance"
+
+# Audio groups
+audio_groups:
+  - audio
+  - pulse-access
