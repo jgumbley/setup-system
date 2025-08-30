@@ -19,7 +19,7 @@ endif
 term:
 	ansible-playbook terminal.yml
 
-setup:
+setup: .bootstrapped
 	ansible-playbook setup.yml -c local -K
 
 claude:
