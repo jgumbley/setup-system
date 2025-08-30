@@ -1,10 +1,5 @@
 ---
 machine_configs:
-  # Full desktop/laptop with GUI
-  "system":
-    - sway-desktop 
-    
-  # Full desktop/laptop with GUI
   "jim-laptop":
     - core-tools
     - terminal
@@ -18,12 +13,7 @@ machine_configs:
   "pi-*":
     - core-tools
     - terminal
-  
-  # Example: Development server
-  "dev-server":
-    - core-tools
-    - terminal
-    - development
+    - ssh_host
   
   # HAL machine configuration
   "hal":
@@ -34,7 +24,3 @@ machine_configs:
     - ssh_host
     - docker
   
-  # Default fallback configuration
-  "default":
-    - terminal
-    - core-tools

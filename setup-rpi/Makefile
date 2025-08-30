@@ -3,7 +3,7 @@ IMAGE_FILENAME = $(notdir $(IMAGE_URL))
 EXTRACTED_IMAGE = $(basename $(IMAGE_FILENAME))
 SDCARD = /dev/sda
 
-.PHONY: all download clean blank-sd write-sd first-connect setup-ssh connect-rpi
+.PHONY: all download clean blank-sd write-sd setup-cloudinit
 
 all: $(EXTRACTED_IMAGE)
 
@@ -32,16 +32,14 @@ write-sd: $(EXTRACTED_IMAGE)
 	sudo sync
 	@echo "Image written successfully. SD card is ready for Raspberry Pi."
 
-setup-ssh:
-	@echo "Setting up SSH with password auth for Raspberry Pi. Make sure SD card is mounted."
+setup-cloudinit:
+	@echo "Setting up cloud-init for Raspberry Pi. Make sure SD card is mounted."
 	sudo mkdir -p /mnt/rpi-boot
 	sudo mount $(SDCARD)1 /mnt/rpi-boot
-	@echo "Creating SSH file to enable SSH server..."
-	sudo touch /mnt/rpi-boot/ssh
-	@echo "Creating userconf file for password authentication..."
-	sudo bash -c "echo 'system:$6$8PEvvahRpEB.dhjw$2pIf5qqvzktFn/wr1xCfB0V64p7vWk2gHdROuMEgVfGfV5n7fsXM.EkVCLk2F7rAi/iNpuRKJdlo2C5jEzBmv0' > /mnt/rpi-boot/userconf"
+	@echo "Copying cloud-init user-data configuration..."
+	sudo cp user-data /mnt/rpi-boot/user-data
 	sudo sync
 	@echo "Unmounting boot partition..."
 	sudo umount /mnt/rpi-boot
-	@echo "SSH setup complete. You can now boot your Raspberry Pi and connect with username 'ubuntu' and password 'ubuntu'."
+	@echo "Setup complete. RPi will create 'system' user, wait for network, install make/git, clone repo, and run 'make setup'."
 

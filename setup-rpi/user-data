@@ -1,0 +1,34 @@
+#cloud-config
+hostname: pi-new
+users:
+  - name: system
+    passwd: $6$8PEvvahRpEB.dhjw$2pIf5qqvzktFn/wr1xCfB0V64p7vWk2gHdROuMEgVfGfV5n7fsXM.EkVCLk2F7rAi/iNpuRKJdlo2C5jEzBmv0
+    lock_passwd: false
+    shell: /bin/bash
+    sudo: ALL=(ALL) NOPASSWD:ALL
+    groups: sudo
+
+ssh_pwauth: true
+
+package_update: true
+packages:
+  - make
+  - git
+
+runcmd:
+  - |
+    # Wait for network connectivity
+    until ping -c 1 8.8.8.8 >/dev/null 2>&1; do
+      echo "Waiting for network..."
+      sleep 5
+    done
+    echo "Network is ready"
+    
+    # Clone repo and run make setup
+    cd /home/system
+    mkdir -p wip
+    cd wip
+    git clone https://github.com/jgumbley/setup-system.git
+    cd setup-system
+    make setup
+    chown -R system:system /home/system

@@ -19,7 +19,7 @@ endif
 term:
 	ansible-playbook terminal.yml
 
-setup: core
+setup:
 	ansible-playbook setup.yml -c local -K
 
 claude:
@@ -29,9 +29,6 @@ backup:
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
 	mkdir -p /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip
 	rsync -rlptDvz --progress --update --no-group --exclude='node_modules' --exclude='__pycache__' --exclude='.DS_Store' --exclude='venv' --exclude='.venv' ~/wip/ /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip/
-
-status:
-	@bash scripts/inference-status.sh
 
 caffeinate:
 	sudo systemd-inhibit --what=sleep:idle:handle-lid-switch --who="Make Caffeinate" --why="Preventing system sleep and suspend" --mode=block sleep infinity
