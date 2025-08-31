@@ -25,3 +25,4 @@ core_packages:
   - net-tools
   - mitmproxy
   - jq
+  - rustup

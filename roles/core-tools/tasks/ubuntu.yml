@@ -29,3 +29,9 @@
   shell: ~/.local/bin/uv --version
   register: uv_version
   changed_when: false
+
+- name: Initialize rustup with stable toolchain
+  shell: rustup default stable
+  args:
+    creates: "{{ ansible_env.HOME }}/.rustup"
+  changed_when: false
