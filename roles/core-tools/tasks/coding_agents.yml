@@ -1,4 +1,17 @@
 ---
+- name: Check for npm availability
+  command: npm --version
+  register: npm_check
+  changed_when: false
+  failed_when: false
+
+- name: Fail if npm is not available
+  fail:
+    msg: >-
+      npm is not available on PATH. Node.js installation should provide npm,
+      but it appears missing. Please review Node.js install tasks for this host.
+  when: npm_check.rc != 0
+
 - name: Install/Update Claude Code globally
   npm:
     name: "@anthropic-ai/claude-code"
@@ -14,6 +27,10 @@
     state: latest
   become: "{{ ansible_os_family != 'Darwin' }}"
   register: gemini_install_result
+
+- name: Install/Update OpenI Codex
+  command: openi codex install
+  become: "{{ ansible_os_family != 'Darwin' }}"
 
 - name: Install/Update OpenCode AI globally
   npm:

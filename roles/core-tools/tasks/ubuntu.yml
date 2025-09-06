@@ -6,6 +6,43 @@
     update_cache: yes
   become: yes
 
+- name: Ensure APT keyrings directory exists
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+  become: yes
+
+- name: Download NodeSource GPG key (ASCII armored)
+  get_url:
+    url: https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key
+    dest: /etc/apt/keyrings/nodesource.gpg.key
+    mode: '0644'
+  become: yes
+
+- name: Convert NodeSource GPG key to keyring (dearmor)
+  command: >-
+    gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg /etc/apt/keyrings/nodesource.gpg.key
+  args:
+    creates: /etc/apt/keyrings/nodesource.gpg
+  become: yes
+
+- name: Add NodeSource Node.js 20.x repository (signed-by)
+  apt_repository:
+    repo: >-
+      deb [arch={{ 'amd64' if ansible_architecture in ['x86_64','amd64'] else 'arm64' }}
+      signed-by=/etc/apt/keyrings/nodesource.gpg]
+      https://deb.nodesource.com/node_20.x nodistro main
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install Node.js (includes npm)
+  apt:
+    name: nodejs
+    state: present
+  become: yes
+
 - name: Install core packages with apt
   apt:
     name: "{{ item }}"
