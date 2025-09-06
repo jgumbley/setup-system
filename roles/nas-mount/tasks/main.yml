@@ -71,14 +71,14 @@
         group: "{{ ansible_user_gid }}"
         mode: "0755"
 
-    - name: "Ensure fstab entry exists for NFS"
+    - name: "Ensure fstab entry exists for NFS (Linux, stable v3)"
       lineinfile:
         path: /etc/fstab
         create: yes
-        regexp: '^{{ nas_host }}:/{{ nas_share }}'
+        regexp: '^{{ nas_host }}:/{{ nas_share }}\s+'
         line: >
           {{ nas_host }}:/{{ nas_share }}  /mnt/{{ nas_share }}   nfs
-          nfsvers=4.1,_netdev,noauto,x-systemd.automount  0  0
+          vers=3,_netdev,noauto,x-systemd.automount,nofail  0  0
 
     - name: "Reload systemd units"
       systemd:

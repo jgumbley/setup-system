@@ -28,8 +28,11 @@
   become: "{{ ansible_os_family != 'Darwin' }}"
   register: gemini_install_result
 
-- name: Install/Update OpenI Codex
-  command: openi codex install
+- name: Install/Update OpenAI Codex globally
+  npm:
+    name: "@openai/codex"
+    global: yes
+    state: latest
   become: "{{ ansible_os_family != 'Darwin' }}"
 
 - name: Install/Update OpenCode AI globally
