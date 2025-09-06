@@ -25,3 +25,8 @@ machine_configs:
     - ssh_host
     - docker
   
+  # Current host (auto-detected as "system")
+  "system":
+    - core-tools
+    - nas-mount
+  
