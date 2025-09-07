@@ -10,16 +10,23 @@
       - waybar
       - upower
       - kitty
-      - i3
       - light
       - swaybg
       - wev
       - pavucontrol
       - network-manager
+      - brightnessctl
       - wofi
       - grim
       - slurp
     state: present
+
+- name: Ensure user in video group (for backlight control)
+  become: yes
+  user:
+    name: "{{ ansible_user_id }}"
+    groups: video
+    append: yes
 
 - name: Ensure the sway configuration directory exists
   become: no
@@ -75,6 +82,17 @@
   notify: reload sway
 
 
+- name: Install udev rules for screen/keyboard backlight
+  become: yes
+  copy:
+    src: 90-backlight.rules
+    dest: /etc/udev/rules.d/90-backlight.rules
+    owner: root
+    group: root
+    mode: '0644'
+  notify: reload udev
+
+
 - name: Create screenshots directory
   become: no
   file:
@@ -107,3 +125,17 @@
 
 - name: Include kanshi tasks
   include_tasks: kanshi.yml
+
+- name: Ensure applications directory exists
+  become: no
+  ansible.builtin.file:
+    path: ~/.local/share/applications
+    state: directory
+    mode: '0755'
+
+- name: Add RimWorld launcher (.desktop)
+  become: no
+  ansible.builtin.template:
+    src: rimworld.desktop.j2
+    dest: ~/.local/share/applications/rimworld.desktop
+    mode: '0644'

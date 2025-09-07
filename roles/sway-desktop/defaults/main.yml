@@ -1,3 +1,6 @@
 ---
 wlroots_no_atomic: "1"
 wlroots_no_modifiers: "0"
+rimworld_binary_path: "{{ lookup('env','HOME') }}/.local/share/Steam/steamapps/common/RimWorld/RimWorldLinux"
+rimworld_args: "-disable-compute-shaders --"
+backlight_device: ""
