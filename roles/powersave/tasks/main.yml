@@ -1,5 +1,6 @@
 ---
-# Powersave role: reduce background services, switch to TLP, install powertop.
+# Powersave role: reduce background services, prefer native power-profiles-daemon,
+# install powertop, keep logs efficient.
 # Safe for Ubuntu/Debian; avoids touching rpcbind (needed for NFSv3).
 
 - name: Ensure facts are gathered
@@ -14,14 +15,14 @@
 
 # --- Package adjustments ---
 
-- name: Install power saving tools (TLP and powertop)
+- name: Install power saving tools (power-profiles-daemon, powertop)
   apt:
     name:
-      - tlp
-      - tlp-rdw
+      - power-profiles-daemon
       - powertop
     state: present
     update_cache: yes
+
 
 - name: Remove Snap daemon (snapd)
   apt:
@@ -73,25 +74,29 @@
 
 # --- Service tweaks ---
 
-- name: Disable power-profiles-daemon (use TLP instead)
+- name: Enable and start power-profiles-daemon (native scheduler)
   systemd:
     name: power-profiles-daemon.service
-    enabled: no
-    state: stopped
-  failed_when: false
-
-- name: Enable and start TLP
-  systemd:
-    name: tlp.service
     enabled: yes
     state: started
   failed_when: false
 
-- name: Ensure Bluetooth is enabled and running
+- name: Set system to power-saver profile
+  command: powerprofilesctl set power-saver
+  register: ppd_set
+  changed_when: ppd_set.rc == 0
+  failed_when: false
+
+
+
+
+  
+
+- name: Disable and stop Bluetooth
   systemd:
     name: bluetooth.service
-    enabled: yes
-    state: started
+    enabled: no
+    state: stopped
   failed_when: false
 
 - name: Disable and stop Avahi (mDNS)
@@ -122,18 +127,18 @@
     state: stopped
   failed_when: false
 
-- name: Disable and stop rsyslog (use journald)
+- name: Enable and start rsyslog
   systemd:
     name: rsyslog.service
-    enabled: no
-    state: stopped
+    enabled: yes
+    state: started
   failed_when: false
 
-- name: Ensure journald persistent storage directory exists
+- name: Remove journald persistent storage directory if created by role
   file:
     path: /var/log/journal
-    state: directory
-    mode: '0755'
+    state: absent
+  failed_when: false
 
 - name: Ensure journald drop-in config directory exists
   file:
@@ -141,15 +146,16 @@
     state: directory
     mode: '0755'
 
-- name: Configure journald for persistent storage
-  copy:
-    dest: /etc/systemd/journald.conf.d/99-persistent.conf
-    content: |
-      [Journal]
-      Storage=persistent
-    owner: root
-    group: root
-    mode: '0644'
+- name: Remove journald persistent config if present
+  file:
+    path: /etc/systemd/journald.conf.d/99-persistent.conf
+    state: absent
+
+- name: Remove journald volatile drop-in if present
+  file:
+    path: /etc/systemd/journald.conf.d/99-volatile.conf
+    state: absent
+  failed_when: false
 
 - name: Restart systemd-journald to apply config
   systemd:
