@@ -67,9 +67,6 @@
       file:
         path: /mnt/{{ nas_share }}
         state: directory
-        owner: "{{ ansible_user_uid }}"
-        group: "{{ ansible_user_gid }}"
-        mode: "0755"
 
     - name: "Ensure fstab entry exists for NFS (Linux, stable v3)"
       lineinfile:

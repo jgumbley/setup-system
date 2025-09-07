@@ -27,12 +27,19 @@
     state: directory
     mode: '0755'
 
-- name: Set WLR_DRM_DEVICES environment variable for sway
+- name: Ensure user environment.d directory exists
   become: no
-  lineinfile:
-    path: ~/.profile
-    line: 'export WLR_DRM_DEVICES=/dev/dri/card2'
-    create: yes
+  ansible.builtin.file:
+    path: ~/.config/environment.d
+    state: directory
+    mode: '0755'
+
+- name: Set wlroots DRM environment flags
+  become: no
+  ansible.builtin.template:
+    src: wlroots.conf.j2
+    dest: ~/.config/environment.d/wlroots.conf
+    mode: '0644'
 
 - name: Copy sway config
   become: no
@@ -71,10 +78,10 @@
     state: directory
     mode: "0755"
 
-- name: Create Wallpapers directory
+- name: Create wallpapers directory
   become: no
   file:
-    path: ~/Pictures/Wallpapers
+    path: ~/Pictures/wallpapers
     state: directory
     mode: "0755"
 

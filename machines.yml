@@ -29,4 +29,5 @@ machine_configs:
   "system":
     - core-tools
     - nas-mount
+    - sway-desktop
   
