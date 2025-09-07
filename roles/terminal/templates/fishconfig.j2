@@ -4,8 +4,6 @@ test -f ~/.secret_env; and source ~/.secret_env
 # Ensure ~/.local/bin is in PATH for pipx-installed tools
 fish_add_path ~/.local/bin
 
-# Configure cowsay to prefer user cowfiles (tiny otter default)
-set -gx COWPATH "$HOME/.local/share/cowsay/cows:/usr/share/cowsay/cows"
 
 if status is-interactive
     # Commands to run in interactive sessions can go here

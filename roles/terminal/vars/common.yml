@@ -8,7 +8,6 @@ git_default_editor: "vi"
 
 # Terminal components to configure
 terminal_components:
-  - cowsay
   - secret_env
   - git
   - fish

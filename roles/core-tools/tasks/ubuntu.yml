@@ -50,6 +50,12 @@
   become: yes
   loop: "{{ core_packages }}"
 
+- name: Ensure cowsay is not installed
+  apt:
+    name: cowsay
+    state: absent
+  become: yes
+
 - name: Add fish shell to /etc/shells
   lineinfile:
     path: /etc/shells
