@@ -8,9 +8,12 @@
     "modules-center": [],
     "modules-right": [
         "pulseaudio",
+        "custom/sep",
         "network",
+        "custom/sep",
         "battery",
-        "clock",
+        "clock#date",
+        "clock#time",
         "tray"
     ],
 
@@ -42,21 +45,28 @@
 
     "pulseaudio": {
         "format": "{volume}% {icon}",
-        "format-bluetooth": "{volume}% {icon}",
-        "format-bluetooth-muted": "\uf6a9 {icon}",
-        "format-muted": "\uf6a9",
+        "format-bluetooth": "{volume}% 🎧",
+        "format-bluetooth-muted": "muted 🎧",
+        "format-muted": "muted 🔇",
         "format-icons": {
-            "default": ["\uf026", "\uf027", "\uf028"]
+            "default": ["🔈", "🔉", "🔊"]
         },
         "on-click": "pavucontrol"
     },
 
+    "custom/sep": {
+        "format": "|",
+        "interval": 0,
+        "tooltip": false
+    },
+
     "network": {
-        "format-wifi": "WiFi: {essid}",
-        "format-ethernet": "Eth",
-        "format-disconnected": "Disconnected",
+        "format-wifi": "{essid} 🌐",
+        "format-ethernet": "Eth 🔌",
+        "format-disconnected": "Disconnected 🚫",
         "tooltip-format-wifi": "{essid} ({signalStrength}%)",
-        "tooltip-format-ethernet": "{ipaddr}/{cidr}"
+        "tooltip-format-ethernet": "{ipaddr}/{cidr}",
+        "on-click": "kitty -e nmtui"
     },
 
     "battery": {
@@ -64,12 +74,20 @@
             "warning": 30,
             "critical": 15
         },
-        "format": "{capacity}% {icon}",
-        "format-icons": ["", "", "", "", ""]
+        "format": "{power}W {icon}",
+        "format-charging": "{power}W {icon}",
+        "format-plugged": "{power}W {icon}",
+        "format-full": "{power}W {icon}",
+        "format-icons": ["▁", "▃", "▅", "▆", "█"]
     },
 
-    "clock": {
-        "format": "{:%H:%M}",
+    "clock#date": {
+        "format": " <b>{:%d/%m}</b> ",
+        "tooltip-format": "{:%Y-%m-%d}\n<tt><small>{calendar}</small></tt>"
+    },
+
+    "clock#time": {
+        "format": " <b>{:%H:%M}</b> ",
         "tooltip-format": "{:%Y-%m-%d}\n<tt><small>{calendar}</small></tt>"
     },
 

@@ -1,5 +1,7 @@
 #waybar {
     font-family: '{{ fixed_font_family }}';
+    font-size: {{ terminal_settings.font_size }}pt;
+    font-weight: normal;
     background-color: #1E1E1E;
     color: #E6E6E6;
     border: 1px solid #333;
@@ -65,4 +67,17 @@ a {
 
 a:hover {
     color: #CE9178;
+}
+
+/* Match tmux: dark grey date, lighter grey time, black-like text */
+#clock.date {
+    background-color: #626262; /* xterm-256 color241 */
+    color: #121212;            /* xterm-256 color233 */
+    font-weight: bold;
+}
+
+#clock.time {
+    background-color: #8a8a8a; /* xterm-256 color245 */
+    color: #121212;            /* xterm-256 color233 */
+    font-weight: bold;
 }

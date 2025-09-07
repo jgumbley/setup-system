@@ -30,4 +30,5 @@ machine_configs:
     - core-tools
     - nas-mount
     - sway-desktop
+    - powersave
   

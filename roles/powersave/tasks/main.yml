@@ -1,0 +1,239 @@
+---
+# Powersave role: reduce background services, switch to TLP, install powertop.
+# Safe for Ubuntu/Debian; avoids touching rpcbind (needed for NFSv3).
+
+- name: Ensure facts are gathered
+  setup:
+  when: ansible_facts is not defined
+
+- name: Proceed only on Debian/Ubuntu families
+  assert:
+    that:
+      - ansible_os_family == 'Debian'
+    fail_msg: "powersave role currently supports Debian/Ubuntu only"
+
+# --- Package adjustments ---
+
+- name: Install power saving tools (TLP and powertop)
+  apt:
+    name:
+      - tlp
+      - tlp-rdw
+      - powertop
+    state: present
+    update_cache: yes
+
+- name: Remove Snap daemon (snapd)
+  apt:
+    name: snapd
+    state: absent
+
+- name: Add Mozilla Team PPA for Firefox (deb version)
+  apt_repository:
+    repo: ppa:mozillateam/ppa
+    state: present
+    filename: mozillateam-ppa
+
+- name: Pin Firefox to mozillateam PPA
+  copy:
+    dest: /etc/apt/preferences.d/mozillateam-firefox
+    content: |
+      Package: firefox*
+      Pin: release o=LP-PPA-mozillateam
+      Pin-Priority: 1001
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install Firefox (deb) from PPA
+  apt:
+    name: firefox
+    state: present
+    update_cache: yes
+
+- name: Remove Ubuntu Advantage tools (unused)
+  apt:
+    name: ubuntu-advantage-tools
+    state: absent
+  register: ua_pkg_removed
+  failed_when: false
+
+- name: Remove CUPS server packages (no printing needed)
+  apt:
+    name:
+      - cups
+      - cups-browsed
+      - cups-daemon
+      - cups-common
+      - cups-client
+      - printer-driver-all
+    state: absent
+  register: cups_removed
+  failed_when: false
+
+# --- Service tweaks ---
+
+- name: Disable power-profiles-daemon (use TLP instead)
+  systemd:
+    name: power-profiles-daemon.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Enable and start TLP
+  systemd:
+    name: tlp.service
+    enabled: yes
+    state: started
+  failed_when: false
+
+- name: Ensure Bluetooth is enabled and running
+  systemd:
+    name: bluetooth.service
+    enabled: yes
+    state: started
+  failed_when: false
+
+- name: Disable and stop Avahi (mDNS)
+  systemd:
+    name: avahi-daemon.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Stop Avahi socket
+  systemd:
+    name: avahi-daemon.socket
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable and stop ModemManager
+  systemd:
+    name: ModemManager.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable and stop GNOME Remote Desktop
+  systemd:
+    name: gnome-remote-desktop.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable and stop rsyslog (use journald)
+  systemd:
+    name: rsyslog.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Ensure journald persistent storage directory exists
+  file:
+    path: /var/log/journal
+    state: directory
+    mode: '0755'
+
+- name: Ensure journald drop-in config directory exists
+  file:
+    path: /etc/systemd/journald.conf.d
+    state: directory
+    mode: '0755'
+
+- name: Configure journald for persistent storage
+  copy:
+    dest: /etc/systemd/journald.conf.d/99-persistent.conf
+    content: |
+      [Journal]
+      Storage=persistent
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Restart systemd-journald to apply config
+  systemd:
+    name: systemd-journald.service
+    state: restarted
+
+- name: Mask colord service (prevent D-Bus activation)
+  systemd:
+    name: colord.service
+    masked: yes
+    state: stopped
+  failed_when: false
+
+- name: Disable and stop SSSD
+  systemd:
+    name: sssd.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable and stop switcheroo-control (dual GPU helper)
+  systemd:
+    name: switcheroo-control.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable and stop fwupd service
+  systemd:
+    name: fwupd.service
+    enabled: no
+    state: stopped
+    masked: yes
+  failed_when: false
+
+- name: Disable fwupd refresh timer
+  systemd:
+    name: fwupd-refresh.timer
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable sysstat timers (reduce periodic wakeups)
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  loop:
+    - sysstat-collect.timer
+    - sysstat-summary.timer
+  failed_when: false
+
+- name: Disable NetworkManager-wait-online (faster boot)
+  systemd:
+    name: NetworkManager-wait-online.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable and stop Ubuntu Advantage service/timer
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  loop:
+    - ubuntu-advantage.service
+    - ua-timer.timer
+  failed_when: false
+
+# Keep rpcbind enabled due to NFSv3 usage.
+
+- name: Disable OpenVPN service if present
+  systemd:
+    name: openvpn.service
+    enabled: no
+    state: stopped
+  failed_when: false
+
+- name: Disable OpenVPN client/server template units if present
+  systemd:
+    name: "{{ item }}"
+    enabled: no
+    state: stopped
+  loop:
+    - openvpn-client@.service
+    - openvpn-server@.service
+  failed_when: false

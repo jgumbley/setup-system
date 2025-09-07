@@ -6,15 +6,16 @@
       - sway
       - swayidle
       - swaylock
-      - fonts-font-awesome
       - fonts-oxygen
       - waybar
+      - upower
       - kitty
       - i3
       - light
       - swaybg
       - wev
       - pavucontrol
+      - network-manager
       - wofi
       - grim
       - slurp
@@ -46,6 +47,7 @@
   template:
     src: swayconfig.j2
     dest: ~/.config/sway/config
+  notify: reload sway
 
 - name: Ensure the waybar configuration directory exists
   become: no
@@ -63,12 +65,14 @@
   template:
     src: waybar.j2
     dest: ~/.config/waybar/config.jsonc
+  notify: reload sway
 
 - name: Copy waybar style
   become: no
   template:
     src: waybar.css.j2
     dest: ~/.config/waybar/style.css
+  notify: reload sway
 
 
 - name: Create screenshots directory
