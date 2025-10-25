@@ -14,3 +14,17 @@
         dest: "{{ ansible_env.HOME }}/.gitconfig"
         mode: '0644'
       tags: git
+
+    - name: Ensure .ssh directory exists
+      file:
+        path: "{{ ansible_env.HOME }}/.ssh"
+        state: directory
+        mode: '0700'
+      tags: git
+
+    - name: Deploy SSH config
+      template:
+        src: ssh_config.j2
+        dest: "{{ ansible_env.HOME }}/.ssh/config"
+        mode: '0600'
+      tags: git
