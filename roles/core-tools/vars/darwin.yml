@@ -4,9 +4,12 @@ core_packages:
   - fish
   - kitty
   - git
+  - git-lfs
   - vim
   - npm
   - python
   - uv
   - lazygit
+  - htop
+  - btop
   - bandwhich
