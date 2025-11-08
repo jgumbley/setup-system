@@ -44,11 +44,18 @@
     name: docker-buildx-plugin
     state: present
 
+- name: Check if buildx builder already exists
+  command: docker buildx inspect mybuilder
+  become_user: system
+  register: buildx_inspect_result
+  changed_when: false
+  failed_when: false
+
 - name: Create buildx builder instance
   command: docker buildx create --name mybuilder --driver docker-container --bootstrap
   become_user: system
   register: buildx_create_result
-  failed_when: buildx_create_result.rc != 0 and "already exists" not in buildx_create_result.stderr
+  when: buildx_inspect_result.rc != 0
   changed_when: buildx_create_result.rc == 0
 
 - name: Set buildx builder as default
