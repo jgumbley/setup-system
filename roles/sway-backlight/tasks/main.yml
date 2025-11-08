@@ -1,0 +1,22 @@
+---
+- name: Ensure user in video group (for backlight control)
+  become: yes
+  user:
+    name: "{{ ansible_user_id }}"
+    groups: video
+    append: yes
+
+- name: Install udev rules for screen/keyboard backlight
+  become: yes
+  copy:
+    src: 90-backlight.rules
+    dest: /etc/udev/rules.d/90-backlight.rules
+    owner: root
+    group: root
+    mode: '0644'
+  register: backlight_rules
+
+- name: Reload udev rules when backlight configuration changes
+  become: yes
+  command: udevadm control --reload
+  when: backlight_rules.changed

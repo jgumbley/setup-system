@@ -1,0 +1,5 @@
+# Allow members of the video group to manage screen backlights
+SUBSYSTEM=="backlight", ACTION=="add", RUN+="/bin/chgrp video /sys/class/backlight/%k/brightness", RUN+="/bin/chmod g+w /sys/class/backlight/%k/brightness"
+
+# Allow members of the video group to manage keyboard backlights
+SUBSYSTEM=="leds", KERNEL=="*::kbd_backlight", ACTION=="add", RUN+="/bin/chgrp video /sys/class/leds/%k/brightness", RUN+="/bin/chmod g+w /sys/class/leds/%k/brightness"
