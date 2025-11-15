@@ -14,6 +14,7 @@ terminal_components:
   - tmux
   - vim
   - kitty
+  - mc
 
 # Default terminal settings
 default_terminal_colors:
@@ -49,3 +50,12 @@ terminal_settings:
   line_height: "125%"
   column_width: "100%"
   history_limit: 10000
+
+# Midnight Commander configuration
+mc_paths:
+  config_dir: "{{ ansible_env.HOME }}/.config/mc"
+  skin_dir: "{{ ansible_env.HOME }}/.local/share/mc/skins"
+
+mc_skin_name: "onedark"
+mc_skin_template: "mc_onedark_skin.j2"
+mc_builtin_dark_skin: "modarcon16-defbg"

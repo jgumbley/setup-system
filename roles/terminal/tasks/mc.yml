@@ -1,0 +1,25 @@
+---
+- name: Ensure Midnight Commander config directory exists
+  file:
+    path: "{{ mc_paths.config_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Ensure Midnight Commander skin directory exists
+  file:
+    path: "{{ mc_paths.skin_dir }}"
+    state: directory
+    mode: "0755"
+
+- name: Configure Midnight Commander preferences
+  template:
+    src: mc.ini.j2
+    dest: "{{ mc_paths.config_dir }}/ini"
+    mode: "0644"
+
+- name: Deploy Midnight Commander One Dark skin
+  template:
+    src: "{{ mc_skin_template }}"
+    dest: "{{ mc_paths.skin_dir }}/{{ mc_skin_name }}.ini"
+    mode: "0644"
+  when: mc_skin_template is defined
