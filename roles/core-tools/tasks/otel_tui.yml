@@ -1,0 +1,105 @@
+---
+- name: Ensure otel-tui Homebrew tap is added (macOS)
+  homebrew_tap:
+    name: ymtdzzz/tap
+    state: present
+  when: ansible_system == 'Darwin'
+
+- name: Install otel-tui via Homebrew tap on macOS
+  homebrew:
+    name: ymtdzzz/tap/otel-tui
+    state: present
+  when: ansible_system == 'Darwin'
+
+- block:
+    - name: Determine otel-tui architecture label (Linux)
+      set_fact:
+        otel_tui_arch_label: >-
+          {{ 'x86_64' if ansible_architecture in ['x86_64', 'amd64']
+             else 'arm64' if ansible_architecture in ['arm64', 'aarch64']
+             else 'unsupported' }}
+
+    - name: Fail when otel-tui architecture is unsupported on Linux
+      fail:
+        msg: "otel-tui installer only supports Linux on x86_64 or arm64 (detected {{ ansible_architecture }})"
+      when: otel_tui_arch_label == 'unsupported'
+
+    - name: Derive otel-tui artifact metadata
+      set_fact:
+        otel_tui_platform_key: "Linux_{{ otel_tui_arch_label }}"
+        otel_tui_archive_name: "otel-tui_Linux_{{ otel_tui_arch_label }}.tar.gz"
+        otel_tui_download_url: "https://github.com/ymtdzzz/otel-tui/releases/download/v{{ otel_tui_version }}/otel-tui_Linux_{{ otel_tui_arch_label }}.tar.gz"
+        otel_tui_install_path: "{{ otel_tui_install_dir }}/otel-tui"
+
+    - name: Ensure otel-tui checksum is defined for this platform
+      assert:
+        that:
+          - otel_tui_platform_key in otel_tui_checksums
+        fail_msg: "No otel-tui checksum available for {{ otel_tui_platform_key }}. Please update otel_tui_checksums."
+
+    - name: Store otel-tui checksum for this platform
+      set_fact:
+        otel_tui_checksum: "{{ otel_tui_checksums[otel_tui_platform_key] }}"
+
+    - name: Create temporary download directory for otel-tui
+      tempfile:
+        state: directory
+        prefix: otel-tui-
+      register: otel_tui_tmpdir
+
+    - name: Download otel-tui release artifact
+      get_url:
+        url: "{{ otel_tui_download_url }}"
+        dest: "{{ otel_tui_tmpdir.path }}/{{ otel_tui_archive_name }}"
+        checksum: "{{ otel_tui_checksum }}"
+        mode: '0644'
+
+    - name: Extract otel-tui archive
+      command: >
+        tar -xzf {{ otel_tui_tmpdir.path }}/{{ otel_tui_archive_name }}
+        -C {{ otel_tui_tmpdir.path }}
+      args:
+        creates: "{{ otel_tui_tmpdir.path }}/otel-tui"
+
+    - name: Ensure otel-tui install directory exists
+      file:
+        path: "{{ otel_tui_install_dir }}"
+        state: directory
+        mode: '0755'
+      become: yes
+
+    - name: Install otel-tui binary
+      copy:
+        src: "{{ otel_tui_tmpdir.path }}/otel-tui"
+        dest: "{{ otel_tui_install_path }}"
+        mode: '0755'
+        owner: root
+        group: root
+        remote_src: yes
+      become: yes
+
+    - name: Verify otel-tui installation
+      command: "{{ otel_tui_install_path }} --version"
+      register: otel_tui_version_check
+      changed_when: false
+
+    - name: Ensure otel-tui install dir is in Linux PATH
+      copy:
+        dest: /etc/profile.d/otel-tui.sh
+        content: |
+          # Added by core-tools role to expose otel-tui
+          case ":$PATH:" in
+            *":{{ otel_tui_install_dir }}:"*) ;;
+            *) PATH="{{ otel_tui_install_dir }}:$PATH" ;;
+          esac
+          export PATH
+        owner: root
+        group: root
+        mode: '0644'
+      become: yes
+
+    - name: Clean up otel-tui temporary directory
+      file:
+        path: "{{ otel_tui_tmpdir.path }}"
+        state: absent
+  when: ansible_system == 'Linux'

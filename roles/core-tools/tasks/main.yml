@@ -26,6 +26,10 @@
 - name: Include platform-specific tasks
   include_tasks: "{{ platform_name }}.yml"
 
+- name: Install otel-tui terminal viewer
+  include_tasks: otel_tui.yml
+  when: ansible_system in ['Darwin', 'Linux']
+
 - name: Install coding agents
   include_tasks: coding_agents.yml
 

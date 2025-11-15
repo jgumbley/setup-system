@@ -6,3 +6,11 @@ core_packages:
   - git
   - vim
   - python3
+
+otel_tui_version: "0.6.0"
+otel_tui_install_dir: /usr/local/bin
+otel_tui_checksums:
+  Darwin_arm64: "sha256:b389fe84dd154bf324c63511d657e54585d86592775be8e71bbd14aa8eef6dbd"
+  Darwin_x86_64: "sha256:ee17e4bde1de3dbaad0006676253d09a14bb16f7d22df6b8606967e55643731d"
+  Linux_arm64: "sha256:0400b81965f17fa7525b3b6eee93e1cdda46bbe774ab34871e656d7518115927"
+  Linux_x86_64: "sha256:8d576b73d0ba535699053d5724e7290cf88b386a57ac466c1da73b56f1909f9d"
