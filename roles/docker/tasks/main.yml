@@ -44,6 +44,11 @@
     name: docker-buildx-plugin
     state: present
 
+- name: Install Docker Compose v2 plugin
+  package:
+    name: docker-compose-plugin
+    state: present
+
 - name: Check if buildx builder already exists
   command: docker buildx inspect mybuilder
   become_user: system

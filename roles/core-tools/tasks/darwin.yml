@@ -29,4 +29,3 @@
   homebrew:
     name: uv
     state: present
-

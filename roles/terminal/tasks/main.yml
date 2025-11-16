@@ -20,6 +20,10 @@
     homebrew_shellenv: 'eval "$({{ homebrew_prefix }}/bin/brew shellenv)"'
   when: is_mac and homebrew_check.stat.exists
 
+- name: Configure Docker Compose CLI plugin for current user
+  include_tasks: docker_compose_plugin.yml
+  when: is_mac
+
 - name: Load OS-specific variables (Debian/Ubuntu)
   include_vars: debian.yml
   when: is_linux and ansible_os_family == 'Debian'
