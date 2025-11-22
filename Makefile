@@ -1,6 +1,8 @@
+include common.mk
+
 HOSTNAME := $(shell hostname)
 
-.PHONY: cross-platform linux mac config push term core-tools backup inference status caffeinate
+.PHONY: cross-platform linux mac config push term core-tools backup inference status caffeinate agent-core
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -32,3 +34,6 @@ backup:
 
 caffeinate:
 	sudo systemd-inhibit --what=sleep:idle:handle-lid-switch --who="Make Caffeinate" --why="Preventing system sleep and suspend" --mode=block sleep infinity
+
+agent-core: .bootstrapped
+	@bash scripts/run-in-agent-pane.sh agent-core $(MAKE) core
