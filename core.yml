@@ -1,6 +1,45 @@
----
 - hosts: localhost
   connection: local
+  pre_tasks:
+    - name: Align macOS hostnames with ComputerName
+      block:
+        - name: Read macOS ComputerName
+          command: scutil --get ComputerName
+          register: mac_computer_name
+          changed_when: false
+
+        - name: Read macOS LocalHostName
+          command: scutil --get LocalHostName
+          register: mac_local_hostname
+          changed_when: false
+          failed_when: mac_local_hostname.rc not in [0, 1]
+
+        - name: Read macOS HostName
+          command: scutil --get HostName
+          register: mac_host_name
+          changed_when: false
+          failed_when: mac_host_name.rc not in [0, 1]
+
+        - name: Sync LocalHostName to ComputerName
+          become: yes
+          command:
+            argv:
+              - scutil
+              - --set
+              - LocalHostName
+              - "{{ mac_computer_name.stdout }}"
+          when: mac_local_hostname.rc != 0 or mac_local_hostname.stdout != mac_computer_name.stdout
+
+        - name: Sync HostName to ComputerName
+          become: yes
+          command:
+            argv:
+              - scutil
+              - --set
+              - HostName
+              - "{{ mac_computer_name.stdout }}"
+          when: mac_host_name.rc != 0 or mac_host_name.stdout != mac_computer_name.stdout
+      when: ansible_system == "Darwin"
   roles:
     - core-tools
     # - nas-mount
