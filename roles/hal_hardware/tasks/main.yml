@@ -5,8 +5,71 @@
       - lm-sensors
       - linux-tools-common
       - linux-tools-generic
+      - iw
     state: present
   become: yes
+
+- name: Detect wireless interfaces
+  command: iw dev
+  register: iw_dev
+  failed_when: false
+  changed_when: false
+
+- name: Select first wireless interface for monitor mode
+  set_fact:
+    monitor_iface: >-
+      {{
+        (iw_dev.stdout_lines
+          | select('match', '^\\s*Interface ')
+          | map('regex_replace', '^\\s*Interface\\s+', '')
+          | list
+        )[0] | default('')
+      }}
+
+- name: Configure wireless interface as a monitor-mode interface
+  when: monitor_iface | length > 0
+  block:
+    - name: Install systemd unit to keep wlp9s0 in monitor mode
+      copy:
+        dest: "/etc/systemd/system/{{ monitor_iface }}-monitor.service"
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          [Unit]
+          Description=Configure {{ monitor_iface }} as monitor-mode interface
+          Wants=network-pre.target
+          After=network-pre.target
+          Before=NetworkManager.service
+          ConditionPathExists=/sys/class/net/{{ monitor_iface }}
+
+          [Service]
+          Type=oneshot
+          ExecStart=/usr/sbin/ip link set {{ monitor_iface }} down
+          ExecStart=/usr/sbin/iw dev {{ monitor_iface }} set type monitor
+          ExecStart=/usr/sbin/ip link set {{ monitor_iface }} up
+          RemainAfterExit=yes
+
+          [Install]
+          WantedBy=multi-user.target
+      become: yes
+
+    - name: Reload systemd to pick up wlp9s0 monitor service
+      systemd:
+        daemon_reload: yes
+      become: yes
+
+    - name: Enable and start wlp9s0 monitor service
+      systemd:
+        name: "{{ monitor_iface }}-monitor.service"
+        enabled: yes
+        state: started
+      become: yes
+
+- name: Warn when no wireless interface is present
+  debug:
+    msg: "No wireless interface detected via 'iw dev'; skipping monitor mode setup."
+  when: monitor_iface | length == 0
 
 - name: Set CPU governor to performance mode
   shell: echo "performance" > /sys/devices/system/cpu/cpu{{ item }}/cpufreq/scaling_governor
