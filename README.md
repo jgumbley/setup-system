@@ -28,10 +28,11 @@ The setup process is primarily driven by `make` commands which wrap Ansible play
 ## Makefile Commands
 
 *   `make core`: Runs the `core.yml` playbook to install essential tools and mount the NAS. This requires `sudo` and will prompt for a password.
-*   `make agent-core`: Launches `make core` in a tmux pane via `scripts/run-in-agent-pane.sh`, keeps the pane open after completion, and lets a coding agent follow along while you enter sudo credentials manually. See `agents.md` for details.
+*   `make agent TARGET=<target>`: Runs any Make target in a tmux pane via `scripts/run-in-agent-pane.sh`, keeps the pane open after completion, and lets a coding agent follow along while you enter sudo credentials manually. `make agent TARGET=core` mirrors the old `agent-core` helper. See `agents.md` for details.
+*   `make nas`: Runs the `nas.yml` playbook to mount the NAS (macOS uses the current user with sudo privileges).
 *   `make term`: Runs the `terminal.yml` playbook to configure the terminal environment.
 *   `make setup`: (Linux only) Runs the `setup.yml` playbook, which applies a machine-specific configuration based on the hostname.
-*   `make backup`: Backs up the `~/wip` directory to the NAS.
+*   `make backup`: Ensures the NAS is mounted, then backs up the `~/wip` directory to the NAS.
 
 ## Ansible Structure
 

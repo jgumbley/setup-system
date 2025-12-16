@@ -32,4 +32,8 @@ machine_configs:
     - sway-desktop
     - sway-backlight
     - powersave
+
+  # macOS host "arnold" – ensure NAS is mounted during setup
+  "arnold":
+    - nas-mount
   
