@@ -17,6 +17,24 @@
     dest: "{{ mc_paths.config_dir }}/ini"
     mode: "0644"
 
+- name: Configure Midnight Commander key bindings (vim-style j/k)
+  copy:
+    src: mc.keymap
+    dest: "{{ mc_paths.config_dir }}/mc.keymap"
+    mode: "0644"
+
+- name: Ensure ~/.local/bin exists for mc viewer script
+  file:
+    path: "{{ ansible_env.HOME }}/.local/bin"
+    state: directory
+    mode: "0755"
+
+- name: Install mc external viewer helper (vim + kitty)
+  copy:
+    src: mc-view
+    dest: "{{ ansible_env.HOME }}/.local/bin/mc-view"
+    mode: "0755"
+
 - name: Deploy Midnight Commander One Dark skin
   template:
     src: "{{ mc_skin_template }}"

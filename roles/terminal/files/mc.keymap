@@ -1,0 +1,35 @@
+[panel]
+Up = k; up; ctrl-p
+Down = j; down; ctrl-n
+
+[dialog]
+Up = k; left; up
+Down = j; right; down
+
+[menu]
+Up = k; up; ctrl-p
+Down = j; down; ctrl-n
+
+[listbox]
+Up = k; up; ctrl-p
+Down = j; down; ctrl-n
+
+[radio]
+Up = k; up; ctrl-p
+Down = j; down; ctrl-n
+
+[tree]
+Up = k; up; ctrl-p
+Down = j; down; ctrl-n
+
+[help]
+Up = k; up; ctrl-p
+Down = j; down; ctrl-n
+
+[chattr]
+Up = k; up; left; ctrl-p
+Down = j; down; right; ctrl-n
+
+[diffviewer]
+Up = k; up
+Down = j; down

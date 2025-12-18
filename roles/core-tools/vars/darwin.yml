@@ -3,6 +3,7 @@ core_packages:
   - tmux
   - fish
   - kitty
+  - mpv
   - git
   - git-lfs
   - vim

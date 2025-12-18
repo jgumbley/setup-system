@@ -4,6 +4,11 @@ test -f ~/.secret_env; and source ~/.secret_env
 # Ensure ~/.local/bin is in PATH for pipx-installed tools
 fish_add_path ~/.local/bin
 
+# Midnight Commander: use a smarter external viewer (vim + kitty)
+function mc --wraps=mc --description 'Midnight Commander (with mc-view external viewer)'
+    env VIEWER=mc-view PAGER=mc-view mc $argv
+end
+
 
 if status is-interactive
     # Commands to run in interactive sessions can go here

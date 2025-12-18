@@ -1,0 +1,180 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  cat <<'EOF' >&2
+Usage: mc-view <file> [extra-args...]
+
+Midnight Commander external viewer:
+- Text: opens in vim (readonly)
+- Images: renders inline via kitty icat (when available)
+- Audio/Video: plays via mpv (optionally in a kitty overlay)
+EOF
+}
+
+if [[ "${1:-}" == "" || "${1:-}" == "-h" || "${1:-}" == "--help" ]]; then
+  usage
+  exit 2
+fi
+
+line_arg=""
+file_arg=""
+
+if [[ "${1:-}" =~ ^\\+[0-9]+$ && "${2:-}" != "" ]]; then
+  line_arg="$1"
+  file_arg="$2"
+elif [[ "${2:-}" =~ ^\\+[0-9]+$ && "${1:-}" != "" ]]; then
+  file_arg="$1"
+  line_arg="$2"
+else
+  file_arg="$1"
+fi
+
+if [[ ! -e "$file_arg" ]]; then
+  echo "mc-view: file not found: $file_arg" >&2
+  exit 1
+fi
+
+mimetype="$(file --mime-type -Lb -- "$file_arg" 2>/dev/null || true)"
+
+in_kitty() {
+  [[ -n "${KITTY_WINDOW_ID-}" ]] && command -v kitty >/dev/null 2>&1
+}
+
+kitty_remote_ok() {
+  if ! in_kitty; then
+    return 1
+  fi
+  if ! command -v python3 >/dev/null 2>&1 && ! command -v python >/dev/null 2>&1; then
+    return 1
+  fi
+  kitty @ ls --self >/dev/null 2>&1
+}
+
+python_bin() {
+  if command -v python3 >/dev/null 2>&1; then
+    echo python3
+    return 0
+  fi
+  if command -v python >/dev/null 2>&1; then
+    echo python
+    return 0
+  fi
+  return 1
+}
+
+kitty_window_exists() {
+  local window_id="$1"
+  local py
+  py="$(python_bin)" || return 1
+
+  kitty @ ls 2>/dev/null | "$py" - "$window_id" <<'PY'
+import json
+import sys
+
+data = json.load(sys.stdin)
+target = int(sys.argv[1])
+
+def exists(node):
+    if isinstance(node, dict):
+        if node.get("id") == target and "pid" in node:
+            return True
+        for v in node.values():
+            if exists(v):
+                return True
+        return False
+    if isinstance(node, list):
+        return any(exists(v) for v in node)
+    return False
+
+sys.exit(0 if exists(data) else 1)
+PY
+}
+
+wait_for_kitty_window_to_close() {
+  local window_id="$1"
+
+  while kitty_window_exists "$window_id"; do
+    sleep 0.2
+  done
+}
+
+kitty_overlay_run_and_wait() {
+  local title="$1"
+  shift
+
+  local window_id
+  window_id="$(kitty @ launch --type=overlay --title="$title" --cwd=current "$@" 2>/dev/null | head -n1 || true)"
+  if [[ "$window_id" =~ ^[0-9]+$ ]]; then
+    wait_for_kitty_window_to_close "$window_id"
+    return 0
+  fi
+
+  return 1
+}
+
+case "$mimetype" in
+  image/*)
+    if in_kitty; then
+      kitty +kitten icat --hold -- "$file_arg"
+      kitty +kitten icat --clear
+      exit 0
+    fi
+
+    file -- "$file_arg"
+    read -r -n 1 -s -p "Press any key to continue..."
+    echo
+    exit 0
+    ;;
+
+  audio/*)
+    if command -v mpv >/dev/null 2>&1; then
+      if kitty_remote_ok; then
+        kitty_overlay_run_and_wait "mc: mpv (audio)" mpv --no-video -- "$file_arg" && exit 0
+      fi
+      exec mpv --no-video -- "$file_arg"
+    fi
+    ;;
+
+  video/*)
+    if command -v mpv >/dev/null 2>&1; then
+      if kitty_remote_ok; then
+        kitty_overlay_run_and_wait "mc: mpv (video)" mpv -- "$file_arg" && exit 0
+      fi
+      exec mpv -- "$file_arg"
+    fi
+    ;;
+
+  text/* | application/json | application/xml | application/*+xml | application/x-yaml | application/x-shellscript | application/javascript)
+    if command -v view >/dev/null 2>&1; then
+      if [[ -n "$line_arg" ]]; then
+        exec view -n -- "$file_arg" "$line_arg"
+      fi
+      exec view -n -- "$file_arg"
+    fi
+
+    if command -v vim >/dev/null 2>&1; then
+      if [[ -n "$line_arg" ]]; then
+        exec vim -R -n -- "$file_arg" "$line_arg"
+      fi
+      exec vim -R -n -- "$file_arg"
+    fi
+    ;;
+esac
+
+if command -v view >/dev/null 2>&1; then
+  if [[ -n "$line_arg" ]]; then
+    exec view -n -- "$file_arg" "$line_arg"
+  fi
+  exec view -n -- "$file_arg"
+fi
+
+if command -v vim >/dev/null 2>&1; then
+  if [[ -n "$line_arg" ]]; then
+    exec vim -R -n -- "$file_arg" "$line_arg"
+  fi
+  exec vim -R -n -- "$file_arg"
+fi
+
+echo "mc-view: no usable viewer found (need vim or view)" >&2
+exit 1

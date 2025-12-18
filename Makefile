@@ -1,8 +1,21 @@
+.DEFAULT_GOAL := help
+
+.PHONY: help
+help:
+	@echo "Targets:"
+	@echo "  make core           Run core system setup (sudo/BEcome prompts)"
+	@echo "  make term           Configure terminal environment"
+	@echo "  make setup          Full machine setup (Linux)"
+	@echo "  make nas            Mount NAS via Ansible playbook"
+	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
+	@echo "  make agent-core     Run 'make core' in a tmux agent pane"
+	@echo "  make agent-<target> Run any target in a tmux agent pane"
+
 include common.mk
 
 HOSTNAME := $(shell hostname)
 
-.PHONY: cross-platform linux mac config push term core-tools nas backup inference status caffeinate agent agent-core agent-setup
+.PHONY: cross-platform linux mac config push term core-tools nas setup backup inference status caffeinate agent agent-core agent-setup
 
 # Allow invoking any Make target inside the tmux agent helper.
 AGENT_TARGET := $(if $(TARGET),$(TARGET),$(target))
