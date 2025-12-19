@@ -30,6 +30,7 @@ machine_configs:
     - core-tools
     - nas-mount
     - sway-desktop
+    - openmw
     - sway-backlight
     - powersave
 

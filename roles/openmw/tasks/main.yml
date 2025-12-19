@@ -1,0 +1,7 @@
+---
+- name: Install OpenMW
+  become: yes
+  ansible.builtin.apt:
+    name: openmw
+    state: present
+    cache_valid_time: 3600
