@@ -23,12 +23,6 @@
     state: present
     update_cache: yes
 
-
-- name: Remove Snap daemon (snapd)
-  apt:
-    name: snapd
-    state: absent
-
 - name: Add Mozilla Team PPA for Firefox (deb version)
   apt_repository:
     repo: ppa:mozillateam/ppa
@@ -51,6 +45,15 @@
     name: firefox
     state: present
     update_cache: yes
+    allow_downgrades: yes
+
+- name: Remove Snap daemon (snapd) with allow-downgrades
+  command: apt-get -y --allow-downgrades remove snapd
+  environment:
+    DEBIAN_FRONTEND: noninteractive
+  register: snapd_remove
+  changed_when: "'not installed' not in snapd_remove.stdout"
+  failed_when: snapd_remove.rc not in [0]
 
 - name: Remove Ubuntu Advantage tools (unused)
   apt:
