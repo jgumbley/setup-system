@@ -84,6 +84,12 @@
     - name: "Activate the automount"
       command: systemctl restart remote-fs.target
 
+    - name: "Trigger automount and verify NFS share is accessible"
+      command: timeout 15s stat /mnt/{{ nas_share }}
+      register: nas_mount_probe
+      changed_when: false
+      failed_when: nas_mount_probe.rc != 0
+
     - name: "Create /usr/local/mnt directory for consistency"
       file:
         path: /usr/local/mnt

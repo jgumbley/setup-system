@@ -6,6 +6,7 @@ help:
 	@echo "  make core           Run core system setup (sudo/BEcome prompts)"
 	@echo "  make term           Configure terminal environment"
 	@echo "  make setup          Full machine setup (Linux)"
+	@echo "  make openmw         Install OpenMW (sudo/BECOME prompts)"
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 	@echo "  make agent-core     Run 'make core' in a tmux agent pane"
@@ -15,7 +16,7 @@ include common.mk
 
 HOSTNAME := $(shell hostname)
 
-.PHONY: cross-platform linux mac config push term core-tools nas setup backup inference status caffeinate agent agent-core agent-setup
+.PHONY: cross-platform linux mac config push term core-tools nas setup openmw backup inference status caffeinate agent agent-core agent-setup
 
 # Allow invoking any Make target inside the tmux agent helper.
 AGENT_TARGET := $(if $(TARGET),$(TARGET),$(target))
@@ -46,6 +47,9 @@ term:
 
 setup: .bootstrapped
 	ansible-playbook setup.yml -c local -K
+
+openmw: .bootstrapped
+	ansible-playbook openmw.yml -c local -K
 
 claude:
 	sudo -E claude

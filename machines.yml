@@ -24,6 +24,7 @@ machine_configs:
     - hal_hardware
     - ssh_host
     - docker
+    - openmw
   
   # Current host (auto-detected as "system")
   "system":
