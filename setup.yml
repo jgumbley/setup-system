@@ -10,6 +10,16 @@
   handlers:
     - include_tasks: handlers/main.yml
   tasks:
+    - name: Update apt cache on Linux
+      apt:
+        update_cache: yes
+      when: ansible_system == "Linux" and ansible_pkg_mgr == "apt"
+
+    - name: Upgrade apt packages on Linux
+      apt:
+        upgrade: yes
+      when: ansible_system == "Linux" and ansible_pkg_mgr == "apt"
+
     - name: Get current hostname
       set_fact:
         current_hostname: "{{ ansible_hostname }}"
@@ -28,7 +38,7 @@
     - name: Display detected configuration
       debug:
         msg: "Hostname: {{ current_hostname }}, applying config: {{ matched_config }}"
-    
+
     - name: Apply configuration components
       include_role:
         name: "{{ component }}"

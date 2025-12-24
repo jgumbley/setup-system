@@ -33,6 +33,8 @@ machine_configs:
     - openmw
     - sway-backlight
     - powersave
+    - waydroid
+    - wifi-powersave
 
   # macOS host "arnold" – ensure NAS is mounted during setup
   "arnold":

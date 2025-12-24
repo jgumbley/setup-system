@@ -1,0 +1,30 @@
+---
+- name: Ensure Waydroid repo dependencies are installed
+  apt:
+    name:
+      - ca-certificates
+      - curl
+      - gnupg
+    state: present
+  become: yes
+  when: ansible_system == "Linux" and ansible_pkg_mgr == "apt"
+
+- name: Add Waydroid repository
+  shell: curl -s https://repo.waydro.id | bash
+  args:
+    creates: /etc/apt/sources.list.d/waydroid.list
+  become: yes
+  when: ansible_system == "Linux" and ansible_pkg_mgr == "apt"
+
+- name: Update apt cache after adding Waydroid repo
+  apt:
+    update_cache: yes
+  become: yes
+  when: ansible_system == "Linux" and ansible_pkg_mgr == "apt"
+
+- name: Install Waydroid
+  apt:
+    name: waydroid
+    state: present
+  become: yes
+  when: ansible_system == "Linux" and ansible_pkg_mgr == "apt"
