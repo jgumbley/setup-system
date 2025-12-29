@@ -1,0 +1,83 @@
+---
+- name: Ensure Steam is only installed on amd64
+  ansible.builtin.fail:
+    msg: "Steam install is only supported for amd64; detected {{ ansible_architecture }}"
+  when: ansible_architecture not in ["x86_64", "amd64"]
+
+- name: Install prerequisites for enabling Ubuntu components
+  become: yes
+  ansible.builtin.apt:
+    name: software-properties-common
+    state: present
+    cache_valid_time: 3600
+  when: ansible_distribution == "Ubuntu"
+
+- name: Enable Ubuntu universe component (Steam dependencies live here)
+  become: yes
+  ansible.builtin.command:
+    argv:
+      - add-apt-repository
+      - -y
+      - universe
+  register: universe_repo
+  changed_when: "'already enabled' not in (universe_repo.stdout | lower)"
+  when: ansible_distribution == "Ubuntu"
+
+- name: Enable Ubuntu multiverse component (required for Steam)
+  become: yes
+  ansible.builtin.command:
+    argv:
+      - add-apt-repository
+      - -y
+      - multiverse
+  register: multiverse_repo
+  changed_when: "'already enabled' not in (multiverse_repo.stdout | lower)"
+  when: ansible_distribution == "Ubuntu"
+
+- name: Check foreign dpkg architectures
+  ansible.builtin.command: dpkg --print-foreign-architectures
+  register: dpkg_foreign_arch
+  changed_when: false
+
+- name: Enable i386 architecture for Steam dependencies
+  become: yes
+  ansible.builtin.command: dpkg --add-architecture i386
+  when: "'i386' not in dpkg_foreign_arch.stdout_lines"
+
+- name: Update apt cache after repo/arch changes
+  become: yes
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+
+- name: Gather installed packages
+  ansible.builtin.package_facts:
+    manager: auto
+
+- name: Ensure steam-devices is absent when using steam-launcher (conflicts)
+  become: yes
+  ansible.builtin.apt:
+    name: steam-devices
+    state: absent
+  when: "'steam-launcher' in ansible_facts.packages"
+
+- name: Install Steam (Valve packages)
+  become: yes
+  ansible.builtin.apt:
+    name:
+      - steam
+      - steam-libs-amd64
+      - steam-libs-i386
+    state: present
+    cache_valid_time: 3600
+  when: "'steam-launcher' in ansible_facts.packages"
+
+- name: Install Steam (Ubuntu packages)
+  become: yes
+  ansible.builtin.apt:
+    name:
+      - steam-installer
+      - steam-devices
+    state: present
+    cache_valid_time: 3600
+  when: "'steam-launcher' not in ansible_facts.packages"

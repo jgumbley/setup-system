@@ -25,6 +25,7 @@ machine_configs:
     - ssh_host
     - docker
     - openmw
+    - steam
   
   # Current host (auto-detected as "system")
   "system":

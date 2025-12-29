@@ -1,7 +1,43 @@
 ---
-- name: Install OpenMW
-  become: yes
+- name: Remove OpenMW from distro repos
   ansible.builtin.apt:
-    name: openmw
+    name:
+      - openmw
+      - openmw-launcher
+      - openmw-cs
+      - openmw-data
+    state: absent
+    purge: yes
+  become: yes
+
+- name: Ensure add-apt-repository is available
+  ansible.builtin.apt:
+    name: software-properties-common
     state: present
     cache_valid_time: 3600
+  become: yes
+
+- name: Add OpenMW stable PPA
+  ansible.builtin.apt_repository:
+    repo: ppa:openmw/openmw
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Add OpenMW daily builds PPA
+  ansible.builtin.apt_repository:
+    repo: ppa:openmw/openmw-daily
+    state: present
+    update_cache: yes
+  become: yes
+
+- name: Install OpenMW from daily builds
+  ansible.builtin.apt:
+    name:
+      - openmw
+      - openmw-launcher
+      - openmw-cs
+      - libopenscenegraph-dev
+    state: present
+    cache_valid_time: 3600
+  become: yes
