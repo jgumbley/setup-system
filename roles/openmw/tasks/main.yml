@@ -41,3 +41,14 @@
     state: present
     cache_valid_time: 3600
   become: yes
+
+- name: Install Morrowind content creation toolchain (apt)
+  ansible.builtin.apt:
+    name:
+      - blender
+      - dosbox
+      - gimp
+      - audacity
+    state: present
+    cache_valid_time: 3600
+  become: yes
