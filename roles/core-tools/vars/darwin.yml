@@ -13,6 +13,7 @@ core_packages:
   - lazygit
   - htop
   - btop
+  - p7zip
   - bandwhich
   - midnight-commander
   - docker

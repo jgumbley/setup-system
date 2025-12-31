@@ -16,6 +16,7 @@ core_packages:
   - htop
   - btop
   - mc
+  - p7zip-full
   - nfs-common
   - lazygit
   - network-manager
