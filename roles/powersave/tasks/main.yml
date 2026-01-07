@@ -84,8 +84,8 @@
     state: started
   failed_when: false
 
-- name: Set system to power-saver profile
-  command: powerprofilesctl set power-saver
+- name: Set system to balanced profile
+  command: powerprofilesctl set balanced
   register: ppd_set
   changed_when: ppd_set.rc == 0
   failed_when: false

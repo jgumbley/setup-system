@@ -6,6 +6,7 @@ core_packages:
   - git
   - vim
   - python3
+  - iotop
 
 otel_tui_version: "0.6.0"
 otel_tui_install_dir: /usr/local/bin
