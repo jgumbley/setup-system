@@ -64,3 +64,10 @@ color_scheme:
     cyan: "{{ theme_colors.syntax.number }}"
     white: "#F8F8F8"
   url: "{{ theme_colors.secondary }}"
+
+# Shared terminal sizing so non-terminal roles can reference it safely.
+terminal_settings:
+  font_size: 16
+  line_height: "125%"
+  column_width: "100%"
+  history_limit: 10000
