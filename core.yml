@@ -40,6 +40,20 @@
               - "{{ mac_computer_name.stdout }}"
           when: mac_host_name.rc != 0 or mac_host_name.stdout != mac_computer_name.stdout
       when: ansible_system == "Darwin"
+    - name: Remove legacy 1Password repo entries with conflicting keyring path
+      shell: |
+        set -euo pipefail
+        for list_file in /etc/apt/sources.list /etc/apt/sources.list.d/*.list; do
+          [ -e "$list_file" ] || continue
+          if grep -q "downloads.1password.com" "$list_file"; then
+            sed -i '\#/etc/apt/keyrings/1password-archive-keyring.gpg#d' "$list_file"
+          fi
+        done
+      args:
+        executable: /bin/bash
+      become: yes
+      when: ansible_os_family == "Debian"
   roles:
     - core-tools
+    - onepassword-cli
     # - nas-mount

@@ -35,6 +35,14 @@
     state: latest
   become: "{{ ansible_os_family != 'Darwin' }}"
 
+- name: Install/Update Pi Coding Agent globally
+  npm:
+    name: "@mariozechner/pi-coding-agent"
+    global: yes
+    state: latest
+  become: "{{ ansible_os_family != 'Darwin' }}"
+  register: pi_install_result
+
 - name: Install/Update OpenCode AI globally
   npm:
     name: "opencode-ai"
@@ -54,3 +62,7 @@
 - name: Display OpenCode AI installation status
   debug:
     msg: "OpenCode AI {{ 'updated' if opencode_install_result.changed else 'already up to date' }}"
+
+- name: Display Pi Coding Agent installation status
+  debug:
+    msg: "Pi Coding Agent {{ 'updated' if pi_install_result.changed else 'already up to date' }}"

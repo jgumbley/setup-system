@@ -1,0 +1,5 @@
+---
+- name: Install 1Password CLI with Homebrew
+  homebrew:
+    name: 1password-cli
+    state: present

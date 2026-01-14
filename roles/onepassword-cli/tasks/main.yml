@@ -1,0 +1,11 @@
+---
+- name: Include platform detection
+  include_tasks: ../core-tools/tasks/platform_detection.yml
+
+- name: Install 1Password CLI on macOS
+  include_tasks: darwin.yml
+  when: is_mac
+
+- name: Install 1Password CLI on Debian/Ubuntu
+  include_tasks: ubuntu.yml
+  when: is_linux and ansible_os_family == 'Debian'
