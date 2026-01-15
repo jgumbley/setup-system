@@ -19,6 +19,7 @@ core_packages:
   - p7zip-full
   - nfs-common
   - lazygit
+  - ripgrep
   - network-manager
   - wireless-tools
   - net-tools

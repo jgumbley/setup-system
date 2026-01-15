@@ -6,6 +6,7 @@ core_packages:
   - git
   - vim
   - python3
+  - ripgrep
   - iotop
 
 otel_tui_version: "0.6.0"

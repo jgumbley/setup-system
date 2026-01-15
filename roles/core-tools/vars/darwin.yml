@@ -11,6 +11,7 @@ core_packages:
   - python
   - uv
   - lazygit
+  - ripgrep
   - htop
   - btop
   - p7zip
