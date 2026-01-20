@@ -13,36 +13,9 @@ terminal_components:
   - fish
   - tmux
   - vim
+  - neovim
   - kitty
   - mc
-
-# Default terminal settings
-default_terminal_colors:
-  foreground: "#E6E6E6"
-  background: "#1E1E1E"
-  cursor: "#E6E6E6"
-  
-# Color scheme for all terminals
-color_scheme:
-  normal:
-    black: "#1E1E1E"
-    red: "#E06C75"
-    green: "#98C379"
-    yellow: "#E5C07B"
-    blue: "#9CDCFE"
-    magenta: "#C678DD"
-    cyan: "#56B6C2"
-    white: "#BBBBBB"
-  bright:
-    black: "#666666"
-    red: "#E06C75"
-    green: "#98C379"
-    yellow: "#E5C07B"
-    blue: "#9CDCFE"
-    magenta: "#C678DD"
-    cyan: "#56B6C2"
-    white: "#F8F8F8"
-  url: "#9CDCFE"
 
 # Terminal settings
 terminal_settings:

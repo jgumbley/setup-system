@@ -19,7 +19,7 @@ end
 
 function fish_prompt
     # Set color to green, common in old-school displays
-    set_color green
+    set_color {{ theme_colors.success | replace('#', '') }}
 
     # Define an array with only the proper fish emojis
     set -l fish_emojis "🐟" "🐠" "🐡"
@@ -50,7 +50,7 @@ function fish_greeting
     set -l kernel (uname -r)  # Kernel release
     set -l uptime (uptime)
 
-    set_color 555555
+    set_color {{ theme_colors.syntax.comment | replace('#', '') }}
     echo "OS: $os | Host: $host | Kernel: $kernel"
     echo "Uptime: $uptime"
     set_color normal

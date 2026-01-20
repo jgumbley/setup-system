@@ -1,42 +1,163 @@
 ---
 # Global theme colors used across all roles and applications
 # Based on VS Code Dark+ theme with custom enhancements
+# - Keeps existing palette
+# - Adds extended UI/diff/diagnostic layers for apps like nvim/kitty/sway/waybar/mc
+# - Tones down magenta by default (legacy vivid magentas still available as *_vivid)
 
 # Base colors
 theme_colors:
-  # Primary colors
+  # Core neutrals (original + a few named extras)
+  black_pure: "#000000"
+  black_ink: "#0C0C0C"
+  black_raised: "#121212"
+
   background: "#1E1E1E"
-  foreground: "#E6E6E6"
+  background_dim: "#222222"
   surface: "#252526"
+  surface_alt: "#262626"
+  overlay: "#292D2E"
+
   border: "#333333"
-  
+  border_hi: "#484E50"
+  focus_border: "#555555"
+  border_dim: "#222222"
+
+  foreground: "#E6E6E6"
+  foreground_alt: "#D0D0D0"
+  foreground_bright: "#F5F5F5"
+  foreground_max: "#F8F8F8"
+
+  text_muted: "#BBBBBB"
+  text_dim: "#888888"
+  text_faint: "#666666"
+  text_bright: "#FFFFFF"
+
+  gray_muted: "#A8A8A8"
+  gray_gutter: "#B0B0B0"
+  gray_600: "#626262"
+  gray_650: "#666666"
+  gray_800: "#888888"
+  gray_820: "#8A8A8A"
+
+  # Primary colors (legacy keys kept)
   # Accent colors
   primary: "#E06C75"    # red/pink accent
   secondary: "#9CDCFE"  # blue accent
-  
-  # Semantic colors
+
+  # Semantic colors (legacy keys kept)
   success: "#B5CEA8"    # green
-  warning: "#CE9178"    # orange
+  warning: "#C678DD"    # vivid magenta (warning)
   error: "#E06C75"      # red
   info: "#4FC1FF"       # light blue
-  
-  # UI element colors
-  selection: "#252526"
-  search: "#333333"
+
+  # Additional accents (extended palette)
+  teal: "#4EC9B0"
+  teal_dim: "#3D9C88"
+  teal_soft: "#62B5A4"
+
+  cyan: "#56B6C2"
+  cyan_hi: "#64D3E1"
+
+  blue: "#4FC1FF"
+  blue_deep: "#569CD6"
+  blue_soft: "#61AFEF"
+  indigo: "#7AA2F7"
+  sky: "#87CEEB"
+
+  green: "#98C379"
+  green_soft: "#B5CEA8"
+  green_yellow: "#AFD787"
+  green_dim: "#74955D"
+  green_hi: "#B0E28C"
+
+  yellow: "#E5C07B"
+  yellow_light: "#FFD787"
+  gold: "#D7BA7D"
+
+  orange: "#CE9178"
+  orange_mid: "#D19A66"
+
+  red: "#E06C75"
+  red_strong: "#D75F5F"
+  red_dim: "#CA7B81"
+
+  # Magenta / pink (default toned down; vivid legacy preserved)
+  magenta: "#B27BC2"        # toned-down default
+  magenta_vivid: "#C678DD"  # legacy vivid magenta (kept for compatibility/optional use)
+  lilac: "#C298C2"
+  lilac_vivid: "#DDA0DD"
+  pink: "#E0A8C4"
+  pink_vivid: "#FFAFD7"
+  magenta_bg: "#2B1F33"     # subtle purple UI tint background
+
+  # UI element colors (existing keys kept, plus new high-contrast highlights)
+  selection: "#252526"      # legacy selection surface (kept)
+  selection_bg: "#264F78"   # high-contrast selection highlight
+  selection_fg: "#FFFFFF"
+
+  search: "#333333"         # legacy search surface (kept)
+  search_bg: "#613214"      # search match highlight
+  search_fg: "#FFFFFF"
+
   cursor: "#E6E6E6"
-  
-  # Syntax highlighting colors
+  indicator: "#484E50"
+  indicator_dim: "#292D2E"
+
+  placeholder_bg: "#0C0C0C"
+  placeholder_border: "#000000"
+
+  clock_date_bg: "#626262"
+  clock_time_bg: "#8A8A8A"
+  clock_text: "#121212"
+
+  # Diff / Git layers (useful for nvim, git signs, diffs in terminal apps)
+  diff:
+    add_bg: "#273D2C"
+    change_bg: "#1F3341"
+    delete_bg: "#3F2328"
+    text_bg: "#264F78"
+    add_fg: "#98C379"
+    change_fg: "#4FC1FF"
+    delete_fg: "#E06C75"
+
+  # Diagnostics (LSP/linters): bg tints + fg anchors
+  diagnostic:
+    error_fg: "#E06C75"
+    warn_fg: "#C678DD"
+    info_fg: "#4FC1FF"
+    hint_fg: "#4EC9B0"
+    error_bg: "#3A1F24"
+    warn_bg: "#3A2F1C"
+    info_bg: "#1C2B3A"
+    hint_bg: "#1F3A2F"
+
+  # Syntax highlighting colors (legacy keys kept + expanded options)
   syntax:
     comment: "#666666"
+    comment_soft: "#A8A8A8"
+
     string: "#B5CEA8"
+    string_alt: "#AFD787"
+
     number: "#4EC9B0"
+
     keyword: "#4FC1FF"
     function: "#9CDCFE"
+
     variable: "#E06C75"
-    constant: "#E06C75"
-    type: "#4EC9B0"
+    constant: "#E06C75"         # legacy mapping (kept)
+    constant_soft: "#E0A8C4"    # optional alternate for constants
+
+    type: "#4EC9B0"             # legacy mapping (kept)
+    type_alt: "#87CEEB"         # optional alternate for types/identifiers
+
     operator: "#BBBBBB"
     preprocessor: "#CE9178"
+
+    statement: "#C298C2"        # expanded (nice for "Statement"/"Conditional"/etc)
+    special: "#D0D0D0"          # expanded (Special/Delimiter/etc)
+    error: "#D75F5F"            # expanded (hard error accent)
 
 # Legacy color scheme for backward compatibility
 default_terminal_colors:
@@ -51,7 +172,7 @@ color_scheme:
     green: "{{ theme_colors.success }}"
     yellow: "{{ theme_colors.warning }}"
     blue: "{{ theme_colors.secondary }}"
-    magenta: "#C678DD"
+    magenta: "{{ theme_colors.magenta }}"          # toned-down default
     cyan: "{{ theme_colors.syntax.number }}"
     white: "{{ theme_colors.syntax.operator }}"
   bright:
@@ -60,9 +181,9 @@ color_scheme:
     green: "{{ theme_colors.success }}"
     yellow: "{{ theme_colors.warning }}"
     blue: "{{ theme_colors.secondary }}"
-    magenta: "#C678DD"
+    magenta: "{{ theme_colors.lilac }}"            # brighter-but-still-muted variant
     cyan: "{{ theme_colors.syntax.number }}"
-    white: "#F8F8F8"
+    white: "{{ theme_colors.foreground_max }}"
   url: "{{ theme_colors.secondary }}"
 
 # Shared terminal sizing so non-terminal roles can reference it safely.

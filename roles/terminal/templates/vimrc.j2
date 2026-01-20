@@ -5,20 +5,20 @@ set termguicolors       " enable true colors support
 colorscheme default     " use default, will customize colors below
 
 " Conservative readable colors
-hi Normal guifg=#F5F5F5 guibg=#262626
-hi Cursor guifg=#262626 guibg=#F5F5F5
-hi Comment guifg=#A8A8A8
-hi Constant guifg=#FFAFD7
-hi String guifg=#AFD787
-hi Identifier guifg=#87CEEB
-hi Statement guifg=#DDA0DD
-hi PreProc guifg=#FFD787
-hi Type guifg=#87CEEB
-hi Special guifg=#D0D0D0
-hi Error guifg=#FFFFFF guibg=#D75F5F
+hi Normal guifg={{ default_terminal_colors.foreground }} guibg={{ default_terminal_colors.background }}
+hi Cursor guifg={{ default_terminal_colors.background }} guibg={{ default_terminal_colors.cursor }}
+hi Comment guifg={{ color_scheme.bright.black }}
+hi Constant guifg={{ color_scheme.normal.blue }}
+hi String guifg={{ color_scheme.normal.green }}
+hi Identifier guifg={{ color_scheme.normal.blue }}
+hi Statement guifg={{ color_scheme.normal.blue }}
+hi PreProc guifg={{ color_scheme.normal.yellow }}
+hi Type guifg={{ color_scheme.normal.blue }}
+hi Special guifg={{ color_scheme.bright.white }}
+hi Error guifg={{ color_scheme.bright.white }} guibg={{ color_scheme.normal.red }}
 
 set number              " show line numbers
-hi LineNr guifg=#B0B0B0     " set line numbers to readable grey
+hi LineNr guifg={{ color_scheme.bright.black }}     " set line numbers to readable grey
 set expandtab           " use spaces instead of tabs
 set tabstop=4           " number of spaces for a tab
 set shiftwidth=4        " number of spaces for each indent

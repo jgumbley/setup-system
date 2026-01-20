@@ -1,0 +1,22 @@
+---
+- name: Check if neovim is installed
+  command: which nvim
+  register: neovim_check
+  failed_when: false
+  changed_when: false
+
+- name: Configure neovim
+  when: neovim_check.rc == 0
+  block:
+    - name: Ensure neovim config directory exists
+      file:
+        path: "{{ ansible_env.HOME }}/.config/nvim"
+        state: directory
+        mode: '0755'
+
+    - name: Deploy neovim configuration
+      template:
+        src: nvim_init.lua.j2
+        dest: "{{ ansible_env.HOME }}/.config/nvim/init.lua"
+        mode: '0644'
+      tags: neovim

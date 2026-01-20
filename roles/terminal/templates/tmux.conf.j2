@@ -54,18 +54,18 @@ set -g default-command "exec {{ tmux_shell }}"
 
 # Status bar
 set -g status-position bottom
-set -g status-style bg=colour234,fg=colour137
+set -g status-style bg={{ theme_colors.background }},fg={{ theme_colors.foreground }}
 set -g status-left ''
-set -g status-right '#[fg=colour233,bg=colour245,bold] <#h> '
+set -g status-right '#[fg={{ theme_colors.clock_text }},bg={{ theme_colors.clock_time_bg }},bold] <#h> '
 set -g status-right-length 50
 set -g status-left-length 20
 
 # Window status
-setw -g window-status-format "#[fg=white,bg=colour234]  #I #W  "
-setw -g window-status-current-format "#[fg=colour234,bg=colour39]#[fg=colour25,bg=colour39,noreverse,bold] #I #W #[fg=colour39,bg=colour234,nobold]"
+setw -g window-status-format "#[fg={{ theme_colors.text_bright }},bg={{ theme_colors.background }}]  #I #W  "
+setw -g window-status-current-format "#[fg={{ theme_colors.background }},bg={{ theme_colors.info }}]#[fg={{ theme_colors.background }},bg={{ theme_colors.info }},noreverse,bold] #I #W #[fg={{ theme_colors.info }},bg={{ theme_colors.background }},nobold]"
 
 # Messages
-set -g message-style fg=white,bg=blue,bold
+set -g message-style fg={{ theme_colors.foreground }},bg={{ theme_colors.secondary }},bold
 
 # Pane borders
 set -g pane-border-style fg=default

@@ -1,0 +1,82 @@
+-- Neovim configuration (Lua)
+vim.g.mapleader = ' '
+vim.opt.compatible = false
+vim.cmd('syntax on')
+
+-- Plugin manager (lazy.nvim) and plugins
+local lazypath = vim.fn.stdpath('data') .. '/lazy/lazy.nvim'
+if not vim.loop.fs_stat(lazypath) then
+  vim.fn.system({
+    'git',
+    'clone',
+    '--filter=blob:none',
+    'https://github.com/folke/lazy.nvim.git',
+    '--branch=stable',
+    lazypath,
+  })
+end
+vim.opt.rtp:prepend(lazypath)
+
+require('lazy').setup({
+  { 'echasnovski/mini.nvim', version = '*' },
+})
+
+require('mini.pick').setup()
+vim.keymap.set('n', '<leader>p', function()
+  require('mini.pick').builtin.files()
+end, { desc = 'Pick files' })
+vim.keymap.set('n', '<leader>fg', function()
+  require('mini.pick').builtin.grep_live()
+end, { desc = 'Live grep' })
+vim.opt.background = 'dark'
+vim.opt.termguicolors = true
+vim.cmd('colorscheme default')
+
+-- Conservative readable colors (shared terminal palette)
+vim.cmd('hi Normal guifg={{ default_terminal_colors.foreground }} guibg={{ default_terminal_colors.background }}')
+vim.cmd('hi Cursor guifg={{ default_terminal_colors.background }} guibg={{ default_terminal_colors.cursor }}')
+vim.cmd('hi Comment guifg={{ color_scheme.bright.black }}')
+vim.cmd('hi Constant guifg={{ color_scheme.normal.blue }}')
+vim.cmd('hi String guifg={{ color_scheme.normal.green }}')
+vim.cmd('hi Identifier guifg={{ color_scheme.normal.blue }}')
+vim.cmd('hi Statement guifg={{ color_scheme.normal.blue }}')
+vim.cmd('hi PreProc guifg={{ color_scheme.normal.yellow }}')
+vim.cmd('hi Type guifg={{ color_scheme.normal.blue }}')
+vim.cmd('hi Special guifg={{ color_scheme.bright.white }}')
+vim.cmd('hi Error guifg={{ color_scheme.bright.white }} guibg={{ color_scheme.normal.red }}')
+
+vim.opt.number = true
+vim.cmd('hi LineNr guifg={{ color_scheme.bright.black }}')
+vim.opt.expandtab = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.autoindent = true
+vim.opt.smartindent = true
+
+vim.opt.ruler = true
+vim.opt.hlsearch = true
+vim.opt.incsearch = true
+vim.opt.ignorecase = true
+vim.opt.smartcase = true
+
+vim.opt.backspace = { 'indent', 'eol', 'start' }
+vim.opt.showcmd = true
+vim.opt.wildmenu = true
+vim.opt.laststatus = 2
+
+-- File explorer (netrw)
+vim.g.netrw_banner = 0
+vim.g.netrw_liststyle = 3
+vim.g.netrw_browse_split = 0
+vim.g.netrw_winsize = 25
+
+vim.api.nvim_create_autocmd('VimEnter', {
+  callback = function()
+    if vim.fn.argc() == 0 then
+      vim.cmd('Explore')
+    end
+  end,
+})
+
+-- Save file with sudo if needed
+vim.cmd('command W w !sudo tee % > /dev/null')
