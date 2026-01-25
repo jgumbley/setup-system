@@ -28,3 +28,4 @@ core_packages:
   - jq
   - rustup
   - wl-clipboard
+  - blueman
