@@ -27,12 +27,12 @@
     creates: /etc/apt/keyrings/nodesource.gpg
   become: yes
 
-- name: Add NodeSource Node.js 20.x repository (signed-by)
+- name: Add NodeSource Node.js 22.x repository (signed-by)
   apt_repository:
     repo: >-
       deb [arch={{ 'amd64' if ansible_architecture in ['x86_64','amd64'] else 'arm64' }}
       signed-by=/etc/apt/keyrings/nodesource.gpg]
-      https://deb.nodesource.com/node_20.x nodistro main
+      https://deb.nodesource.com/node_22.x nodistro main
     state: present
     update_cache: yes
   become: yes
@@ -40,8 +40,14 @@
 - name: Install Node.js (includes npm)
   apt:
     name: nodejs
-    state: present
+    state: latest
   become: yes
+
+- name: Verify Node.js major version is 22
+  command: node --version
+  register: node_version
+  changed_when: false
+  failed_when: node_version.stdout is not match("^v22\\.")
 
 - name: Install core packages with apt
   apt:

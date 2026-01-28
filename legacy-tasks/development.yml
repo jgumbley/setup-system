@@ -1,7 +1,7 @@
 ---
-- name: Setup Node.js 20.x repository
+- name: Setup Node.js 22.x repository
   become: true
-  ansible.builtin.shell: curl -fsSL https://deb.nodesource.com/setup_20.x | sudo -E bash -
+  ansible.builtin.shell: curl -fsSL https://deb.nodesource.com/setup_22.x | sudo -E bash -
   args:
     creates: /etc/apt/sources.list.d/nodesource.list
   register: nodejs_repo_setup
