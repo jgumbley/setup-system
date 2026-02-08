@@ -29,3 +29,5 @@ core_packages:
   - rustup
   - wl-clipboard
   - blueman
+  - libsdl2-dev
+  - zlib1g-dev

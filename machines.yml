@@ -33,6 +33,7 @@ machine_configs:
     - nas-mount
     - sway-desktop
     - openmw
+    - emulators
     - sway-backlight
     - powersave
 

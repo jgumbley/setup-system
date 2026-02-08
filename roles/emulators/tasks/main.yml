@@ -1,0 +1,86 @@
+---
+- name: Include platform detection
+  include_tasks: ../core-tools/tasks/platform_detection.yml
+
+- name: Refresh apt cache (for package detection)
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+  when: is_linux and ansible_os_family == 'Debian'
+
+- name: Install prerequisites for enabling Ubuntu components
+  ansible.builtin.apt:
+    name: software-properties-common
+    state: present
+    cache_valid_time: 3600
+  become: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Enable Ubuntu universe component (emulator packages live here)
+  ansible.builtin.command:
+    argv:
+      - add-apt-repository
+      - -y
+      - universe
+  register: universe_repo
+  changed_when: "'already enabled' not in (universe_repo.stdout | lower)"
+  become: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Update apt cache after repo changes
+  ansible.builtin.apt:
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+  when: ansible_distribution == "Ubuntu"
+
+- name: Check for available NEC PC-98 emulator packages
+  ansible.builtin.command: "apt-cache show {{ item }}"
+  register: pc98_pkg_checks
+  changed_when: false
+  failed_when: false
+  loop:
+    - xnp2
+    - np2
+    - mame
+  when: is_linux and ansible_os_family == 'Debian'
+
+- name: Select NEC PC-98 emulator package
+  ansible.builtin.set_fact:
+    pc98_emulator_package: >-
+      {{ (pc98_pkg_checks.results
+          | selectattr('rc', 'eq', 0)
+          | map(attribute='item')
+          | list
+          | first) | default('') }}
+  when: is_linux and ansible_os_family == 'Debian'
+
+- name: Fail if no emulator package is available
+  ansible.builtin.fail:
+    msg: "No known NEC PC-98 emulator package found (tried xnp2, np2, mame)."
+  when:
+    - is_linux and ansible_os_family == 'Debian'
+    - pc98_emulator_package == ''
+
+- name: Install NEC PC-98 emulator package
+  ansible.builtin.apt:
+    name: "{{ pc98_emulator_package }}"
+    state: present
+    cache_valid_time: 3600
+  become: yes
+  when:
+    - is_linux and ansible_os_family == 'Debian'
+    - pc98_emulator_package != ''
+
+- name: Report selected emulator package
+  ansible.builtin.debug:
+    msg: "Installed NEC PC-98 emulator package: {{ pc98_emulator_package }}"
+  when:
+    - is_linux and ansible_os_family == 'Debian'
+    - pc98_emulator_package != ''
+
+- name: Skip emulator install on unsupported platforms
+  ansible.builtin.debug:
+    msg: "Emulators role is only configured for Debian/Ubuntu (skipping)."
+  when: not (is_linux and ansible_os_family == 'Debian')
