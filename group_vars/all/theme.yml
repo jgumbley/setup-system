@@ -46,7 +46,7 @@ theme_colors:
   secondary: "#9CDCFE"  # blue accent
 
   # Semantic colors (legacy keys kept)
-  success: "#B5CEA8"    # green
+  success: "#9FE870"    # high-contrast green for terminal readability
   warning: "#C678DD"    # vivid magenta (warning)
   error: "#E06C75"      # red
   info: "#4FC1FF"       # light blue

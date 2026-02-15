@@ -1,0 +1,95 @@
+---
+- name: Include platform detection
+  include_tasks: ../core-tools/tasks/platform_detection.yml
+
+- name: Skip Godot install on non-Linux platforms
+  ansible.builtin.debug:
+    msg: "Godot install is only configured for Linux (skipping)."
+  when: not is_linux
+
+- name: Ensure unzip is installed
+  ansible.builtin.apt:
+    name: unzip
+    state: present
+    cache_valid_time: 3600
+  become: yes
+  when: is_linux and ansible_os_family == 'Debian'
+
+- name: Determine Godot architecture label
+  ansible.builtin.set_fact:
+    godot_arch_label: >-
+      {{ 'x86_64' if ansible_architecture in ['x86_64', 'amd64'] else
+         'arm64' if ansible_architecture in ['aarch64', 'arm64'] else '' }}
+  when: is_linux
+
+- name: Fail on unsupported architecture
+  ansible.builtin.fail:
+    msg: "Godot install supports x86_64 and arm64; detected {{ ansible_architecture }}"
+  when:
+    - is_linux
+    - godot_arch_label == ''
+
+- name: Select Godot download URL
+  ansible.builtin.set_fact:
+    godot_download_url: "{{ godot_download_urls[godot_arch_label] | default('') }}"
+  when: is_linux
+
+- name: Fail when Godot download URL is unavailable
+  ansible.builtin.fail:
+    msg: "Could not find Godot editor download for linux.{{ godot_arch_label }} (version {{ godot_version }})."
+  when:
+    - is_linux
+    - godot_download_url | default('') == ''
+
+- name: Set Godot archive and binary names
+  ansible.builtin.set_fact:
+    godot_archive_name: "{{ godot_download_url | regex_replace('^.*/', '') }}"
+    godot_binary_name: "{{ godot_archive_name | regex_replace('\\.zip$', '') }}"
+  when: is_linux
+
+- name: Ensure Godot install directory exists
+  ansible.builtin.file:
+    path: "{{ godot_install_dir }}"
+    state: directory
+    mode: "0755"
+  become: yes
+  when: is_linux
+
+- name: Create temporary download directory
+  ansible.builtin.tempfile:
+    state: directory
+    suffix: godot
+  register: godot_tmpdir
+  when: is_linux
+
+- name: Download Godot editor archive
+  ansible.builtin.get_url:
+    url: "{{ godot_download_url }}"
+    dest: "{{ godot_tmpdir.path }}/{{ godot_archive_name }}"
+    mode: "0644"
+  when: is_linux
+
+- name: Extract Godot editor
+  ansible.builtin.unarchive:
+    src: "{{ godot_tmpdir.path }}/{{ godot_archive_name }}"
+    dest: "{{ godot_install_dir }}"
+    remote_src: yes
+    creates: "{{ godot_install_dir }}/{{ godot_binary_name }}"
+  become: yes
+  when: is_linux
+
+- name: Ensure Godot binary is executable
+  ansible.builtin.file:
+    path: "{{ godot_install_dir }}/{{ godot_binary_name }}"
+    mode: "0755"
+  become: yes
+  when: is_linux
+
+- name: Symlink Godot into PATH
+  ansible.builtin.file:
+    src: "{{ godot_install_dir }}/{{ godot_binary_name }}"
+    dest: "{{ godot_symlink_path }}"
+    state: link
+    force: yes
+  become: yes
+  when: is_linux

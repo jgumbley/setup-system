@@ -49,6 +49,7 @@ The configuration is managed by Ansible playbooks and roles.
 *   `core-tools`: Installs common command-line tools, coding agents, and configures the kitty terminal.
 *   `nas-mount`: Mounts the network-attached storage.
 *   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
+*   `godot`: Installs the Godot Engine editor binary from https://godotengine.org/download (no extra runtime dependencies; bring your own editor/IDE).
 *   `terminal`: Configures fish, tmux, vim, git, and other terminal applications.
 
 ## Coding Agents

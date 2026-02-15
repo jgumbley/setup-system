@@ -34,6 +34,7 @@ machine_configs:
     - sway-desktop
     - openmw
     - emulators
+    - godot
     - sway-backlight
     - powersave
 
