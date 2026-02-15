@@ -6,21 +6,14 @@ help:
 	@echo "  make core           Run core system setup (sudo/BEcome prompts)"
 	@echo "  make term           Configure terminal environment"
 	@echo "  make setup          Full machine setup (Linux)"
-	@echo "  make openmw         Install OpenMW (sudo/BECOME prompts)"
-	@echo "  make steam          Install Steam (sudo/BECOME prompts)"
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
-	@echo "  make agent-core     Run 'make core' in a tmux agent pane"
-	@echo "  make agent-<target> Run any target in a tmux agent pane"
 
 include common.mk
 
 HOSTNAME := $(shell hostname)
 
-.PHONY: cross-platform linux mac config push term core-tools nas setup openmw steam backup inference status caffeinate agent agent-core agent-setup
-
-# Allow invoking any Make target inside the tmux agent helper.
-AGENT_TARGET := $(if $(TARGET),$(TARGET),$(target))
+.PHONY: term core nas setup backup caffeinate 
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -49,15 +42,6 @@ term:
 setup: .bootstrapped
 	ansible-playbook setup.yml -c local -K
 
-openmw: .bootstrapped
-	ansible-playbook openmw.yml -c local -K
-
-steam: .bootstrapped
-	ansible-playbook steam.yml -c local -K
-
-claude:
-	sudo -E claude
-
 backup:
 	$(MAKE) nas
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
@@ -66,16 +50,3 @@ backup:
 
 caffeinate:
 	sudo systemd-inhibit --what=sleep:idle:handle-lid-switch --who="Make Caffeinate" --why="Preventing system sleep and suspend" --mode=block sleep infinity
-
-agent:
-	@if [ -z "$(AGENT_TARGET)" ]; then \
-		echo "Usage: make agent TARGET=<make-target>"; \
-		exit 1; \
-	fi
-	@bash scripts/run-in-agent-pane.sh agent-$(AGENT_TARGET) $(MAKE) $(AGENT_TARGET)
-
-agent-core:
-	@$(MAKE) agent TARGET=core
-
-agent-setup:
-	@$(MAKE) agent TARGET=setup
