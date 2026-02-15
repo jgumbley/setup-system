@@ -1,9 +1,4 @@
-.PHONY: digest ingest clean agent-%
-
-CLIPBOARD_CMD := pbcopy
-ifeq ($(shell uname -s),Linux)
-CLIPBOARD_CMD := wl-copy
-endif
+.PHONY: digest ingest clean
 
 define success
 	@printf '\033[32m\n'; \
@@ -17,11 +12,9 @@ define success
 	printf "\033[90m{{{ %s | user=%s | host=%s | procid=%s | parentproc=%s }}}\033[0m\n\033[0m" "$$(date +%Y-%m-%d_%H:%M:%S)" "$$(whoami)" "$$(hostname)" "$$$$" "$$parent_info"
 endef
 
-.venv/:
+.venv/: requirements.txt
 	uv venv .venv/
-	@if [ -f requirements.txt ]; then \
-		uv pip install -r requirements.txt; \
-	fi
+	uv pip install -r requirements.txt
 	$(call success)
 
 digest:
@@ -34,14 +27,9 @@ digest:
 	$(call success)
 
 ingest:
-	$(MAKE) digest | $(CLIPBOARD_CMD)
+	$(MAKE) digest | wl-copy
 	$(call success)
 
-clean:
+clean::
 	rm -Rf .venv/
 	$(call success)
-
-# Run any make target inside a tmux agent pane so a human can type secrets
-# locally while the agent watches output. Usage: make agent-<target>
-agent-%:
-	@bash scripts/run-in-agent-pane.sh "agent-$*" $(MAKE) $*

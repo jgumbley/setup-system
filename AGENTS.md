@@ -4,6 +4,7 @@
 - Read the Makefile first before using any tools or adding targets.
 - Call `make digest` to understand the codebase; it is the sanctioned way to learn the structure.
 - All execution happens via make; add or adjust Make targets rather than invoking tools or scripts directly.
+- `pane.sh` is available at the repo root as a tmux pane runner helper, and it is especially useful for elevation: the user can type a password directly in the pane while the agent still reads the resulting output.
 
 ## Architectural alignment
 - Align with the existing architecture. Reuse what is here; do not reframe components.
