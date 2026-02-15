@@ -6,3 +6,9 @@ godot_version: "4.6"
 godot_download_urls:
   x86_64: "https://downloads.godotengine.org/?flavor=stable&platform=linux.64&slug=linux.x86_64.zip&version={{ godot_version }}"
   arm64: "https://downloads.godotengine.org/?flavor=stable&platform=linux.arm64&slug=linux.arm64.zip&version={{ godot_version }}"
+godot_archive_names:
+  x86_64: "godot-linux.x86_64-{{ godot_version }}.zip"
+  arm64: "godot-linux.arm64-{{ godot_version }}.zip"
+godot_binary_names:
+  x86_64: "Godot_v{{ godot_version }}-stable_linux.x86_64"
+  arm64: "Godot_v{{ godot_version }}-stable_linux.arm64"

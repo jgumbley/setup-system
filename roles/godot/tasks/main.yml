@@ -43,9 +43,16 @@
 
 - name: Set Godot archive and binary names
   ansible.builtin.set_fact:
-    godot_archive_name: "{{ godot_download_url | regex_replace('^.*/', '') }}"
-    godot_binary_name: "{{ godot_archive_name | regex_replace('\\.zip$', '') }}"
+    godot_archive_name: "{{ godot_archive_names[godot_arch_label] | default('') }}"
+    godot_binary_name: "{{ godot_binary_names[godot_arch_label] | default('') }}"
   when: is_linux
+
+- name: Fail when Godot archive or binary names are unavailable
+  ansible.builtin.fail:
+    msg: "Could not resolve Godot archive/binary names for linux.{{ godot_arch_label }} (version {{ godot_version }})."
+  when:
+    - is_linux
+    - godot_archive_name | default('') == '' or godot_binary_name | default('') == ''
 
 - name: Ensure Godot install directory exists
   ansible.builtin.file:
