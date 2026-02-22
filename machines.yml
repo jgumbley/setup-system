@@ -1,7 +1,6 @@
 ---
 machine_configs:
   "jim-laptop":
-    - core-tools
     - terminal
     - sway-desktop
     - development
@@ -11,14 +10,12 @@ machine_configs:
   
   # Minimal Raspberry Pi setup
   "pi-*":
-    - core-tools
     - terminal
     - ssh_host
     - realtime-audio
   
   # HAL machine configuration
   "hal":
-    - core-tools
     - terminal
     - sway-desktop
     - hal_hardware
@@ -26,16 +23,17 @@ machine_configs:
     - docker
     - openmw
     - steam
+    - openclaw
   
   # Current host (auto-detected as "system")
   "system":
-    - core-tools
     - nas-mount
     - sway-desktop
     - openmw
     - emulators
     - godot
     - sway-backlight
+    - tp_firmware
     - powersave
 
   # macOS host "arnold" – ensure NAS is mounted during setup

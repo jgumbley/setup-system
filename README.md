@@ -24,13 +24,14 @@ The setup process is primarily driven by `make` commands which wrap Ansible play
     ```bash
     make setup
     ```
+    This runs `make core` first, then applies machine-specific roles.
 
 ## Makefile Commands
 
 *   `make core`: Runs the `core.yml` playbook to install essential tools and mount the NAS. This requires `sudo` and will prompt for a password.
 *   `make nas`: Runs the `nas.yml` playbook to mount the NAS (macOS uses the current user with sudo privileges).
 *   `make term`: Runs the `terminal.yml` playbook to configure the terminal environment.
-*   `make setup`: (Linux only) Runs the `setup.yml` playbook, which applies a machine-specific configuration based on the hostname.
+*   `make setup`: (Linux only) Runs `make core` first, then runs `setup.yml` to apply machine-specific configuration based on the hostname.
 *   `make backup`: Ensures the NAS is mounted, then backs up the `~/wip` directory to the NAS.
 
 ## Ansible Structure

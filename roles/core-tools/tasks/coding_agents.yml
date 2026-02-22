@@ -51,14 +51,6 @@
   become: "{{ ansible_os_family != 'Darwin' }}"
   register: opencode_install_result
 
-- name: Install/Update ClawDBot globally
-  npm:
-    name: "clawdbot"
-    global: yes
-    state: latest
-  become: "{{ ansible_os_family != 'Darwin' }}"
-  register: clawdbot_install_result
-
 - name: Display Claude Code installation status
   debug:
     msg: "Claude Code {{ 'updated' if claude_install_result.changed else 'already up to date' }}"
@@ -70,10 +62,6 @@
 - name: Display OpenCode AI installation status
   debug:
     msg: "OpenCode AI {{ 'updated' if opencode_install_result.changed else 'already up to date' }}"
-
-- name: Display ClawDBot installation status
-  debug:
-    msg: "ClawDBot {{ 'updated' if clawdbot_install_result.changed else 'already up to date' }}"
 
 - name: Display Pi Coding Agent installation status
   debug:

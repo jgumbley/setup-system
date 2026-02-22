@@ -1,0 +1,12 @@
+---
+- name: Install/Update ClawDBot globally
+  npm:
+    name: "clawdbot"
+    global: yes
+    state: latest
+  become: "{{ ansible_os_family != 'Darwin' }}"
+  register: clawdbot_install_result
+
+- name: Display ClawDBot installation status
+  debug:
+    msg: "ClawDBot {{ 'updated' if clawdbot_install_result.changed else 'already up to date' }}"

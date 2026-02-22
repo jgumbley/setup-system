@@ -1,0 +1,12 @@
+---
+- name: Proceed only on Debian/Ubuntu families
+  assert:
+    that:
+      - ansible_os_family == "Debian"
+    fail_msg: "tp_firmware role currently supports Debian/Ubuntu only"
+
+- name: Update linux-firmware package
+  apt:
+    name: linux-firmware
+    state: latest
+    update_cache: yes
