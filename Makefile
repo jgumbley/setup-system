@@ -5,7 +5,7 @@ help:
 	@echo "Targets:"
 	@echo "  make core           Run core system setup (sudo/BEcome prompts)"
 	@echo "  make term           Configure terminal environment"
-	@echo "  make setup          Full machine setup (Linux, runs core first)"
+	@echo "  make setup          Full machine setup "
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 
@@ -39,7 +39,7 @@ endif
 term:
 	ansible-playbook terminal.yml
 
-setup: core
+setup:
 	ansible-playbook setup.yml -c local -K
 
 backup:
