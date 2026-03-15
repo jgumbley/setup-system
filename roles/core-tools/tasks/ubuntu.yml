@@ -37,6 +37,30 @@
     update_cache: yes
   become: yes
 
+- name: Download HashiCorp GPG key (ASCII armored)
+  get_url:
+    url: https://apt.releases.hashicorp.com/gpg
+    dest: /usr/share/keyrings/hashicorp.asc
+    mode: '0644'
+  become: yes
+
+- name: Convert HashiCorp GPG key to keyring (dearmor)
+  command: >-
+    gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg /usr/share/keyrings/hashicorp.asc
+  args:
+    creates: /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  become: yes
+
+- name: Add HashiCorp APT repository (signed-by)
+  apt_repository:
+    repo: >-
+      deb [arch={{ 'amd64' if ansible_architecture in ['x86_64','amd64'] else 'arm64' }}
+      signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg]
+      https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main
+    state: present
+    update_cache: yes
+  become: yes
+
 - name: Install Node.js (includes npm)
   apt:
     name: nodejs

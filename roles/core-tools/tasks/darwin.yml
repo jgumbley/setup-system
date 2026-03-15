@@ -14,6 +14,10 @@
     msg: "Homebrew is not installed. Please install Homebrew first by running: /bin/bash -c \"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)\""
   when: not homebrew_check_arm.stat.exists and not homebrew_check_intel.stat.exists
 
+- name: Ensure HashiCorp Homebrew tap is added
+  homebrew_tap:
+    name: hashicorp/tap
+    state: present
 
 - name: Update Homebrew package list
   homebrew:

@@ -21,6 +21,7 @@ core_packages:
   - nfs-common
   - lazygit
   - ripgrep
+  - terraform
   - network-manager
   - wireless-tools
   - net-tools
