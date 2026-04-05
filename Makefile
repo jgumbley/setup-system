@@ -8,12 +8,14 @@ help:
 	@echo "  make setup          Full machine setup "
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
+	@echo "  make backup-phone   Backup rooted phone filesystem to NAS (mounts first)"
 
 include common.mk
 
 HOSTNAME := $(shell hostname)
+PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term core nas setup backup caffeinate 
+.PHONY: term core nas setup backup backup-phone caffeinate 
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -42,11 +44,18 @@ term:
 setup:
 	ansible-playbook setup.yml -c local -K
 
-backup:
-	$(MAKE) nas
+backup: nas
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
 	mkdir -p /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip
 	rsync -rlptDvz --progress --update --no-group --exclude='node_modules' --exclude='__pycache__' --exclude='.DS_Store' --exclude='venv' --exclude='.venv' ~/wip/ /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip/
+
+backup-phone: nas
+	mkdir -p /usr/local/mnt/iceburg/backup/$(PHONE_HOSTNAME).smeg/wip
+	adb start-server
+	adb wait-for-device
+	adb root
+	adb wait-for-device
+	adb pull / /usr/local/mnt/iceburg/backup/$(PHONE_HOSTNAME).smeg/wip/
 
 caffeinate:
 	sudo systemd-inhibit --what=sleep:idle:handle-lid-switch --who="Make Caffeinate" --why="Preventing system sleep and suspend" --mode=block sleep infinity

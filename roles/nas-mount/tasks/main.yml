@@ -84,8 +84,12 @@
     - name: "Activate the automount"
       command: systemctl restart remote-fs.target
 
-    - name: "Trigger automount and verify NFS share is accessible"
-      command: timeout 15s stat /mnt/{{ nas_share }}
+    - name: "Trigger automount and verify active NFS mount"
+      shell: |
+        set -eu
+        timeout 15s ls -1 /mnt/{{ nas_share }} >/dev/null
+        source="$(findmnt -T /mnt/{{ nas_share }} -n -t nfs,nfs4 -o SOURCE)"
+        printf '%s\n' "${source}" | grep -Eq ':/{{ nas_share }}$'
       register: nas_mount_probe
       changed_when: false
       failed_when: nas_mount_probe.rc != 0
