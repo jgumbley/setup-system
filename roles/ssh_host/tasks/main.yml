@@ -58,11 +58,22 @@
     - /etc/update-motd.d/95-hwe-eol
   ignore_errors: yes
 
+- name: Verify fish exists before setting it as login shell
+  stat:
+    path: /usr/bin/fish
+  register: fish_shell
+
+- name: Fail if fish is missing
+  assert:
+    that:
+      - fish_shell.stat.exists
+    fail_msg: "/usr/bin/fish is required for SSH login shell."
+
 - name: Ensure system user exists
   user:
     name: system
     home: /home/system
-    shell: /bin/bash
+    shell: /usr/bin/fish
     create_home: yes
     state: present
 
