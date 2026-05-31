@@ -6,6 +6,7 @@ help:
 	@echo "  make core           Run core system setup (sudo/BEcome prompts)"
 	@echo "  make term           Configure terminal environment"
 	@echo "  make setup          Full machine setup "
+	@echo "  make setup-check    Verify setup playbook syntax"
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 	@echo "  make backup-phone   Backup rooted phone filesystem to NAS (mounts first)"
@@ -15,7 +16,7 @@ include common.mk
 HOSTNAME := $(shell hostname)
 PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term core nas setup backup backup-phone caffeinate 
+.PHONY: term core nas setup setup-check backup backup-phone caffeinate 
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -43,6 +44,9 @@ term:
 
 setup:
 	ansible-playbook setup.yml -c local -K
+
+setup-check:
+	ansible-playbook setup.yml -c local --syntax-check
 
 backup: nas
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"

@@ -92,7 +92,16 @@
         printf '%s\n' "${source}" | grep -Eq ':/{{ nas_share }}$'
       register: nas_mount_probe
       changed_when: false
-      failed_when: nas_mount_probe.rc != 0
+      failed_when: nas_mount_probe.rc != 0 and (nas_mount_required | default(true) | bool)
+
+    - name: "Report unavailable NAS during non-blocking setup"
+      ansible.builtin.debug:
+        msg:
+          - "NAS mount is configured but not currently reachable; continuing setup."
+          - "Run `make nas` when the NAS is online to verify the mount."
+      when:
+        - nas_mount_probe.rc != 0
+        - not (nas_mount_required | default(true) | bool)
 
     - name: "Create /usr/local/mnt directory for consistency"
       file:

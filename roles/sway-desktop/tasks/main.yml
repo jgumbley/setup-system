@@ -19,6 +19,8 @@
       - wofi
       - grim
       - slurp
+      - wtype
+      - ydotool
     state: present
 
 - name: Ensure the sway configuration directory exists
