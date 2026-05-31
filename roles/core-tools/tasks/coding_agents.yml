@@ -20,14 +20,6 @@
   become: "{{ ansible_os_family != 'Darwin' }}"
   register: claude_install_result
 
-- name: Install/Update Gemini CLI globally
-  npm:
-    name: "@google/gemini-cli"
-    global: yes
-    state: latest
-  become: "{{ ansible_os_family != 'Darwin' }}"
-  register: gemini_install_result
-
 - name: Install/Update OpenAI Codex globally
   npm:
     name: "@openai/codex"
@@ -54,10 +46,6 @@
 - name: Display Claude Code installation status
   debug:
     msg: "Claude Code {{ 'updated' if claude_install_result.changed else 'already up to date' }}"
-
-- name: Display Gemini CLI installation status
-  debug:
-    msg: "Gemini CLI {{ 'updated' if gemini_install_result.changed else 'already up to date' }}"
 
 - name: Display OpenCode AI installation status
   debug:
