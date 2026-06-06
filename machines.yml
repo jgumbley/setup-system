@@ -21,7 +21,7 @@ machine_configs:
     - hal_hardware
     - ssh_host
     - docker
-    - openmw
+    # - openmw
     - steam
     - openclaw
   

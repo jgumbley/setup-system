@@ -4,6 +4,7 @@
   apt:
     name: 
       - sway
+      - wayvnc
       - swayidle
       - swaylock
       - fonts-oxygen
