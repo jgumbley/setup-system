@@ -27,9 +27,16 @@
     state: latest
   become: "{{ ansible_os_family != 'Darwin' }}"
 
-- name: Install/Update Pi Coding Agent globally
+- name: Remove deprecated Pi Coding Agent global package
   npm:
     name: "@mariozechner/pi-coding-agent"
+    global: yes
+    state: absent
+  become: "{{ ansible_os_family != 'Darwin' }}"
+
+- name: Install/Update Pi Coding Agent globally
+  npm:
+    name: "@earendil-works/pi-coding-agent"
     global: yes
     state: latest
   become: "{{ ansible_os_family != 'Darwin' }}"
@@ -53,4 +60,4 @@
 
 - name: Display Pi Coding Agent installation status
   debug:
-    msg: "Pi Coding Agent {{ 'updated' if pi_install_result.changed else 'already up to date' }}"
+    msg: "Pi Coding Agent {{ 'updated' if pi_install_result.changed else 'already up to date' }} from @earendil-works"
