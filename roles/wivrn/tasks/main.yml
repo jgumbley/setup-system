@@ -1,0 +1,40 @@
+---
+- name: Ensure WiVRn role runs only on Debian/Ubuntu Linux
+  ansible.builtin.assert:
+    that:
+      - ansible_system == "Linux"
+      - ansible_os_family == "Debian"
+    fail_msg: "WiVRn role currently supports Debian/Ubuntu Linux only."
+
+- name: Install WiVRn Flatpak prerequisites
+  ansible.builtin.apt:
+    name:
+      - flatpak
+      - avahi-daemon
+    state: present
+    update_cache: yes
+    cache_valid_time: 3600
+  become: yes
+
+- name: Enable and start Avahi for WiVRn discovery
+  ansible.builtin.systemd:
+    name: avahi-daemon.service
+    enabled: yes
+    state: started
+  become: yes
+
+- name: Add Flathub remote
+  community.general.flatpak_remote:
+    name: flathub
+    state: present
+    method: system
+    flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+  become: yes
+
+- name: Install WiVRn server/dashboard from Flathub
+  community.general.flatpak:
+    name: io.github.wivrn.wivrn
+    state: present
+    method: system
+    remote: flathub
+  become: yes

@@ -1,12 +1,15 @@
 ---
-- name: Install/Update ClawDBot globally
+- name: Remove OpenClaw global npm packages
   npm:
-    name: "clawdbot"
+    name: "{{ item }}"
     global: yes
-    state: latest
+    state: absent
   become: "{{ ansible_os_family != 'Darwin' }}"
-  register: clawdbot_install_result
+  loop:
+    - clawdbot
+    - openclaw
+  register: openclaw_removal_result
 
-- name: Display ClawDBot installation status
+- name: Display OpenClaw removal status
   debug:
-    msg: "ClawDBot {{ 'updated' if clawdbot_install_result.changed else 'already up to date' }}"
+    msg: "OpenClaw global npm packages {{ 'removed' if openclaw_removal_result.changed else 'already absent' }}"

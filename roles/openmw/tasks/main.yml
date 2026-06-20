@@ -52,3 +52,72 @@
     state: present
     cache_valid_time: 3600
   become: yes
+
+- name: Configure Sunshine controller forwarding on hal
+  when: ansible_hostname == "hal"
+  vars:
+    sunshine_input_user: "{{ ansible_env.SUDO_USER | default(lookup('env', 'USER'), true) }}"
+  block:
+    - name: Load uinput kernel module for Sunshine
+      ansible.builtin.modprobe:
+        name: uinput
+        state: present
+      become: yes
+
+    - name: Load uinput kernel module at boot
+      ansible.builtin.copy:
+        dest: /etc/modules-load.d/uinput.conf
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          uinput
+      become: yes
+
+    - name: Ensure input group exists for Sunshine
+      ansible.builtin.group:
+        name: input
+        state: present
+      become: yes
+
+    - name: Add setup user to input group for Sunshine
+      ansible.builtin.user:
+        name: "{{ sunshine_input_user }}"
+        groups: input
+        append: yes
+      become: yes
+
+    - name: Install udev rule for Sunshine uinput access
+      ansible.builtin.copy:
+        dest: /etc/udev/rules.d/85-sunshine-uinput.rules
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          KERNEL=="uinput", GROUP="input", MODE="0660", OPTIONS+="static_node=uinput"
+      register: sunshine_uinput_rules
+      become: yes
+
+    - name: Reload udev rules for Sunshine uinput access
+      ansible.builtin.command: udevadm control --reload-rules
+      when: sunshine_uinput_rules.changed
+      become: yes
+
+    - name: Apply Sunshine uinput udev rule
+      ansible.builtin.command: udevadm trigger --sysname-match=uinput
+      when: sunshine_uinput_rules.changed
+      failed_when: false
+      become: yes
+
+    - name: Ensure live uinput device uses Sunshine group ownership
+      ansible.builtin.file:
+        path: /dev/uinput
+        owner: root
+        group: input
+        mode: '0660'
+      become: yes
+
+    - name: Ensure live uinput ACL allows Sunshine input group
+      ansible.builtin.command: setfacl -m g::rw,g:input:rw,m::rw /dev/uinput
+      changed_when: false
+      become: yes

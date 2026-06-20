@@ -23,6 +23,7 @@ machine_configs:
     - docker
     - openmw
     - steam
+    - wivrn
     - openclaw
   
   # Current host (auto-detected as "system")
