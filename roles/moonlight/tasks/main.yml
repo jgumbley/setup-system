@@ -1,0 +1,29 @@
+---
+- name: Include platform detection
+  include_tasks: ../core-tools/tasks/platform_detection.yml
+
+- name: Refuse to install Moonlight on non-Linux platforms
+  ansible.builtin.fail:
+    msg: "Moonlight snap is only supported on Linux (detected {{ ansible_system }})."
+  when: not is_linux
+
+- name: Ensure snapd is present
+  become: yes
+  ansible.builtin.package:
+    name: snapd
+    state: present
+
+- name: Install Moonlight client via snap
+  become: yes
+  community.general.snap:
+    name: moonlight
+    state: present
+
+- name: Report installed Moonlight snap
+  ansible.builtin.command: snap list moonlight
+  register: moonlight_snap_list
+  changed_when: false
+
+- name: Show installed Moonlight version
+  ansible.builtin.debug:
+    var: moonlight_snap_list.stdout_lines

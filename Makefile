@@ -10,13 +10,17 @@ help:
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 	@echo "  make backup-phone   Backup rooted phone filesystem to NAS (mounts first)"
+	@echo "  make moonlight      Install Moonlight streaming client (snap, sudo prompt)"
 
 include common.mk
 
 HOSTNAME := $(shell hostname)
 PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term core nas setup setup-check backup backup-phone caffeinate 
+.PHONY: term core nas setup setup-check backup backup-phone caffeinate moonlight
+
+moonlight:
+	ansible-playbook moonlight.yml -c local -K
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)

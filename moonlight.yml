@@ -1,0 +1,9 @@
+---
+- hosts: localhost
+  connection: local
+  become: yes
+  gather_facts: yes
+  tasks:
+    - name: Install Moonlight client
+      include_role:
+        name: moonlight

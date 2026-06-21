@@ -36,6 +36,7 @@ machine_configs:
     - sway-backlight
     - tp_firmware
     - powersave
+    - moonlight
 
   # macOS host "arnold" – ensure NAS is mounted during setup
   "arnold":
