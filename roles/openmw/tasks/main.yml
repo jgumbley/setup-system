@@ -87,6 +87,25 @@
         append: yes
       become: yes
 
+    # seatd provides the seat/session that wlroots' libinput backend needs to
+    # read Sunshine's uinput passthrough devices natively (headless,libinput
+    # sway). Without it the libinput backend fails: "Timeout waiting session to
+    # become active". Installed only on hal where the Sunshine stream runs.
+    - name: Install seatd for wlroots libinput session management
+      ansible.builtin.apt:
+        name: seatd
+        state: present
+        cache_valid_time: 3600
+      become: yes
+
+    - name: Enable and start seatd service
+      ansible.builtin.systemd:
+        name: seatd
+        enabled: yes
+        state: started
+        daemon_reload: yes
+      become: yes
+
     - name: Install udev rule for Sunshine uinput access
       ansible.builtin.copy:
         dest: /etc/udev/rules.d/85-sunshine-uinput.rules
