@@ -25,19 +25,14 @@
 
 - name: Remove obsolete OpenMW PPAs from Ubuntu 26.04
   ansible.builtin.shell: |
-    shopt -s nullglob
-    files=(
-      /etc/apt/sources.list.d/openmw-ubuntu-openmw-*.list
-      /etc/apt/sources.list.d/openmw-ubuntu-openmw-*.sources
-    )
-    if (( ${#files[@]} )); then
-      rm -f "${files[@]}"
-      echo removed
-    fi
+    find /etc/apt/sources.list.d -maxdepth 1 -type f \
+      \( -name 'openmw-ubuntu-openmw-*.list' \
+      -o -name 'openmw-ubuntu-openmw-*.sources' \) \
+      -print -delete
   args:
     executable: /bin/bash
   register: openmw_ppa_cleanup
-  changed_when: openmw_ppa_cleanup.stdout == 'removed'
+  changed_when: openmw_ppa_cleanup.stdout != ''
   become: yes
   when: ansible_facts['distribution_version'] is version('26.04', '>=')
 
