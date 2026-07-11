@@ -1,4 +1,7 @@
-#!/bin/bash
+#!/usr/bin/env bash
+set -euo pipefail
 
-sudo apt install ansible git -y
+# This bootstrap targets Ubuntu 26.04 only and must never be made backwards compatible.
+sudo apt-get update
+sudo apt-get install --yes ansible-core git
 ansible-galaxy collection install community.general

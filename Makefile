@@ -45,7 +45,7 @@ moonlight:
 ifeq ($(shell uname -s),Darwin)
 	su admin -c "cd $(PWD) && ./bootstrap/darwin.sh" && touch .bootstrapped
 else
-	sudo ./bootstrap/ubuntu.sh && touch .bootstrapped
+	./bootstrap/ubuntu.sh && touch .bootstrapped
 endif
 
 updates: .bootstrapped
