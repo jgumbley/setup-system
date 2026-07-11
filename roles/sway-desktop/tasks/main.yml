@@ -80,7 +80,6 @@
       - wayvnc
       - swayidle
       - swaylock
-      - fonts-oxygen
       - waybar
       - upower
       - kitty
