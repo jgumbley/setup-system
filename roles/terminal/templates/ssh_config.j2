@@ -7,3 +7,8 @@ Host tw
   HostName github.com
   User git
   IdentityFile ~/.ssh/id_tw
+{% if ansible_system == "Linux" and ansible_hostname in ["system", "hal", "rocks"] %}
+
+Host *
+  IdentityAgent ~/.1password/agent.sock
+{% endif %}

@@ -55,6 +55,7 @@
   become: yes
   apt:
     name: 
+      - 1password
       - sway
       - wayvnc
       - swayidle
