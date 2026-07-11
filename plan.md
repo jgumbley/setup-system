@@ -12,57 +12,24 @@ the working tree and commit history, not here.
 - Run privileged or interactive Make targets through `bash pane.sh`.
 - Do not add fallbacks, optional branches, or generalized validation.
 
-## Next repository change — 1Password SSH workflow
-
-Manage the native 1Password desktop application and SSH-agent integration on
-graphical Ubuntu machines without changing or rotating existing SSH keys.
-
-Requirements:
-
-- Preserve the intentional `jg` and `tw` SSH aliases; `tw` is required on the
-  work Mac even though its private key is not present on `system`.
-- Use `jg` consistently for personal GitHub remotes.
-- Keep the existing keypairs and public-key fingerprints. Do not rekey hosts or
-  GitHub merely to adopt the 1Password agent.
-- Install the native 1Password desktop package on graphical Ubuntu hosts that
-  use Sway. Do not use the Snap or Flatpak build for this purpose because the
-  SSH agent is required.
-- Continue installing the 1Password CLI through the existing updates workflow.
-- Manage the Linux 1Password agent socket in SSH client configuration without
-  breaking the existing macOS `jg`/`tw` behavior.
-- Never place private keys, account credentials, or automated 1Password sign-in
-  material in this repository. Importing keys, signing in, and enabling the SSH
-  agent remain manual commissioning actions.
-- Keep public inbound-access keys managed by `ssh_host`.
-
-Verification:
-
-- On `system`, `ssh -T jg` authenticates to the personal GitHub account through
-  the 1Password agent with the existing `system.pub` fingerprint.
-- Personal repositories use the `jg` alias for fetch and push.
-- Existing macOS alias behavior remains represented correctly in the shared
-  SSH template.
-- Running setup twice does not repeatedly reinstall or reconfigure 1Password.
-
-Stop after verification for operator testing and commit.
-
 ## Commission `legobrick`
 
 `legobrick` is a headless Ubuntu 26.04 machine administered remotely; coding
 agents do not run there.
 
 1. Install Ubuntu 26.04 and set the hostname exactly to `legobrick`.
-2. Clone this public repository over HTTPS so the machine needs no GitHub
+2. Install `git` and `make` from Ubuntu packages.
+3. Clone this public repository over HTTPS so the machine needs no GitHub
    private key.
-3. Run `make setup` locally. It applies updates, `terminal`, `ssh_host`, and
-   `realtime-audio`.
-4. Verify the `system` user, key-only inbound SSH, authorized public keys, fish,
+4. Run `make setup` locally. Its bootstrap prerequisite installs Ansible before
+   applying updates, `terminal`, `ssh_host`, and `realtime-audio`.
+5. Verify the `system` user, key-only inbound SSH, authorized public keys, fish,
    JACK, realtime permissions, attached audio devices, and low-latency kernel.
-5. From an administrative workstation, connect using the `jg` key held by the
+6. From an administrative workstation, connect using the `jg` key held by the
    1Password agent.
-6. For later maintenance, SSH into `legobrick`, attach to tmux, pull over HTTPS,
+7. For later maintenance, SSH into `legobrick`, attach to tmux, pull over HTTPS,
    and run `make setup` through `bash pane.sh`.
-7. Run setup twice and confirm convergence.
+8. Run setup twice and confirm convergence.
 
 Prefer Ubuntu packages for Python audio dependencies. Fail if required packages
 are unavailable; do not add an unmanaged global pip fallback.

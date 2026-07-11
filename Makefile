@@ -45,7 +45,7 @@ endif
 term:
 	ansible-playbook terminal.yml
 
-setup:
+setup: .bootstrapped
 ifeq ($(shell uname -s),Darwin)
 	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook updates.yml setup.yml -c local --ask-become-pass"
 else
