@@ -10,13 +10,17 @@ help:
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 	@echo "  make backup-phone   Backup rooted phone filesystem to NAS (mounts first)"
 	@echo "  make moonlight      Install Moonlight streaming client (snap, sudo prompt)"
+	@echo "  make prep-rpi-sd DEVICE=/dev/sdX CONFIRM=legobrick"
 
 include common.mk
 
 HOSTNAME := $(shell hostname)
 PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term updates nas setup backup backup-phone caffeinate moonlight
+.PHONY: term updates nas setup backup backup-phone caffeinate moonlight prep-rpi-sd
+
+prep-rpi-sd:
+	bash pane.sh prep-legobrick-sd $(MAKE) -C utils/prep_rpi_sd prepare DEVICE=$(DEVICE) CONFIRM=$(CONFIRM)
 
 moonlight:
 	ansible-playbook moonlight.yml -c local -K
