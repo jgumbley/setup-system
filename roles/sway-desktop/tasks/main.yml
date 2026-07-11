@@ -11,12 +11,32 @@
   command: snap remove firefox
   when: firefox_snap.rc == 0
 
-- name: Add Mozilla Team PPA for Firefox
+- name: Ensure APT keyrings directory exists for Mozilla Team
   become: yes
-  apt_repository:
-    repo: ppa:mozillateam/ppa
-    state: present
-    filename: mozillateam-ppa
+  file:
+    path: /etc/apt/keyrings
+    state: directory
+    mode: '0755'
+
+- name: Download Mozilla Team PPA signing key over HTTPS
+  become: yes
+  get_url:
+    url: >-
+      https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x738BEB9321D1AAEC13EA9391AEBDF4819BE21867
+    dest: /etc/apt/keyrings/mozillateam-ppa.asc
+    mode: '0644'
+
+- name: Configure Mozilla Team PPA for Firefox
+  become: yes
+  copy:
+    dest: /etc/apt/sources.list.d/mozillateam-ppa.list
+    content: >-
+      deb [signed-by=/etc/apt/keyrings/mozillateam-ppa.asc]
+      https://ppa.launchpadcontent.net/mozillateam/ppa/ubuntu
+      {{ ansible_facts['distribution_release'] }} main
+    owner: root
+    group: root
+    mode: '0644'
 
 - name: Prefer Mozilla Team Firefox packages
   become: yes
