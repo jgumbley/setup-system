@@ -14,6 +14,7 @@ help:
 	@echo "  make commission-legobrick"
 	@echo "  make setup-legobrick"
 	@echo "  make verify-legobrick"
+	@echo "  make verify-1password-ssh  Check the desktop SSH agent and loaded keys"
 	@echo "  make prep-ubuntu-usb DEVICE=/dev/sdX CONFIRM=rocks"
 
 include common.mk
@@ -21,7 +22,7 @@ include common.mk
 HOSTNAME := $(shell hostname)
 PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term updates nas setup backup backup-phone caffeinate moonlight prep-rpi-sd commission-legobrick setup-legobrick verify-legobrick prep-ubuntu-usb
+.PHONY: term updates nas setup backup backup-phone caffeinate moonlight prep-rpi-sd commission-legobrick setup-legobrick verify-legobrick verify-1password-ssh prep-ubuntu-usb
 
 prep-rpi-sd:
 	bash pane.sh prep-legobrick-sd $(MAKE) -C utils/prep_rpi_sd prepare DEVICE=$(DEVICE) CONFIRM=$(CONFIRM)
@@ -34,6 +35,13 @@ setup-legobrick:
 
 verify-legobrick:
 	bash pane.sh verify-legobrick $(MAKE) -C utils/prep_rpi_sd verify
+
+verify-1password-ssh:
+	@command -v 1password >/dev/null || { echo "1Password desktop app is not installed." >&2; exit 1; }
+	@pgrep -x 1password >/dev/null || { echo "1Password desktop app is not running. Open and unlock it, then retry." >&2; exit 1; }
+	@test -S "$(HOME)/.1password/agent.sock" || { echo "1Password SSH agent socket is unavailable. In 1Password, enable Settings > Developer > Use the SSH agent, then unlock the app and retry." >&2; exit 1; }
+	@SSH_AUTH_SOCK="$(HOME)/.1password/agent.sock" ssh-add -l >/dev/null 2>&1 || { echo "1Password SSH agent has no available keys. Add or import an SSH Key item in an unlocked vault, then retry." >&2; exit 1; }
+	@echo "1Password SSH agent is running and has at least one available key."
 
 prep-ubuntu-usb:
 	bash pane.sh prep-rocks-usb $(MAKE) -C utils/prep_ubuntu_usb prepare DEVICE=$(DEVICE) CONFIRM=$(CONFIRM)
