@@ -1,4 +1,56 @@
 ---
+- name: Check whether the Firefox Snap is installed
+  become: yes
+  command: snap list firefox
+  register: firefox_snap
+  changed_when: false
+  failed_when: firefox_snap.rc not in [0, 1]
+
+- name: Remove the Firefox Snap
+  become: yes
+  command: snap remove firefox
+  when: firefox_snap.rc == 0
+
+- name: Add Mozilla Team PPA for Firefox
+  become: yes
+  apt_repository:
+    repo: ppa:mozillateam/ppa
+    state: present
+    filename: mozillateam-ppa
+
+- name: Prefer Mozilla Team Firefox packages
+  become: yes
+  copy:
+    dest: /etc/apt/preferences.d/mozillateam-firefox
+    content: |
+      Package: firefox*
+      Pin: release o=LP-PPA-mozillateam
+      Pin-Priority: 1001
+    owner: root
+    group: root
+    mode: '0644'
+
+- name: Install Mozilla deb Firefox
+  become: yes
+  apt:
+    name: firefox
+    state: present
+    update_cache: yes
+    allow_downgrade: yes
+
+- name: Verify Firefox is installed as a deb
+  command: dpkg-query -W -f='${Status}' firefox
+  register: firefox_deb
+  changed_when: false
+  failed_when: firefox_deb.stdout != 'install ok installed'
+
+- name: Verify the Firefox Snap is absent
+  become: yes
+  command: snap list firefox
+  register: firefox_snap_check
+  changed_when: false
+  failed_when: firefox_snap_check.rc != 1
+
 - name: Install sway
   become: yes
   apt:
