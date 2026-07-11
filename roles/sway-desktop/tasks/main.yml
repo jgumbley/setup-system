@@ -11,41 +11,52 @@
   command: snap remove firefox
   when: firefox_snap.rc == 0
 
-- name: Ensure APT keyrings directory exists for Mozilla Team
+- name: Remove obsolete Mozilla Team PPA configuration
+  become: yes
+  file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - /etc/apt/sources.list.d/mozillateam-ppa.list
+    - /etc/apt/preferences.d/mozillateam-firefox
+    - /etc/apt/keyrings/mozillateam-ppa.asc
+
+- name: Ensure APT keyrings directory exists for Mozilla
   become: yes
   file:
     path: /etc/apt/keyrings
     state: directory
     mode: '0755'
 
-- name: Download Mozilla Team PPA signing key over HTTPS
+- name: Download Mozilla package signing key over HTTPS
   become: yes
   get_url:
-    url: >-
-      https://keyserver.ubuntu.com/pks/lookup?op=get&search=0x738BEB9321D1AAEC13EA9391AEBDF4819BE21867
-    dest: /etc/apt/keyrings/mozillateam-ppa.asc
+    url: https://packages.mozilla.org/apt/repo-signing-key.gpg
+    dest: /etc/apt/keyrings/packages.mozilla.org.asc
     mode: '0644'
 
-- name: Configure Mozilla Team PPA for Firefox
+- name: Configure Mozilla package repository for Firefox
   become: yes
   copy:
-    dest: /etc/apt/sources.list.d/mozillateam-ppa.list
-    content: >-
-      deb [signed-by=/etc/apt/keyrings/mozillateam-ppa.asc]
-      https://ppa.launchpadcontent.net/mozillateam/ppa/ubuntu
-      {{ ansible_facts['distribution_release'] }} main
+    dest: /etc/apt/sources.list.d/mozilla.sources
+    content: |
+      Types: deb
+      URIs: https://packages.mozilla.org/apt
+      Suites: mozilla
+      Components: main
+      Signed-By: /etc/apt/keyrings/packages.mozilla.org.asc
     owner: root
     group: root
     mode: '0644'
 
-- name: Prefer Mozilla Team Firefox packages
+- name: Prefer Mozilla Firefox packages
   become: yes
   copy:
-    dest: /etc/apt/preferences.d/mozillateam-firefox
+    dest: /etc/apt/preferences.d/mozilla
     content: |
-      Package: firefox*
-      Pin: release o=LP-PPA-mozillateam
-      Pin-Priority: 1001
+      Package: *
+      Pin: origin packages.mozilla.org
+      Pin-Priority: 1000
     owner: root
     group: root
     mode: '0644'
@@ -63,6 +74,12 @@
   register: firefox_deb
   changed_when: false
   failed_when: firefox_deb.stdout != 'install ok installed'
+
+- name: Verify the Mozilla Firefox binary is installed
+  stat:
+    path: /usr/lib/firefox/firefox
+  register: firefox_binary
+  failed_when: not firefox_binary.stat.exists or not firefox_binary.stat.executable
 
 - name: Verify the Firefox Snap is absent
   become: yes
