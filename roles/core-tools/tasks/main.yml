@@ -8,14 +8,14 @@
     state: present
   check_mode: yes
   register: admin_user_check
-  when: ansible_os_family == 'Darwin'
+  when: ansible_facts['os_family'] == 'Darwin'
   ignore_errors: yes
 
 - name: Fail if no admin user found on macOS
   fail:
     msg: "No admin user found, required for privilege escalation on macOS"
   when: 
-    - ansible_os_family == 'Darwin'
+    - ansible_facts['os_family'] == 'Darwin'
     - admin_user_check.failed
 
 # Variables loaded from vars/main.yml automatically

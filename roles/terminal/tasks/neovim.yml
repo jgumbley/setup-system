@@ -10,13 +10,13 @@
   block:
     - name: Ensure neovim config directory exists
       file:
-        path: "{{ ansible_env.HOME }}/.config/nvim"
+        path: "{{ ansible_facts['env'].HOME }}/.config/nvim"
         state: directory
         mode: '0755'
 
     - name: Deploy neovim configuration
       template:
         src: nvim_init.lua.j2
-        dest: "{{ ansible_env.HOME }}/.config/nvim/init.lua"
+        dest: "{{ ansible_facts['env'].HOME }}/.config/nvim/init.lua"
         mode: '0644'
       tags: neovim

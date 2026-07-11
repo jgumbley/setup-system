@@ -54,7 +54,7 @@
           - "NFS MOUNT FAILED"
           - "This often means the NAS is not configured to allow access from this host."
           - "Please ensure this computer's hostname is added to the NFS Host Access list for the '{{ nas_share }}' share on your QNAP."
-          - "The hostname the NAS needs to see is likely: {{ ansible_hostname }}.smeg"
+          - "The hostname the NAS needs to see is likely: {{ ansible_facts['hostname'] }}.smeg"
           - "--------------------------------------------------------------------"
       failed_when: true
   when: is_mac
@@ -117,7 +117,7 @@
         dest: /usr/local/mnt/{{ nas_share }}
         state: link
         force: yes
-  become: "{{ ansible_os_family != 'Darwin' }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
   rescue:
     - name: Display NFS mount failure hint
       ansible.builtin.debug:
@@ -126,7 +126,7 @@
           - "NFS MOUNT FAILED"
           - "This often means the NAS is not configured to allow access from this host."
           - "Please ensure this computer's hostname is added to the NFS Host Access list for the '{{ nas_share }}' share on your QNAP."
-          - "The hostname the NAS needs to see is likely: {{ ansible_hostname }}.smeg"
+          - "The hostname the NAS needs to see is likely: {{ ansible_facts['hostname'] }}.smeg"
           - "--------------------------------------------------------------------"
       failed_when: true
   when: is_linux

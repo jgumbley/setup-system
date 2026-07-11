@@ -11,6 +11,6 @@
     - name: Deploy tmux configuration
       template:
         src: tmux.conf.j2
-        dest: "{{ ansible_env.HOME }}/.tmux.conf"
+        dest: "{{ ansible_facts['env'].HOME }}/.tmux.conf"
         mode: '0644'
       tags: tmux

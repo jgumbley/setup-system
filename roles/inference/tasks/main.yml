@@ -115,7 +115,7 @@
     ROCM_PATH: /opt/rocm
     HIP_PATH: /opt/rocm
     HIPCXX: "/opt/rocm/lib/llvm/bin/clang++"
-    PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
+    PATH: "/opt/rocm/bin:{{ ansible_facts['env'].PATH }}"
   become: yes
 
 - name: Build llama.cpp with ROCm support
@@ -126,7 +126,7 @@
     ROCM_PATH: /opt/rocm
     HIP_PATH: /opt/rocm
     HIPCXX: "/opt/rocm/lib/llvm/bin/clang++"
-    PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
+    PATH: "/opt/rocm/bin:{{ ansible_facts['env'].PATH }}"
   become: yes
 
 # btop Installation - Always from scratch with ROCm support
@@ -157,7 +157,7 @@
   environment:
     ROCM_PATH: /opt/rocm
     HIP_PATH: /opt/rocm
-    PATH: "/opt/rocm/bin:{{ ansible_env.PATH }}"
+    PATH: "/opt/rocm/bin:{{ ansible_facts['env'].PATH }}"
   become: yes
 
 - name: Install btop with ROCm support

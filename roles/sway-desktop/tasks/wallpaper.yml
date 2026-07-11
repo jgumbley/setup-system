@@ -1,13 +1,13 @@
 ---
 - name: Create local bin directory
   file:
-    path: "{{ ansible_env.HOME }}/.local/bin"
+    path: "{{ ansible_facts['env'].HOME }}/.local/bin"
     state: directory
     mode: '0755'
 
 - name: Install wallpaper rotation script
   template:
     src: wallpaper-rotate.sh.j2
-    dest: "{{ ansible_env.HOME }}/.local/bin/wallpaper-rotate.sh"
+    dest: "{{ ansible_facts['env'].HOME }}/.local/bin/wallpaper-rotate.sh"
     mode: '0755'
 

@@ -39,7 +39,7 @@
               - HostName
               - "{{ mac_computer_name.stdout }}"
           when: mac_host_name.rc != 0 or mac_host_name.stdout != mac_computer_name.stdout
-      when: ansible_system == "Darwin"
+      when: ansible_facts['system'] == "Darwin"
     - name: Remove legacy 1Password repo entries with conflicting keyring path
       shell: |
         set -euo pipefail
@@ -52,7 +52,7 @@
       args:
         executable: /bin/bash
       become: yes
-      when: ansible_os_family == "Debian"
+      when: ansible_facts['os_family'] == "Debian"
   roles:
     - core-tools
     - onepassword-cli

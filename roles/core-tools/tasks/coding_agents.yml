@@ -17,7 +17,7 @@
     name: "@anthropic-ai/claude-code"
     global: yes
     state: latest
-  become: "{{ ansible_os_family != 'Darwin' }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
   register: claude_install_result
 
 - name: Install/Update OpenAI Codex globally
@@ -25,21 +25,21 @@
     name: "@openai/codex"
     global: yes
     state: latest
-  become: "{{ ansible_os_family != 'Darwin' }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
 
 - name: Remove deprecated @mariozechner/pi-coding-agent package
   npm:
     name: "@mariozechner/pi-coding-agent"
     global: yes
     state: absent
-  become: "{{ ansible_os_family != 'Darwin' }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
 
 - name: Install/Update Pi Coding Agent globally
   npm:
     name: "@earendil-works/pi-coding-agent"
     global: yes
     state: latest
-  become: "{{ ansible_os_family != 'Darwin' }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
   register: pi_install_result
 
 - name: Install/Update OpenCode AI globally
@@ -47,7 +47,7 @@
     name: "opencode-ai"
     global: yes
     state: latest
-  become: "{{ ansible_os_family != 'Darwin' }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
   register: opencode_install_result
 
 - name: Display Claude Code installation status

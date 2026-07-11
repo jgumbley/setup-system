@@ -4,7 +4,7 @@
 
 - name: Refuse to install Moonlight on non-Linux platforms
   ansible.builtin.fail:
-    msg: "Moonlight snap is only supported on Linux (detected {{ ansible_system }})."
+    msg: "Moonlight snap is only supported on Linux (detected {{ ansible_facts['system'] }})."
   when: not is_linux
 
 - name: Ensure snapd is present

@@ -11,6 +11,6 @@
     - name: Deploy vim configuration
       template:
         src: vimrc.j2
-        dest: "{{ ansible_env.HOME }}/.vimrc"
+        dest: "{{ ansible_facts['env'].HOME }}/.vimrc"
         mode: '0644'
       tags: vim

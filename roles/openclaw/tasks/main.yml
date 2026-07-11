@@ -4,7 +4,7 @@
     name: "{{ item }}"
     global: yes
     state: absent
-  become: "{{ ansible_os_family != 'Darwin' }}"
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
   loop:
     - clawdbot
     - openclaw

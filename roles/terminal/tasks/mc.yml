@@ -25,14 +25,14 @@
 
 - name: Ensure ~/.local/bin exists for mc viewer script
   file:
-    path: "{{ ansible_env.HOME }}/.local/bin"
+    path: "{{ ansible_facts['env'].HOME }}/.local/bin"
     state: directory
     mode: "0755"
 
 - name: Install mc external viewer helper (vim + kitty)
   copy:
     src: mc-view
-    dest: "{{ ansible_env.HOME }}/.local/bin/mc-view"
+    dest: "{{ ansible_facts['env'].HOME }}/.local/bin/mc-view"
     mode: "0755"
 
 - name: Deploy Midnight Commander One Dark skin

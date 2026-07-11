@@ -43,9 +43,9 @@
   become: yes
 
 - name: Configure Sunshine controller forwarding on hal
-  when: ansible_hostname == "hal"
+  when: ansible_facts['hostname'] == "hal"
   vars:
-    sunshine_input_user: "{{ ansible_env.SUDO_USER | default(lookup('env', 'USER'), true) }}"
+    sunshine_input_user: "{{ ansible_facts['env'].SUDO_USER | default(lookup('env', 'USER'), true) }}"
   block:
     - name: Load uinput kernel module for Sunshine
       ansible.builtin.modprobe:

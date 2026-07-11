@@ -3,25 +3,25 @@
   homebrew_tap:
     name: ymtdzzz/tap
     state: present
-  when: ansible_system == 'Darwin'
+  when: ansible_facts['system'] == 'Darwin'
 
 - name: Install otel-tui via Homebrew tap on macOS
   homebrew:
     name: ymtdzzz/tap/otel-tui
     state: present
-  when: ansible_system == 'Darwin'
+  when: ansible_facts['system'] == 'Darwin'
 
 - block:
     - name: Determine otel-tui architecture label (Linux)
       set_fact:
         otel_tui_arch_label: >-
-          {{ 'x86_64' if ansible_architecture in ['x86_64', 'amd64']
-             else 'arm64' if ansible_architecture in ['arm64', 'aarch64']
+          {{ 'x86_64' if ansible_facts['architecture'] in ['x86_64', 'amd64']
+             else 'arm64' if ansible_facts['architecture'] in ['arm64', 'aarch64']
              else 'unsupported' }}
 
     - name: Fail when otel-tui architecture is unsupported on Linux
       fail:
-        msg: "otel-tui installer only supports Linux on x86_64 or arm64 (detected {{ ansible_architecture }})"
+        msg: "otel-tui installer only supports Linux on x86_64 or arm64 (detected {{ ansible_facts['architecture'] }})"
       when: otel_tui_arch_label == 'unsupported'
 
     - name: Derive otel-tui artifact metadata
@@ -102,4 +102,4 @@
       file:
         path: "{{ otel_tui_tmpdir.path }}"
         state: absent
-  when: ansible_system == 'Linux'
+  when: ansible_facts['system'] == 'Linux'

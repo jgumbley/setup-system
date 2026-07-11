@@ -13,18 +13,18 @@
     state: present
     cache_valid_time: 3600
   become: yes
-  when: is_linux and ansible_os_family == 'Debian'
+  when: is_linux and ansible_facts['os_family'] == 'Debian'
 
 - name: Determine Godot architecture label
   ansible.builtin.set_fact:
     godot_arch_label: >-
-      {{ 'x86_64' if ansible_architecture in ['x86_64', 'amd64'] else
-         'arm64' if ansible_architecture in ['aarch64', 'arm64'] else '' }}
+      {{ 'x86_64' if ansible_facts['architecture'] in ['x86_64', 'amd64'] else
+         'arm64' if ansible_facts['architecture'] in ['aarch64', 'arm64'] else '' }}
   when: is_linux
 
 - name: Fail on unsupported architecture
   ansible.builtin.fail:
-    msg: "Godot install supports x86_64 and arm64; detected {{ ansible_architecture }}"
+    msg: "Godot install supports x86_64 and arm64; detected {{ ansible_facts['architecture'] }}"
   when:
     - is_linux
     - godot_arch_label == ''

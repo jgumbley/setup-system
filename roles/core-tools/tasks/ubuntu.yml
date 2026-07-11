@@ -4,7 +4,7 @@
     state: present
     update_cache: yes
   become: yes
-  when: ansible_distribution_version is version('26.04', '<')
+  when: ansible_facts['distribution']_version is version('26.04', '<')
 
 - name: Ensure APT keyrings directory exists
   file:
@@ -30,7 +30,7 @@
 - name: Add NodeSource Node.js 22.x repository (signed-by)
   apt_repository:
     repo: >-
-      deb [arch={{ 'amd64' if ansible_architecture in ['x86_64','amd64'] else 'arm64' }}
+      deb [arch={{ 'amd64' if ansible_facts['architecture'] in ['x86_64','amd64'] else 'arm64' }}
       signed-by=/etc/apt/keyrings/nodesource.gpg]
       https://deb.nodesource.com/node_22.x nodistro main
     state: present
@@ -54,9 +54,9 @@
 - name: Add HashiCorp APT repository (signed-by)
   apt_repository:
     repo: >-
-      deb [arch={{ 'amd64' if ansible_architecture in ['x86_64','amd64'] else 'arm64' }}
+      deb [arch={{ 'amd64' if ansible_facts['architecture'] in ['x86_64','amd64'] else 'arm64' }}
       signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg]
-      https://apt.releases.hashicorp.com {{ ansible_distribution_release }} main
+      https://apt.releases.hashicorp.com {{ ansible_facts['distribution']_release }} main
     state: present
     update_cache: yes
   become: yes
@@ -108,5 +108,5 @@
 - name: Initialize rustup with stable toolchain
   shell: rustup default stable
   args:
-    creates: "{{ ansible_env.HOME }}/.rustup"
+    creates: "{{ ansible_facts['env'].HOME }}/.rustup"
   changed_when: false

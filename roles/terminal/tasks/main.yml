@@ -26,7 +26,7 @@
 
 - name: Load OS-specific variables (Debian/Ubuntu)
   include_vars: debian.yml
-  when: is_linux and ansible_os_family == 'Debian'
+  when: is_linux and ansible_facts['os_family'] == 'Debian'
 
 - name: Configure terminal components
   include_tasks: "{{ item }}.yml"

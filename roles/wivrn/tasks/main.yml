@@ -2,8 +2,8 @@
 - name: Ensure WiVRn role runs only on Debian/Ubuntu Linux
   ansible.builtin.assert:
     that:
-      - ansible_system == "Linux"
-      - ansible_os_family == "Debian"
+      - ansible_facts['system'] == "Linux"
+      - ansible_facts['os_family'] == "Debian"
     fail_msg: "WiVRn role currently supports Debian/Ubuntu Linux only."
 
 - name: Install WiVRn Flatpak prerequisites

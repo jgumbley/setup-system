@@ -29,9 +29,9 @@
 - name: Add 1Password CLI repository (signed-by)
   apt_repository:
     repo: >-
-      deb [arch={{ 'amd64' if ansible_architecture in ['x86_64','amd64'] else 'arm64' }}
+      deb [arch={{ 'amd64' if ansible_facts['architecture'] in ['x86_64','amd64'] else 'arm64' }}
       signed-by=/usr/share/keyrings/1password-archive-keyring.gpg]
-      https://downloads.1password.com/linux/debian/{{ 'amd64' if ansible_architecture in ['x86_64','amd64'] else 'arm64' }}
+      https://downloads.1password.com/linux/debian/{{ 'amd64' if ansible_facts['architecture'] in ['x86_64','amd64'] else 'arm64' }}
       stable main
     state: present
     update_cache: yes

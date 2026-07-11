@@ -26,8 +26,8 @@ terminal_settings:
 
 # Midnight Commander configuration
 mc_paths:
-  config_dir: "{{ ansible_env.HOME }}/.config/mc"
-  skin_dir: "{{ ansible_env.HOME }}/.local/share/mc/skins"
+  config_dir: "{{ ansible_facts['env'].HOME }}/.config/mc"
+  skin_dir: "{{ ansible_facts['env'].HOME }}/.local/share/mc/skins"
 
 mc_skin_name: "onedark"
 mc_skin_template: "mc_onedark_skin.j2"

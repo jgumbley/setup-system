@@ -10,20 +10,20 @@
   block:
     - name: Create fish config directory
       file:
-        path: "{{ ansible_env.HOME }}/.config/fish"
+        path: "{{ ansible_facts['env'].HOME }}/.config/fish"
         state: directory
         mode: '0755'
 
     - name: Create fish functions directory
       file:
-        path: "{{ ansible_env.HOME }}/.config/fish/functions"
+        path: "{{ ansible_facts['env'].HOME }}/.config/fish/functions"
         state: directory
         mode: '0755'
 
     - name: Deploy fish configuration
       template:
         src: fishconfig.j2
-        dest: "{{ ansible_env.HOME }}/.config/fish/config.fish"
+        dest: "{{ ansible_facts['env'].HOME }}/.config/fish/config.fish"
         mode: '0644'
       tags: fish
 
@@ -31,13 +31,13 @@
 
     - name: Create opencode config directory
       file:
-        path: "{{ ansible_env.HOME }}/.config/opencode"
+        path: "{{ ansible_facts['env'].HOME }}/.config/opencode"
         state: directory
         mode: '0755'
 
     - name: Create opencode configuration
       copy:
-        dest: "{{ ansible_env.HOME }}/.config/opencode/opencode.json"
+        dest: "{{ ansible_facts['env'].HOME }}/.config/opencode/opencode.json"
         content: |
           {
             "$schema": "https://opencode.ai/config.json",
@@ -64,7 +64,7 @@
 
     - name: Create claude-yolo fish function
       copy:
-        dest: "{{ ansible_env.HOME }}/.config/fish/functions/claude-yolo.fish"
+        dest: "{{ ansible_facts['env'].HOME }}/.config/fish/functions/claude-yolo.fish"
         content: |
           function claude-yolo --description "Run claude with dangerously skip permissions"
               claude --dangerously-skip-permissions $argv
