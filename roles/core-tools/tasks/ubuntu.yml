@@ -4,7 +4,15 @@
     state: present
     update_cache: yes
   become: yes
-  when: ansible_facts['distribution']_version is version('26.04', '<')
+  when: ansible_facts['distribution_version'] is version('26.04', '<')
+
+- name: Remove obsolete LazyGit snapshot PPA from Ubuntu 26.04
+  apt_repository:
+    repo: ppa:roguescholar/snapshots
+    state: absent
+    update_cache: yes
+  become: yes
+  when: ansible_facts['distribution_version'] is version('26.04', '>=')
 
 - name: Ensure APT keyrings directory exists
   file:
@@ -56,7 +64,7 @@
     repo: >-
       deb [arch={{ 'amd64' if ansible_facts['architecture'] in ['x86_64','amd64'] else 'arm64' }}
       signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg]
-      https://apt.releases.hashicorp.com {{ ansible_facts['distribution']_release }} main
+      https://apt.releases.hashicorp.com {{ ansible_facts['distribution_release'] }} main
     state: present
     update_cache: yes
   become: yes

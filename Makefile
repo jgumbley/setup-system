@@ -41,7 +41,7 @@ prep-ubuntu-usb:
 moonlight:
 	ansible-playbook moonlight.yml -c local -K
 
-.bootstrapped: bootstrap/ubuntu.sh bootstrap/darwin.sh
+.bootstrapped:
 ifeq ($(shell uname -s),Darwin)
 	su admin -c "cd $(PWD) && ./bootstrap/darwin.sh" && touch .bootstrapped
 else
