@@ -30,7 +30,7 @@ $(CHECKSUMS):
 	mv $@.part $@
 
 verify-image: download
-	cd $(CACHE) && grep "  $(IMAGE)$$" SHA256SUMS | sha256sum --check --strict
+	cd $(CACHE) && grep " \\*$(IMAGE)$$" SHA256SUMS | sha256sum --check --strict
 
 inspect:
 	@test -n "$(DEVICE)" || { echo "DEVICE is required" >&2; exit 2; }
