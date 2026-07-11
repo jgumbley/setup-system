@@ -3,3 +3,5 @@ mount/
 .bootstrapped
 .secret_env
 ps2
+utils/prep_rpi_sd/.cache
+utils/prep_ubuntu_usb/.cache
