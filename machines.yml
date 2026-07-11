@@ -6,10 +6,11 @@ machine_configs:
     - ssh_host
     - realtime-audio
 
-  # Future lean Ubuntu 26.04 Sway laptop; OpenMW is added in change 3.
+  # Future lean Ubuntu 26.04 Sway laptop.
   "rocks":
     - terminal
     - sway-desktop
+    - openmw
   
   # HAL machine configuration
   "hal":
