@@ -1,5 +1,6 @@
 ---
 - name: Check whether the Firefox Snap is installed
+  tags: firefox
   become: yes
   command: snap list firefox
   register: firefox_snap
@@ -7,11 +8,13 @@
   failed_when: firefox_snap.rc not in [0, 1]
 
 - name: Remove the Firefox Snap
+  tags: firefox
   become: yes
   command: snap remove firefox
   when: firefox_snap.rc == 0
 
 - name: Remove obsolete Mozilla Team PPA configuration
+  tags: firefox
   become: yes
   file:
     path: "{{ item }}"
@@ -22,6 +25,7 @@
     - /etc/apt/keyrings/mozillateam-ppa.asc
 
 - name: Ensure APT keyrings directory exists for Mozilla
+  tags: firefox
   become: yes
   file:
     path: /etc/apt/keyrings
@@ -29,13 +33,17 @@
     mode: '0755'
 
 - name: Download Mozilla package signing key over HTTPS
+  tags: firefox
   become: yes
   get_url:
     url: https://packages.mozilla.org/apt/repo-signing-key.gpg
     dest: /etc/apt/keyrings/packages.mozilla.org.asc
     mode: '0644'
+    checksum: sha256:3ecc63922b7795eb23fdc449ff9396f9114cb3cf186d6f5b53ad4cc3ebfbb11f
+    timeout: 60
 
 - name: Configure Mozilla package repository for Firefox
+  tags: firefox
   become: yes
   copy:
     dest: /etc/apt/sources.list.d/mozilla.sources
@@ -50,6 +58,7 @@
     mode: '0644'
 
 - name: Prefer Mozilla Firefox packages
+  tags: firefox
   become: yes
   copy:
     dest: /etc/apt/preferences.d/mozilla
@@ -62,26 +71,30 @@
     mode: '0644'
 
 - name: Install Mozilla deb Firefox
+  tags: firefox
   become: yes
   apt:
     name: firefox
-    state: present
+    state: latest
     update_cache: yes
     allow_downgrade: yes
 
 - name: Verify Firefox is installed as a deb
+  tags: firefox
   command: dpkg-query -W -f='${Status}' firefox
   register: firefox_deb
   changed_when: false
   failed_when: firefox_deb.stdout != 'install ok installed'
 
 - name: Verify the Mozilla Firefox binary is installed
+  tags: firefox
   stat:
     path: /usr/lib/firefox/firefox
   register: firefox_binary
   failed_when: not firefox_binary.stat.exists or not firefox_binary.stat.executable
 
 - name: Verify the Firefox Snap is absent
+  tags: firefox
   become: yes
   command: snap list firefox
   register: firefox_snap_check

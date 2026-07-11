@@ -41,6 +41,8 @@ if [ $# -lt 2 ]; then
   exit 1
 fi
 
+rm -f "$0"
+
 pane_label="$1"
 shift
 
@@ -87,7 +89,6 @@ RUNNER_EOF
 
 pane_id="$(tmux split-window -b -v -l "$pane_lines" -c "$repo_root" -P -F '#{pane_id}' \
   bash "$runner_script" "$pane_label" "$@")"
-rm -f "$runner_script"
 
 cat <<EOF
 Started tmux pane "$pane_id" for "$pane_label".

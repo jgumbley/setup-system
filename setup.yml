@@ -14,19 +14,23 @@
     - name: Get current hostname
       set_fact:
         current_hostname: "{{ ansible_facts['hostname'] }}"
+      tags: always
     
     - name: Require a configuration for the current hostname
       fail:
         msg: "Unknown hostname '{{ current_hostname }}'; add it to machine_configs in machines.yml"
       when: current_hostname not in machine_configs
+      tags: always
 
     - name: Select machine configuration
       set_fact:
         matched_config: "{{ machine_configs[current_hostname] }}"
+      tags: always
     
     - name: Display detected configuration
       debug:
         msg: "Hostname: {{ current_hostname }}, applying config: {{ matched_config }}"
+      tags: always
     
     - name: Apply configuration components
       include_role:
@@ -34,3 +38,4 @@
       loop: "{{ matched_config }}"
       loop_control:
         loop_var: component
+      tags: always

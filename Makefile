@@ -15,6 +15,7 @@ help:
 	@echo "  make setup-legobrick"
 	@echo "  make verify-legobrick"
 	@echo "  make verify-1password-ssh  Check the desktop SSH agent and loaded keys"
+	@echo "  make firefox        Install Mozilla deb Firefox and remove the Firefox Snap"
 	@echo "  make prep-ubuntu-usb DEVICE=/dev/sdX CONFIRM=rocks"
 
 include common.mk
@@ -22,7 +23,13 @@ include common.mk
 HOSTNAME := $(shell hostname)
 PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term updates nas setup backup backup-phone caffeinate moonlight prep-rpi-sd commission-legobrick setup-legobrick verify-legobrick verify-1password-ssh prep-ubuntu-usb
+.PHONY: term updates nas setup backup backup-phone caffeinate moonlight firefox firefox-apply prep-rpi-sd commission-legobrick setup-legobrick verify-legobrick verify-1password-ssh prep-ubuntu-usb
+
+firefox:
+	bash pane.sh firefox $(MAKE) firefox-apply
+
+firefox-apply:
+	ansible-playbook setup.yml -c local -K --tags firefox
 
 prep-rpi-sd:
 	bash pane.sh prep-legobrick-sd $(MAKE) -C utils/prep_rpi_sd prepare DEVICE=$(DEVICE) CONFIRM=$(CONFIRM)
