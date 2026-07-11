@@ -5,6 +5,7 @@
     state: present
     cache_valid_time: 3600
   become: yes
+  when: ansible_facts['distribution_version'] is version('26.04', '<')
 
 - name: Add OpenMW stable PPA
   ansible.builtin.apt_repository:
@@ -12,6 +13,7 @@
     state: present
     update_cache: yes
   become: yes
+  when: ansible_facts['distribution_version'] is version('26.04', '<')
 
 - name: Add OpenMW daily builds PPA
   ansible.builtin.apt_repository:
@@ -19,8 +21,27 @@
     state: present
     update_cache: yes
   become: yes
+  when: ansible_facts['distribution_version'] is version('26.04', '<')
 
-- name: Install or upgrade OpenMW from daily builds
+- name: Remove obsolete OpenMW PPAs from Ubuntu 26.04
+  ansible.builtin.shell: |
+    shopt -s nullglob
+    files=(
+      /etc/apt/sources.list.d/openmw-ubuntu-openmw-*.list
+      /etc/apt/sources.list.d/openmw-ubuntu-openmw-*.sources
+    )
+    if (( ${#files[@]} )); then
+      rm -f "${files[@]}"
+      echo removed
+    fi
+  args:
+    executable: /bin/bash
+  register: openmw_ppa_cleanup
+  changed_when: openmw_ppa_cleanup.stdout == 'removed'
+  become: yes
+  when: ansible_facts['distribution_version'] is version('26.04', '>=')
+
+- name: Install or upgrade OpenMW
   ansible.builtin.apt:
     name:
       - openmw
