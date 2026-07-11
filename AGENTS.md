@@ -1,6 +1,7 @@
 ## How to work in this repo
 - Strictly make as entry point to invoke all targets, runtime and test.
 - Operate only inside this pwd unless explicitly told otherwise (PWD rules apply).
+- Do not stage or commit changes. Git commits belong to the operator unless the operator explicitly asks an agent to create one.
 - Read the Makefile first before using any tools or adding targets.
 - Call `make digest` to understand the codebase; it is the sanctioned way to learn the structure.
 - All execution happens via make; add or adjust Make targets rather than invoking tools or scripts directly.
