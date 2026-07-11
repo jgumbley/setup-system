@@ -5,6 +5,7 @@
 - Call `make digest` to understand the codebase; it is the sanctioned way to learn the structure.
 - All execution happens via make; add or adjust Make targets rather than invoking tools or scripts directly.
 - `pane.sh` is available at the repo root as a tmux pane runner helper.
+- `pane.sh` remains non-executable; invoke it with `bash pane.sh` from the Make-owned workflow when needed.
 - If a `make` target needs sudo/become, prompts for a password, or writes outside the workspace (for example Ansible temp paths under `~/.ansible`), run that `make` target through `pane.sh` first so the user can type credentials in the pane while the agent reads output.
 
 ## Architectural alignment

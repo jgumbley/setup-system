@@ -1,18 +1,15 @@
 ---
 machine_configs:
-  "jim-laptop":
-    - terminal
-    - sway-desktop
-    - development
-    - applications
-    - music
-    - android
-  
-  # Minimal Raspberry Pi setup
-  "pi-*":
+  # Future Ubuntu 26.04 machine, commissioned after existing-machine backups are verified.
+  "legobrick":
     - terminal
     - ssh_host
     - realtime-audio
+
+  # Future lean Ubuntu 26.04 Sway laptop; OpenMW is added in change 3.
+  "rocks":
+    - terminal
+    - sway-desktop
   
   # HAL machine configuration
   "hal":

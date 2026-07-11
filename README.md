@@ -10,9 +10,9 @@ The setup process is primarily driven by `make` commands which wrap Ansible play
     *   **Ubuntu:** `./bootstrap/ubuntu.sh`
     *   **macOS:** `./bootstrap/darwin.sh`
 
-2.  **Core System:** Install core tools and configure the system.
+2.  **Updates:** Quickly refresh coding agents, shared command-line tools, 1Password CLI, and other fast-moving essentials.
     ```bash
-    make core
+    make updates
     ```
 
 3.  **Terminal:** Configure the terminal environment (fish, tmux, vim, git, kitty).
@@ -20,18 +20,18 @@ The setup process is primarily driven by `make` commands which wrap Ansible play
     make term
     ```
 
-4.  **Full Setup (Linux Only):** Apply a full machine setup based on its hostname.
+4.  **Full Setup:** Fully converge the local machine based on its hostname.
     ```bash
     make setup
     ```
-    This runs `make core` first, then applies machine-specific roles.
+    This runs `make updates` first, then applies machine-specific roles.
 
 ## Makefile Commands
 
-*   `make core`: Runs the `core.yml` playbook to install essential tools and mount the NAS. This requires `sudo` and will prompt for a password.
+*   `make updates`: Runs the quick shared-tool refresh in `updates.yml`. This requires privilege escalation and may prompt for a password.
 *   `make nas`: Runs the `nas.yml` playbook to mount the NAS (macOS uses the current user with sudo privileges).
 *   `make term`: Runs the `terminal.yml` playbook to configure the terminal environment.
-*   `make setup`: (Linux only) Runs `make core` first, then runs `setup.yml` to apply machine-specific configuration based on the hostname.
+*   `make setup`: Runs `make updates` first, then runs `setup.yml` to fully converge the local machine using its exact hostname.
 *   `make backup`: Ensures the NAS is mounted, then backs up the `~/wip` directory to the NAS.
 
 ## Ansible Structure
@@ -40,9 +40,9 @@ The configuration is managed by Ansible playbooks and roles.
 
 ### Playbooks
 
-*   `core.yml`: The main playbook for core system setup. Installs `core-tools` and mounts the NAS.
+*   `updates.yml`: Refreshes shared foundational tools through `core-tools` and the 1Password CLI.
 *   `terminal.yml`: Configures the terminal environment using the `terminal` role.
-*   `setup.yml`: A Linux-only playbook that dynamically applies roles based on the machine's hostname. The hostname-to-role mapping is defined in `machines.yml`.
+*   `setup.yml`: Applies roles selected by the machine's exact hostname. The hostname-to-role mapping is defined in `machines.yml`.
 
 ### Roles
 
@@ -54,5 +54,5 @@ The configuration is managed by Ansible playbooks and roles.
 
 ### Configuration
 
-*   `machines.yml`: Defines which roles to apply to which machine based on hostname patterns.
+*   `machines.yml`: Defines which roles to apply to each exact hostname.
 *   `group_vars/all/theme.yml`: Contains a centralized color scheme used across various applications like kitty and Waybar.

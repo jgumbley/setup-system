@@ -15,16 +15,14 @@
       set_fact:
         current_hostname: "{{ ansible_hostname }}"
     
-    - name: Find matching machine configuration
+    - name: Require a configuration for the current hostname
+      fail:
+        msg: "Unknown hostname '{{ current_hostname }}'; add it to machine_configs in machines.yml"
+      when: current_hostname not in machine_configs
+
+    - name: Select machine configuration
       set_fact:
-        matched_config: "{{ item.value }}"
-      when: current_hostname is match(item.key)
-      loop: "{{ machine_configs | dict2items }}"
-    
-    - name: Use default config if no match found
-      set_fact:
-        matched_config: "{{ machine_configs['default'] }}"
-      when: matched_config is not defined
+        matched_config: "{{ machine_configs[current_hostname] }}"
     
     - name: Display detected configuration
       debug:

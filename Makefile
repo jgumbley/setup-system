@@ -3,10 +3,9 @@
 .PHONY: help
 help:
 	@echo "Targets:"
-	@echo "  make core           Run core system setup (sudo/BEcome prompts)"
+	@echo "  make updates        Refresh shared tools and essentials (sudo/become prompts)"
 	@echo "  make term           Configure terminal environment"
 	@echo "  make setup          Full machine setup "
-	@echo "  make setup-check    Verify setup playbook syntax"
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 	@echo "  make backup-phone   Backup rooted phone filesystem to NAS (mounts first)"
@@ -17,7 +16,7 @@ include common.mk
 HOSTNAME := $(shell hostname)
 PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term core nas setup setup-check backup backup-phone caffeinate moonlight
+.PHONY: term updates nas setup backup backup-phone caffeinate moonlight
 
 moonlight:
 	ansible-playbook moonlight.yml -c local -K
@@ -29,11 +28,11 @@ else
 	sudo ./bootstrap/ubuntu.sh && touch .bootstrapped
 endif
 
-core: .bootstrapped
+updates: .bootstrapped
 ifeq ($(shell uname -s),Darwin)
-	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook core.yml -c local --ask-become-pass"
+	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook updates.yml -c local --ask-become-pass"
 else
-	ansible-playbook core.yml -c local -K
+	ansible-playbook updates.yml -c local -K
 endif
 
 nas: .bootstrapped
@@ -47,10 +46,11 @@ term:
 	ansible-playbook terminal.yml
 
 setup:
-	ansible-playbook setup.yml -c local -K
-
-setup-check:
-	ansible-playbook setup.yml -c local --syntax-check
+ifeq ($(shell uname -s),Darwin)
+	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook updates.yml setup.yml -c local --ask-become-pass"
+else
+	ansible-playbook updates.yml setup.yml -c local -K
+endif
 
 backup: nas
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
