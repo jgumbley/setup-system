@@ -23,7 +23,7 @@ core_packages:
   - ripgrep
   - terraform
   - network-manager
-  - wireless-tools
+  - iw
   - net-tools
   - mitmproxy
   - jq

@@ -12,11 +12,5 @@
     mode: '0755'
 
 - name: Test JACK installation
-  shell: which jackd
-  register: jack_test
-  failed_when: false
-
-- name: Display JACK installation status
-  debug:
-    msg: "JACK installed at: {{ jack_test.stdout }}"
-  when: jack_test.rc == 0
+  command: jackd --version
+  changed_when: false

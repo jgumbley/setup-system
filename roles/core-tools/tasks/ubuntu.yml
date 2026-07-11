@@ -1,10 +1,10 @@
----
-- name: Add LazyGit snapshot PPA
+- name: Add LazyGit snapshot PPA before Ubuntu 26.04
   apt_repository:
     repo: ppa:roguescholar/snapshots
     state: present
     update_cache: yes
   become: yes
+  when: ansible_distribution_version is version('26.04', '<')
 
 - name: Ensure APT keyrings directory exists
   file:

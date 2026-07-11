@@ -10,15 +10,10 @@
       - a2jmidid
       - ffmpeg
       - alsa-utils
-      - linux-lowlatency  # Optional low-latency kernel
+      - linux-image-raspi
+      - python3-jack-client
+      - python3-soundfile
+      - python3-numpy
     state: present
     update_cache: yes
   become: yes
-
-- name: Install Python packages for audio development
-  pip:
-    name:
-      - jack-client
-      - soundfile
-      - numpy
-    state: present
