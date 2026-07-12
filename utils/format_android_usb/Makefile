@@ -30,8 +30,10 @@ format:
 
 format-apply: validate
 	sudo wipefs --all "$(DEVICE)"
-	sudo parted --script "$(DEVICE)" mklabel gpt mkpart primary exfat 1MiB 100%
+	sudo parted --script "$(DEVICE)" mklabel gpt mkpart primary 1MiB 100%
 	sudo partprobe "$(DEVICE)"
 	sudo udevadm settle
 	sudo mkfs.exfat -n ANDROID "$$(lsblk -nrpo PATH,TYPE "$(DEVICE)" | awk '$$2 == "part" { print $$1 }')"
+	sudo udevadm trigger --action=change "$$(lsblk -nrpo PATH,TYPE "$(DEVICE)" | awk '$$2 == "part" { print $$1 }')"
+	sudo udevadm settle
 	@lsblk -o NAME,PATH,RM,SIZE,TYPE,FSTYPE,LABEL,MOUNTPOINTS "$(DEVICE)"
