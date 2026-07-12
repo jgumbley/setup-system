@@ -8,7 +8,7 @@ CACHE := .cache
 IMAGE_PATH := $(CACHE)/$(IMAGE)
 CHECKSUMS := $(CACHE)/SHA256SUMS
 
-.PHONY: help download verify-image inspect validate prepare clean
+.PHONY: help download verify-image inspect validate prepare prepare-apply clean
 
 help:
 	@echo "Targets:"
@@ -39,7 +39,10 @@ validate:
 	@test -n "$(DEVICE)" || { echo "DEVICE is required" >&2; exit 2; }
 	@test "$(CONFIRM)" = rocks || { echo "Set CONFIRM=rocks to authorize erasing $(DEVICE)" >&2; exit 2; }
 
-prepare: validate verify-image
+prepare:
+	bash ../../pane.sh prep-rocks-usb $(MAKE) prepare-apply DEVICE=$(DEVICE) CONFIRM=$(CONFIRM)
+
+prepare-apply: validate verify-image
 	./prepare.sh $(DEVICE) $(IMAGE_PATH)
 
 clean:

@@ -5,12 +5,19 @@ HOSTNAME := rocks
 USER := system
 USB_DEVICE := 06cb:00bd
 
-.PHONY: help preflight register verify
+.PHONY: help preflight configure configure-apply register register-apply verify verify-apply
 
 help:
 	@echo "Targets:"
+	@echo "  make configure Apply Swaylock-only fingerprint authentication"
 	@echo "  make register  Enrol a fingerprint for $(USER)"
 	@echo "  make verify    Verify the enrolled fingerprint interactively"
+
+configure:
+	bash ../../pane.sh configure-fingerprint $(MAKE) configure-apply
+
+configure-apply:
+	ansible-playbook ../../setup.yml -c local -K --tags fingerprint
 
 preflight:
 	@test "$$(hostname)" = "$(HOSTNAME)" || { echo "Fingerprint registration is only supported on $(HOSTNAME)." >&2; exit 1; }
@@ -19,10 +26,16 @@ preflight:
 	@command -v fprintd-enroll >/dev/null || { echo "fprintd-enroll is unavailable; run make setup first." >&2; exit 1; }
 	@grep -Fq pam_fprintd.so /etc/pam.d/swaylock || { echo "Swaylock fingerprint authentication is disabled; run make setup first." >&2; exit 1; }
 
-register: preflight
+register:
+	bash ../../pane.sh register-fingerprint $(MAKE) register-apply
+
+register-apply: preflight
 	@! fprintd-list "$(USER)" | grep -Fq ' - #' || { echo "$(USER) already has an enrolled fingerprint; refusing to overwrite it." >&2; exit 1; }
 	sudo fprintd-enroll "$(USER)"
 	fprintd-list "$(USER)"
 
-verify: preflight
+verify:
+	bash ../../pane.sh verify-fingerprint $(MAKE) verify-apply
+
+verify-apply: preflight
 	fprintd-verify "$(USER)"

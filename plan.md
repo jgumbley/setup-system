@@ -20,7 +20,7 @@ real-time audio role failed. Start again from a freshly flashed SD card; do not
 attempt to repair or reuse the failed installation. The `realtime-audio` role
 remains an intentional no-op until the base machine has been commissioned.
 
-1. Flash a fresh Ubuntu 26.04 SD card with `make prep-rpi-sd`, setting the
+1. Flash a fresh Ubuntu 26.04 SD card with `make -C utils/prep_rpi_sd prepare DEVICE=/dev/sdX CONFIRM=legobrick`, setting the
    hostname exactly to `legobrick` and using cloud-init to install `git` and
    `make` from Ubuntu packages.
 2. Boot the fresh installation, wait for cloud-init to finish, and run the
