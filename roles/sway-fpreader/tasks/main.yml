@@ -1,0 +1,26 @@
+---
+- name: Install fingerprint authentication packages
+  become: yes
+  ansible.builtin.apt:
+    name:
+      - fprintd
+      - libfprint-2-2
+      - libpam-fprintd
+    state: present
+
+- name: Check whether fingerprint PAM authentication is enabled
+  ansible.builtin.command: grep -Fq pam_fprintd.so /etc/pam.d/common-auth
+  register: fingerprint_pam
+  changed_when: false
+  failed_when: fingerprint_pam.rc not in [0, 1]
+
+- name: Enable fingerprint PAM authentication
+  become: yes
+  ansible.builtin.command: pam-auth-update --package --enable fprintd
+  when: fingerprint_pam.rc == 1
+
+- name: Verify the fingerprint reader is detected
+  ansible.builtin.command: fprintd-list "{{ ansible_facts['user_id'] }}"
+  register: fingerprint_reader
+  changed_when: false
+  failed_when: "'found 1 devices' not in fingerprint_reader.stdout"

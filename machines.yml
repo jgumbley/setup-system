@@ -10,6 +10,7 @@ machine_configs:
   "rocks":
     - terminal
     - sway-desktop
+    - sway-fpreader
     - openmw
   
   # HAL machine configuration
