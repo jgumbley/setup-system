@@ -8,12 +8,13 @@ help:
 	@echo "  make setup          Full machine setup "
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
+	@echo "  make android-usb    Format a 64 GB Lexar USB stick for Android"
 
 include common.mk
 
 HOSTNAME := $(shell hostname)
 
-.PHONY: term updates nas setup backup caffeinate
+.PHONY: term updates nas setup backup caffeinate android-usb android-usb-inspect
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -53,3 +54,9 @@ backup: nas
 
 caffeinate:
 	sudo systemd-inhibit --what=sleep:idle:handle-lid-switch --who="Make Caffeinate" --why="Preventing system sleep and suspend" --mode=block sleep infinity
+
+android-usb-inspect:
+	$(MAKE) -C utils/format_android_usb inspect DEVICE=$(DEVICE)
+
+android-usb:
+	$(MAKE) -C utils/format_android_usb format DEVICE=$(DEVICE) CONFIRM=$(CONFIRM)
