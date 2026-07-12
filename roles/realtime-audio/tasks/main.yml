@@ -1,12 +1,3 @@
 ---
-- name: Install real-time audio packages
-  include_tasks: packages.yml
-
-- name: Configure system for real-time audio
-  include_tasks: system_config.yml
-
-- name: Setup user permissions for audio
-  include_tasks: user_permissions.yml
-
-- name: Configure JACK Audio Connection Kit
-  include_tasks: jack_config.yml
+# Intentionally empty. Real-time audio support will be developed here after
+# the base legobrick provisioning workflow has been commissioned successfully.

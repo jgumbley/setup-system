@@ -60,7 +60,7 @@ setup:
 	ssh -tt $(SSH_HOST) "make -C $(REMOTE_REPO) setup"
 
 verify:
-	ssh $(SSH_HOST) "make --no-print-directory --eval 'verify: ; hostname | grep -qx legobrick && id -un | grep -qx system && sudo sshd -T | grep -qx \"passwordauthentication no\" && test -s /home/system/.ssh/authorized_keys && getent passwd system | cut -d: -f7 | grep -qx /usr/bin/fish && id -nG | tr \" \" \"\\n\" | grep -qx audio && command -v jackd && test -f /etc/security/limits.d/audio.conf && dpkg-query -W linux-image-raspi python3-jack-client python3-soundfile python3-numpy && uname -r | grep -q raspi && grep -qx \"CONFIG_PREEMPT_DYNAMIC=y\" /boot/config-$$(uname -r) && aplay --list-devices' verify"
+	ssh $(SSH_HOST) "make --no-print-directory --eval 'verify: ; hostname | grep -qx legobrick && id -un | grep -qx system && sudo sshd -T | grep -qx \"passwordauthentication no\" && test -s /home/system/.ssh/authorized_keys && getent passwd system | cut -d: -f7 | grep -qx /usr/bin/fish' verify"
 
 clean:
 	rm -rf $(CACHE)

@@ -1,7 +1,0 @@
----
-- name: Add system user to audio group
-  user:
-    name: system
-    groups: audio
-    append: yes
-  become: yes

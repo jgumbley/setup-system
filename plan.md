@@ -15,34 +15,37 @@ the working tree and commit history, not here.
 ## Commission `legobrick`
 
 `legobrick` is a headless Ubuntu 26.04 machine administered remotely; coding
-agents do not run there.
+agents do not run there. The first installation was backed out after the
+real-time audio role failed. Start again from a freshly flashed SD card; do not
+attempt to repair or reuse the failed installation. The `realtime-audio` role
+remains an intentional no-op until the base machine has been commissioned.
 
-1. Install Ubuntu 26.04 and set the hostname exactly to `legobrick`.
-2. Install `git` and `make` from Ubuntu packages.
+1. Flash a fresh Ubuntu 26.04 SD card with `make prep-rpi-sd`, setting the
+   hostname exactly to `legobrick` and using cloud-init to install `git` and
+   `make` from Ubuntu packages.
+2. Boot the fresh installation, wait for cloud-init to finish, and run the
+   commissioning preflight.
 3. Clone this public repository over HTTPS so the machine needs no GitHub
    private key.
 4. Run `make setup` locally. Its bootstrap prerequisite installs Ansible before
    applying updates, `terminal`, `ssh_host`, and `realtime-audio`.
-5. Verify the `system` user, key-only inbound SSH, authorized public keys, fish,
-   JACK, realtime permissions, attached audio devices, and low-latency kernel.
+5. Verify the `system` user, key-only inbound SSH, authorized public keys, and
+   fish.
 6. From an administrative workstation, connect using the `jg` key held by the
    1Password agent.
 7. For later maintenance, SSH into `legobrick`, attach to tmux, pull over HTTPS,
    and run `make setup` through `bash pane.sh`.
 8. Run setup twice and confirm convergence.
 
-Prefer Ubuntu packages for Python audio dependencies. Fail if required packages
-are unavailable; do not add an unmanaged global pip fallback.
+## Develop real-time audio on `legobrick`
 
-## Commission `rocks`
-
-1. Install Ubuntu 26.04 and set the hostname exactly to `rocks`.
-2. Clone this repository and run `make setup` locally.
-3. Apply the manual 1Password sign-in and SSH-agent commissioning steps.
-4. Verify Sway, display, input, networking, terminal configuration, Mozilla deb
-   Firefox, 1Password browser integration, Snap support, OpenMW, and the
-   content-creation applications.
-5. Run setup twice and confirm Firefox and OpenMW do not churn.
+Do this only after the base Legobrick setup converges successfully. Build the
+`realtime-audio` role incrementally against the installed Ubuntu 26.04 arm64
+system and attached audio hardware. Prefer Ubuntu packages for Python audio
+dependencies and the Raspberry Pi kernel supplied by the image. Fail if
+required packages are unavailable; do not add an unmanaged global pip fallback.
+Verify JACK, real-time permissions, attached audio devices, kernel preemption,
+and convergence before considering the role complete.
 
 ## Inspect `models` and ROCm locally on `hal`
 
@@ -66,7 +69,7 @@ https://rocm.docs.amd.com/en/latest/compatibility/compatibility-matrix.html
 
 ## Design the generic Ubuntu upgrade workflow
 
-Do this only after both greenfield machines are running.
+Do this only after `legobrick` is running; `rocks` commissioning is complete.
 
 Add host-neutral local Make targets:
 
