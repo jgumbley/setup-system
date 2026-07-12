@@ -18,6 +18,7 @@ help:
 	@echo "  make firefox        Install Mozilla deb Firefox and remove the Firefox Snap"
 	@echo "  make register-fingerprint  Enrol and verify the system user's fingerprint on rocks"
 	@echo "  make verify-fingerprint    Verify fingerprint authentication interactively on rocks"
+	@echo "  make configure-fingerprint Apply Swaylock-only fingerprint authentication on rocks"
 	@echo "  make prep-ubuntu-usb DEVICE=/dev/sdX CONFIRM=rocks"
 
 include common.mk
@@ -25,7 +26,7 @@ include common.mk
 HOSTNAME := $(shell hostname)
 PHONE_HOSTNAME := pixel-phone-rooted
 
-.PHONY: term updates nas setup backup backup-phone caffeinate moonlight firefox firefox-apply prep-rpi-sd commission-legobrick setup-legobrick verify-legobrick verify-1password-ssh register-fingerprint verify-fingerprint prep-ubuntu-usb
+.PHONY: term updates nas setup backup backup-phone caffeinate moonlight firefox firefox-apply prep-rpi-sd commission-legobrick setup-legobrick verify-legobrick verify-1password-ssh configure-fingerprint fingerprint-apply register-fingerprint verify-fingerprint prep-ubuntu-usb
 
 firefox:
 	bash pane.sh firefox $(MAKE) firefox-apply
@@ -51,6 +52,12 @@ verify-1password-ssh:
 	@test -S "$(HOME)/.1password/agent.sock" || { echo "1Password SSH agent socket is unavailable. In 1Password, enable Settings > Developer > Use the SSH agent, then unlock the app and retry." >&2; exit 1; }
 	@SSH_AUTH_SOCK="$(HOME)/.1password/agent.sock" ssh-add -l >/dev/null 2>&1 || { echo "1Password SSH agent has no available keys. Add or import an SSH Key item in an unlocked vault, then retry." >&2; exit 1; }
 	@echo "1Password SSH agent is running and has at least one available key."
+
+configure-fingerprint:
+	bash pane.sh configure-fingerprint $(MAKE) fingerprint-apply
+
+fingerprint-apply:
+	ansible-playbook setup.yml -c local -K --tags fingerprint
 
 register-fingerprint:
 	bash pane.sh register-fingerprint $(MAKE) -C utils/register_fingerprint register

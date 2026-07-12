@@ -20,15 +20,9 @@ client.placeholder      {{ theme_colors.placeholder_border }} {{ theme_colors.pl
 
 include /etc/sway/config-vars.d/*
 
-### Output configuration
+### Shared output configuration
 exec ~/.local/bin/wallpaper-rotate.sh ~/Pictures/wallpapers 300
 exec kanshi
-
-output eDP-1 {
-    resolution 1920x1080
-    position 0,0
-    scale 1
-}
 
 output DP-1 {
     resolution 1920x1080@60hz
@@ -48,6 +42,25 @@ output HDMI-A-2 {
     scale 2
 }
 
+### Machine output configuration
+{% if current_hostname == 'rocks' %}
+# rocks: ThinkPad X1 Nano Gen 1 internal panel
+output eDP-1 {
+    resolution 2160x1350@59.744hz
+    position 0,0
+    scale 1
+}
+{% elif current_hostname == 'system' %}
+# system: internal panel
+output eDP-1 {
+    resolution 1920x1080
+    position 0,0
+    scale 1
+}
+{% elif current_hostname == 'hal' %}
+# hal: no machine-specific output configuration
+{% endif %}
+
 focus_follows_mouse no
 
 ### Idle configuration
@@ -56,18 +69,7 @@ exec swayidle -w \
     timeout 600 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
     before-sleep 'swaylock -f -c 000000'
 
-### Input configuration
-input "1739:0:Synaptics_TM3289-021" {
-    dwt enabled
-    tap enabled
-    natural_scroll enabled
-    middle_emulation enabled
-}
-
-input "2:10:TPPS/2_Elan_TrackPoint" {
-    pointer_accel 0.7
-}
-
+### Shared input configuration
 input "type:keyboard" {
     xkb_layout gb
     xkb_options lv3:lalt_switch,compose:ralt
@@ -82,6 +84,35 @@ input "1452:613:Apple_Inc._Magic_Trackpad" {
     scroll_factor 1.0
 }
 
+### Machine input configuration
+{% if current_hostname == 'rocks' %}
+# rocks: ThinkPad X1 Nano Gen 1 ELAN touchpad and TrackPoint
+input "1267:12624:ELAN0670:00_04F3:3150_Touchpad" {
+    dwt enabled
+    tap enabled
+    natural_scroll enabled
+    middle_emulation enabled
+}
+
+input "2:10:TPPS/2_Elan_TrackPoint" {
+    pointer_accel 0.7
+}
+{% elif current_hostname == 'system' %}
+# system: Synaptics touchpad and TrackPoint
+input "1739:0:Synaptics_TM3289-021" {
+    dwt enabled
+    tap enabled
+    natural_scroll enabled
+    middle_emulation enabled
+}
+
+input "2:10:TPPS/2_Elan_TrackPoint" {
+    pointer_accel 0.7
+}
+{% elif current_hostname == 'hal' %}
+# hal: no machine-specific input configuration
+{% endif %}
+
 ### Key bindings
 # Basic controls
 bindsym $mod+space exec $menu
@@ -90,6 +121,20 @@ bindsym $mod+Return exec $term
 floating_modifier Mod4 normal
 bindsym $mod+Shift+c reload
 bindsym $mod+Shift+e exec swaynag -t warning -m 'You pressed the exit shortcut. Do you really want to exit sway? This will end your Wayland session.' -B 'Yes, exit sway' 'swaymsg exit'
+
+{% if current_hostname == 'rocks' %}
+# rocks: ThinkPad hardware keys
+bindsym XF86MonBrightnessDown exec brightnessctl set 5%-
+bindsym XF86MonBrightnessUp exec brightnessctl set +5%
+bindsym XF86AudioLowerVolume exec wpctl set-volume @DEFAULT_AUDIO_SINK@ 5%-
+bindsym XF86AudioRaiseVolume exec wpctl set-volume -l 1 @DEFAULT_AUDIO_SINK@ 5%+
+bindsym XF86AudioMute exec wpctl set-mute @DEFAULT_AUDIO_SINK@ toggle
+bindsym XF86AudioMicMute exec wpctl set-mute @DEFAULT_AUDIO_SOURCE@ toggle
+{% elif current_hostname == 'system' %}
+# system: no machine-specific key bindings
+{% elif current_hostname == 'hal' %}
+# hal: no machine-specific key bindings
+{% endif %}
 
 # Focus and movement
 bindsym $mod+$left focus left

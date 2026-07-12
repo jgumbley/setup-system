@@ -17,7 +17,7 @@ preflight:
 	@test "$$(id -un)" = "$(USER)" || { echo "Run fingerprint registration as $(USER)." >&2; exit 1; }
 	@lsusb -d "$(USB_DEVICE)" | grep -Fq "$(USB_DEVICE)" || { echo "Fingerprint reader $(USB_DEVICE) was not detected." >&2; exit 1; }
 	@command -v fprintd-enroll >/dev/null || { echo "fprintd-enroll is unavailable; run make setup first." >&2; exit 1; }
-	@grep -Fq pam_fprintd.so /etc/pam.d/common-auth || { echo "Fingerprint PAM authentication is disabled; run make setup first." >&2; exit 1; }
+	@grep -Fq pam_fprintd.so /etc/pam.d/swaylock || { echo "Swaylock fingerprint authentication is disabled; run make setup first." >&2; exit 1; }
 
 register: preflight
 	@! fprintd-list "$(USER)" | grep -Fq ' - #' || { echo "$(USER) already has an enrolled fingerprint; refusing to overwrite it." >&2; exit 1; }

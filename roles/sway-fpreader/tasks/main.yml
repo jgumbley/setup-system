@@ -1,5 +1,6 @@
 ---
 - name: Install fingerprint authentication packages
+  tags: fingerprint
   become: yes
   ansible.builtin.apt:
     name:
@@ -8,18 +9,30 @@
       - libpam-fprintd
     state: present
 
-- name: Check whether fingerprint PAM authentication is enabled
+- name: Check whether fingerprint PAM authentication is enabled system-wide
+  tags: fingerprint
   ansible.builtin.command: grep -Fq pam_fprintd.so /etc/pam.d/common-auth
-  register: fingerprint_pam
+  register: fingerprint_common_auth
   changed_when: false
-  failed_when: fingerprint_pam.rc not in [0, 1]
+  failed_when: fingerprint_common_auth.rc not in [0, 1]
 
-- name: Enable fingerprint PAM authentication
+- name: Disable system-wide fingerprint PAM authentication
+  tags: fingerprint
   become: yes
-  ansible.builtin.command: pam-auth-update --package --enable fprintd
-  when: fingerprint_pam.rc == 1
+  ansible.builtin.command: pam-auth-update --package --disable fprintd
+  when: fingerprint_common_auth.rc == 0
+
+- name: Enable fingerprint authentication for Swaylock
+  tags: fingerprint
+  become: yes
+  ansible.builtin.lineinfile:
+    path: /etc/pam.d/swaylock
+    line: auth sufficient pam_fprintd.so max-tries=1 timeout=10
+    insertbefore: '^auth include login$'
+    state: present
 
 - name: Verify the fingerprint reader is detected
+  tags: fingerprint
   ansible.builtin.command: fprintd-list "{{ ansible_facts['user_id'] }}"
   register: fingerprint_reader
   changed_when: false
