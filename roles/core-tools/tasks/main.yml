@@ -26,8 +26,5 @@
 - name: Include platform-specific tasks
   include_tasks: "{{ platform_name }}.yml"
 
-- name: Install coding agents
-  include_tasks: coding_agents.yml
-
 - name: Setup system-wide secret environment support
   include_tasks: secret_env_system.yml

@@ -28,7 +28,7 @@ remains an intentional no-op until the base machine has been commissioned.
 3. Clone this public repository over HTTPS so the machine needs no GitHub
    private key.
 4. Run `make setup` locally. Its bootstrap prerequisite installs Ansible before
-   applying updates, `terminal`, `ssh_host`, and `realtime-audio`.
+   applying shared setup, `terminal`, `ssh_host`, and `realtime-audio`.
 5. Verify the `system` user, key-only inbound SSH, authorized public keys, and
    fish.
 6. From an administrative workstation, connect using the `jg` key held by the

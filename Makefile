@@ -3,7 +3,7 @@
 .PHONY: help
 help:
 	@echo "Targets:"
-	@echo "  make updates        Refresh shared tools and essentials (sudo/become prompts)"
+	@echo "  make updates        Refresh coding agents (sudo/become prompts)"
 	@echo "  make term           Configure terminal environment"
 	@echo "  make setup          Full machine setup "
 	@echo "  make nas            Mount NAS via Ansible playbook"
@@ -90,15 +90,15 @@ term:
 
 setup: .bootstrapped
 ifeq ($(shell uname -s),Darwin)
-	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook updates.yml setup.yml -c local --ask-become-pass"
+	su admin -c "cd $(PWD) && ANSIBLE_REMOTE_TMP=/tmp ansible-playbook setup.yml -c local --ask-become-pass"
 else
-	ansible-playbook updates.yml setup.yml -c local -K
+	ansible-playbook setup.yml -c local -K
 endif
 
 backup: nas
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
 	mkdir -p /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip
-	rsync -rlptDvz --progress --update --no-group --exclude='node_modules' --exclude='__pycache__' --exclude='.DS_Store' --exclude='venv' --exclude='.venv' ~/wip/ /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip/
+	rsync -rlptDvz --progress --update --no-group --exclude='node_modules' --exclude='__pycache__' --exclude='.DS_Store' --exclude='venv' --exclude='.venv' --exclude='.uv-cache' ~/wip/ /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip/
 
 backup-phone: nas
 	mkdir -p /usr/local/mnt/iceburg/backup/$(PHONE_HOSTNAME).smeg/wip
