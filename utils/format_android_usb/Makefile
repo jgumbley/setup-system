@@ -1,12 +1,13 @@
 SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
-.PHONY: help inspect validate format format-apply
+.PHONY: help inspect validate format format-apply mount mount-apply
 
 help:
 	@echo "Targets:"
 	@echo "  make inspect DEVICE=/dev/sdX"
 	@echo "  make format DEVICE=/dev/sdX CONFIRM=LEXAR"
+	@echo "  make mount DEVICE=/dev/sdX"
 
 inspect:
 	@test -n "$(DEVICE)" || { echo "DEVICE is required" >&2; exit 2; }
@@ -37,3 +38,13 @@ format-apply: validate
 	sudo udevadm trigger --action=change "$$(lsblk -nrpo PATH,TYPE "$(DEVICE)" | awk '$$2 == "part" { print $$1 }')"
 	sudo udevadm settle
 	@lsblk -o NAME,PATH,RM,SIZE,TYPE,FSTYPE,LABEL,MOUNTPOINTS "$(DEVICE)"
+
+mount:
+	bash ../../pane.sh mount-android-usb $(MAKE) mount-apply DEVICE=$(DEVICE)
+
+mount-apply:
+	@test -n "$(DEVICE)" || { echo "DEVICE is required" >&2; exit 2; }
+	@test "$$(lsblk -dnro TYPE "$(DEVICE)")" = disk || { echo "$(DEVICE) is not a whole disk" >&2; exit 1; }
+	@test "$$(lsblk -dnro TRAN "$(DEVICE)")" = usb || { echo "$(DEVICE) is not connected over USB" >&2; exit 1; }
+	@partition="$$(lsblk -nrpo PATH,LABEL "$(DEVICE)" | awk '$$2 == "ANDROID" { print $$1 }')"; test -n "$$partition" || { echo "$(DEVICE) has no ANDROID-labelled partition" >&2; exit 1; }; test "$$(printf '%s\n' "$$partition" | wc -l)" -eq 1 || { echo "$(DEVICE) has multiple ANDROID-labelled partitions" >&2; exit 1; }; sudo mkdir -p /mnt/android; sudo mount "$$partition" /mnt/android
+	@findmnt /mnt/android
