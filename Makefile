@@ -6,6 +6,7 @@ help:
 	@echo "  make updates        Refresh coding agents (sudo/become prompts)"
 	@echo "  make term           Configure terminal environment"
 	@echo "  make setup          Full machine setup "
+	@echo "  make vnc-viewer     Install the TigerVNC viewer"
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 	@echo "  make android-usb    Format a 64 GB Lexar USB stick for Android"
@@ -14,7 +15,7 @@ include common.mk
 
 HOSTNAME := $(shell hostname)
 
-.PHONY: term updates nas setup backup caffeinate android-usb android-usb-inspect
+.PHONY: term updates nas setup vnc-viewer vnc-viewer-apply backup caffeinate android-usb android-usb-inspect
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -46,6 +47,12 @@ ifeq ($(shell uname -s),Darwin)
 else
 	ansible-playbook setup.yml -c local -K
 endif
+
+vnc-viewer:
+	bash pane.sh install-vnc-viewer $(MAKE) vnc-viewer-apply
+
+vnc-viewer-apply: .bootstrapped
+	ansible-playbook setup.yml -c local -K --tags vnc-viewer
 
 backup: nas
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"

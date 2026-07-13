@@ -101,6 +101,13 @@
   changed_when: false
   failed_when: firefox_snap_check.rc != 1
 
+- name: Install TigerVNC viewer
+  tags: vnc-viewer
+  become: yes
+  apt:
+    name: tigervnc-viewer
+    state: present
+
 - name: Install sway
   become: yes
   apt:
