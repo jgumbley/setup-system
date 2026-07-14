@@ -7,6 +7,7 @@ help:
 	@echo "  make term           Configure terminal environment"
 	@echo "  make setup          Full machine setup "
 	@echo "  make vnc-viewer     Install the TigerVNC viewer"
+	@echo "  make sunshine-host Install the native Sunshine host package on HAL"
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip to NAS (mounts first)"
 	@echo "  make android-usb    Format a 64 GB Lexar USB stick for Android"
@@ -15,7 +16,7 @@ include common.mk
 
 HOSTNAME := $(shell hostname)
 
-.PHONY: term updates nas setup vnc-viewer vnc-viewer-apply backup caffeinate android-usb android-usb-inspect
+.PHONY: term updates nas setup vnc-viewer vnc-viewer-apply sunshine-host sunshine-host-apply check backup caffeinate android-usb android-usb-inspect
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -53,6 +54,16 @@ vnc-viewer:
 
 vnc-viewer-apply: .bootstrapped
 	ansible-playbook setup.yml -c local -K --tags vnc-viewer
+
+sunshine-host: .bootstrapped
+	bash pane.sh sunshine-host $(MAKE) --no-print-directory sunshine-host-apply
+
+sunshine-host-apply:
+	ansible-playbook sunshine-host.yml -c local -K
+
+check:
+	ansible-playbook setup.yml -c local --syntax-check
+	ansible-playbook sunshine-host.yml -c local --syntax-check
 
 backup: nas
 	@echo "Backing up to /usr/local/mnt/iceburg/backup/$(HOSTNAME).smeg/wip"
