@@ -33,3 +33,8 @@
   homebrew:
     name: uv
     state: present
+
+- name: Install Google Cloud SDK (gcloud) with Homebrew Cask
+  homebrew_cask:
+    name: google-cloud-sdk
+    state: present

@@ -5,6 +5,7 @@ core_packages:
   - kitty
   - mpv
   - git
+  - gh
   - vim
   - neovim
   - python3
