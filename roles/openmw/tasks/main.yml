@@ -43,6 +43,7 @@
       - openmw-launcher
       - openmw-cs
       - libopenscenegraph-dev
+      - openscenegraph
     state: latest
     cache_valid_time: 3600
   become: yes
@@ -57,3 +58,111 @@
     state: present
     cache_valid_time: 3600
   become: yes
+
+- name: Read the installed Blender version
+  ansible.builtin.command: blender --version
+  register: blender_version
+  changed_when: false
+  become: yes
+  become_user: system
+
+- name: Select Blender add-on releases
+  ansible.builtin.set_fact:
+    blender_config_version: "{{ blender_version.stdout | regex_search('Blender ([0-9]+\\.[0-9]+)', '\\1') | first }}"
+    comfyui_blender_version: "{{ 'v4.5.0' if blender_version.stdout is search('Blender ([5-9]|[1-9][0-9]+)\\.') else 'v3.3.4' }}"
+    comfyui_blender_checksum: "{{ '349bb6c08bc0be41969cd589d77732c2dde5ad364de78b2af470de73a8501ce1' if blender_version.stdout is search('Blender ([5-9]|[1-9][0-9]+)\\.') else 'a1492de6b15ba9c7f3b6d7b631dd25fcaa6c590896817f34cdc53798160347cd' }}"
+
+- name: Create Blender add-on and download directories
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner }}"
+    group: "{{ item.group }}"
+    mode: "0755"
+  loop:
+    - path: "/home/system/.config/blender/{{ blender_config_version }}/scripts/addons"
+      owner: system
+      group: system
+    - path: /var/cache/setup-system/blender-addons
+      owner: root
+      group: root
+  become: yes
+
+- name: Download the Morrowind Blender plug-in
+  ansible.builtin.get_url:
+    url: https://github.com/Greatness7/io_scene_mw/releases/download/0.8.120/io_scene_mw.zip
+    dest: /var/cache/setup-system/blender-addons/io_scene_mw-0.8.120.zip
+    checksum: sha256:351734f08186202b0c9e8433bb6e9fa4d4f29b0e440a098da6ef37904a53ace9
+    mode: "0644"
+  become: yes
+
+- name: Download the Blender ComfyUI integration
+  ansible.builtin.get_url:
+    url: "https://github.com/alexisrolland/ComfyUI-Blender/releases/download/{{ comfyui_blender_version }}/comfyui_blender_{{ comfyui_blender_version }}.zip"
+    dest: "/var/cache/setup-system/blender-addons/comfyui_blender-{{ comfyui_blender_version }}.zip"
+    checksum: "sha256:{{ comfyui_blender_checksum }}"
+    mode: "0644"
+  become: yes
+
+- name: Check installed Blender add-on versions
+  ansible.builtin.stat:
+    path: "/home/system/.config/blender/{{ blender_config_version }}/scripts/addons/{{ item.directory }}/.setup-system-{{ item.version }}"
+  loop:
+    - directory: io_scene_mw
+      version: 0.8.120
+    - directory: comfyui_blender
+      version: "{{ comfyui_blender_version }}"
+  register: blender_addon_versions
+  become: yes
+
+- name: Remove superseded Blender add-ons
+  ansible.builtin.file:
+    path: "/home/system/.config/blender/{{ blender_config_version }}/scripts/addons/{{ item.item.directory }}"
+    state: absent
+  loop: "{{ blender_addon_versions.results }}"
+  when: not item.stat.exists
+  become: yes
+
+- name: Install Blender add-ons
+  ansible.builtin.unarchive:
+    src: "/var/cache/setup-system/blender-addons/{{ item.archive }}"
+    dest: "/home/system/.config/blender/{{ blender_config_version }}/scripts/addons"
+    remote_src: yes
+    owner: system
+    group: system
+    creates: "/home/system/.config/blender/{{ blender_config_version }}/scripts/addons/{{ item.directory }}/.setup-system-{{ item.version }}"
+  loop:
+    - archive: io_scene_mw-0.8.120.zip
+      directory: io_scene_mw
+      version: 0.8.120
+    - archive: "comfyui_blender-{{ comfyui_blender_version }}.zip"
+      directory: comfyui_blender
+      version: "{{ comfyui_blender_version }}"
+  become: yes
+
+- name: Record installed Blender add-on versions
+  ansible.builtin.file:
+    path: "/home/system/.config/blender/{{ blender_config_version }}/scripts/addons/{{ item.directory }}/.setup-system-{{ item.version }}"
+    state: touch
+    owner: system
+    group: system
+    mode: "0644"
+    modification_time: preserve
+    access_time: preserve
+  loop:
+    - directory: io_scene_mw
+      version: 0.8.120
+    - directory: comfyui_blender
+      version: "{{ comfyui_blender_version }}"
+  become: yes
+
+- name: Enable the OpenMW and ComfyUI Blender add-ons
+  ansible.builtin.command:
+    argv:
+      - blender
+      - --background
+      - --python-expr
+      - "import bpy; [bpy.ops.preferences.addon_enable(module=module) for module in ('io_scene_mw', 'comfyui_blender')]; bpy.ops.wm.save_userpref()"
+  changed_when: false
+  become: yes
+  become_user: system
