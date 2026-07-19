@@ -1,0 +1,32 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export SDL_VIDEODRIVER=x11
+export DISPLAY="${DISPLAY:-:0}"
+export PULSE_SERVER="{{ sunshine_host_pulse_server }}"
+export ALSOFT_DRIVERS=pulse
+export SDL_GAMECONTROLLERCONFIG_FILE=/etc/openmw/gamecontrollerdb.txt
+export MESA_LOADER_DRIVER_OVERRIDE=radeonsi
+export __GLX_VENDOR_LIBRARY_NAME=mesa
+cd "{{ sunshine_host_morrowind_data_dir }}"
+
+for _ in $(seq 1 50); do
+  default_sink="$(pactl get-default-sink 2>/dev/null || true)"
+  case "$default_sink" in *sunshine*) break ;; esac
+  sleep 0.2
+done
+
+exec /usr/games/openmw \
+  --config="{{ sunshine_host_morrowind_config_dir }}" \
+  --replace=data --replace=fallback-archive --replace=content \
+  --user-data="{{ sunshine_host_morrowind_user_data_dir }}" \
+  --data=/usr/share/games/openmw/resources/vfs \
+  --data=/usr/share/games/openmw/resources/vfs-mw \
+  --data="{{ sunshine_host_morrowind_data_dir }}" \
+  --fallback-archive=Morrowind.bsa \
+  --fallback-archive=Tribunal.bsa \
+  --fallback-archive=Bloodmoon.bsa \
+  --content=Morrowind.esm \
+  --content=Tribunal.esm \
+  --content=Bloodmoon.esm \
+  "$@"

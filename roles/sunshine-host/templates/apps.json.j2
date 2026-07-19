@@ -1,0 +1,57 @@
+{
+  "env": {
+    "PATH": "{{ sunshine_host_app_path }}"
+  },
+  "apps": [
+    {
+      "name": "eaadwig",
+      "cmd": "{{ sunshine_host_install_dir }}/bin/run-eaadwig-openmw.sh",
+      "working-dir": "{{ sunshine_host_install_dir }}",
+      "output": "{{ sunshine_host_state_dir }}/eaadwig.log",
+      "wait-all": true,
+      "exit-timeout": 5,
+      "auto-detach": false,
+      "image-path": "{{ sunshine_host_config_dir }}/covers/eaadwig.png"
+    },
+    {
+      "name": "tmux",
+      "cmd": "{{ sunshine_host_install_dir }}/bin/quest-tmux-app.sh",
+      "working-dir": "{{ sunshine_host_home }}",
+      "output": "{{ sunshine_host_state_dir }}/tmux.log",
+      "wait-all": true,
+      "exit-timeout": 5,
+      "auto-detach": false,
+      "image-path": "{{ sunshine_host_config_dir }}/covers/tmux.png"
+    },
+    {
+      "name": "morrowind",
+      "cmd": "{{ sunshine_host_install_dir }}/bin/run-morrowind-openmw.sh",
+      "working-dir": "{{ sunshine_host_morrowind_data_dir }}",
+      "output": "{{ sunshine_host_state_dir }}/morrowind.log",
+      "wait-all": true,
+      "exit-timeout": 5,
+      "auto-detach": false,
+      "image-path": "{{ sunshine_host_config_dir }}/covers/morrowind.png"
+    },
+    {
+      "name": "quake3",
+      "cmd": "{{ sunshine_host_install_dir }}/bin/run-quake3.sh",
+      "working-dir": "{{ sunshine_host_quake3_engine_dir }}",
+      "output": "{{ sunshine_host_state_dir }}/quake3.log",
+      "wait-all": true,
+      "exit-timeout": 5,
+      "auto-detach": false,
+      "image-path": "{{ sunshine_host_config_dir }}/covers/quake3.png"
+    },
+    {
+      "name": "rocknix",
+      "cmd": "{{ sunshine_host_install_dir }}/bin/run-rocknix.sh",
+      "working-dir": "{{ sunshine_host_games_root }}",
+      "output": "{{ sunshine_host_state_dir }}/rocknix.log",
+      "wait-all": true,
+      "exit-timeout": 5,
+      "auto-detach": false,
+      "image-path": "{{ sunshine_host_config_dir }}/covers/rocknix.png"
+    }
+  ]
+}

@@ -1,0 +1,25 @@
+[Unit]
+Description=Sunshine Host headless Sway session
+After=multi-user.target
+Wants=dbus.service
+
+[Service]
+Type=simple
+User={{ sunshine_host_user }}
+Group={{ sunshine_host_group }}
+SupplementaryGroups=input render video audio
+RuntimeDirectory=sunshine-host
+RuntimeDirectoryMode=0700
+Environment=XDG_RUNTIME_DIR={{ sunshine_host_runtime_dir }}
+Environment=XDG_CONFIG_HOME={{ sunshine_host_config_dir }}/sway
+Environment=WLR_BACKENDS=headless,libinput
+Environment=WLR_LIBINPUT_NO_DEVICES=1
+ExecStartPre=-/usr/bin/rm -f {{ sunshine_host_runtime_dir }}/bus
+ExecStartPre=/usr/bin/dbus-daemon --session --fork --address=unix:path={{ sunshine_host_runtime_dir }}/bus
+ExecStart=/usr/bin/sway -c {{ sunshine_host_config_dir }}/sway/sway.conf
+Restart=on-failure
+RestartSec=2
+KillMode=control-group
+
+[Install]
+WantedBy=sunshine-host.target

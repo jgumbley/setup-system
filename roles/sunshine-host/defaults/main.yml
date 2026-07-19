@@ -1,0 +1,43 @@
+---
+# HAL-local identities and fully qualified workspace locations.
+sunshine_host_user: system
+sunshine_host_group: system
+sunshine_host_home: /home/system
+sunshine_host_workspace_root: "{{ machine_paths['hal'].workspace_root }}"
+sunshine_host_openmw_root: "{{ machine_paths['hal'].openmw_root }}"
+sunshine_host_games_root: "{{ machine_paths['hal'].games_root }}"
+
+# Installed host-service locations.
+sunshine_host_install_dir: /usr/lib/sunshine-host
+sunshine_host_config_dir: /etc/sunshine-host
+sunshine_host_state_dir: /var/lib/sunshine-host
+sunshine_host_runtime_dir: /run/sunshine-host
+sunshine_host_utility_dir: "{{ playbook_dir }}/utils/sunshine_host"
+
+# Pinned native Sunshine package for HAL.
+sunshine_host_version: "2026.516.143833"
+sunshine_host_deb_path: /var/cache/setup-system/sunshine-ubuntu-24.04-amd64-2026.516.143833.deb
+sunshine_host_deb_url: https://github.com/LizardByte/Sunshine/releases/download/v2026.516.143833/sunshine-ubuntu-24.04-amd64.deb
+sunshine_host_deb_sha256: 6df8900f23c9c056252eea51639507b8239a1d1241308ab8923cb402b0ca653b
+sunshine_host_bin: /usr/bin/sunshine
+
+# External application locations. The role configures launch contracts only;
+# content and builds remain owned by the OpenMW and games repositories.
+sunshine_host_eaadwig_dir: "{{ sunshine_host_openmw_root }}/eadwig"
+sunshine_host_morrowind_data_dir: "{{ sunshine_host_openmw_root }}/morrowind-data/Data Files"
+sunshine_host_morrowind_config_dir: "{{ sunshine_host_openmw_root }}/morrowind/config"
+sunshine_host_morrowind_user_data_dir: "{{ sunshine_host_openmw_root }}/morrowind/user-data"
+sunshine_host_quake3_root: "{{ sunshine_host_games_root }}/quake3"
+sunshine_host_quake3_engine_dir: "{{ sunshine_host_quake3_root }}/quake3e/build/release-linux-x86_64"
+sunshine_host_quake3_binary: "{{ sunshine_host_quake3_engine_dir }}/quake3e.x64"
+sunshine_host_quake3_data_dir: "{{ sunshine_host_quake3_root }}/data"
+sunshine_host_quake3_home_dir: "{{ sunshine_host_quake3_root }}/home"
+sunshine_host_quake3_basegame: baseq3
+
+# Headless session and Sunshine configuration.
+sunshine_host_sway_resolution: 1920x1080
+sunshine_host_sway_refresh: 60Hz
+sunshine_host_wayland_display: wayland-1
+sunshine_host_pulse_server: unix:/run/user/1000/pulse/native
+sunshine_host_app_path: /usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/home/system/.local/bin
+sunshine_host_csrf_origins: https://localhost:47990,https://127.0.0.1:47990,https://hal:47990

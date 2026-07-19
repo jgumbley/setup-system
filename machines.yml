@@ -1,4 +1,15 @@
 ---
+machine_paths:
+  "hal":
+    workspace_root: /home/system/wip
+    openmw_root: /home/system/wip/mw
+    games_root: /home/system/wip/games
+
+machine_utility_packages:
+  "hal":
+    - adb
+    - usbutils
+
 machine_configs:
   # Future Ubuntu 26.04 machine, commissioned after existing-machine backups are verified.
   "legobrick":

@@ -1,0 +1,17 @@
+---
+- name: Reload Sunshine Host systemd units
+  ansible.builtin.systemd:
+    daemon_reload: yes
+  listen: Sunshine Host configuration changed
+
+- name: Restart Sunshine Host Sway session
+  ansible.builtin.systemd:
+    name: sunshine-host-sway.service
+    state: restarted
+  listen: Sunshine Host configuration changed
+
+- name: Restart Sunshine Host daemon
+  ansible.builtin.systemd:
+    name: sunshine-host-sunshine.service
+    state: restarted
+  listen: Sunshine Host configuration changed

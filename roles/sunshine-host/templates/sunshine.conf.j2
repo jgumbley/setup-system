@@ -1,0 +1,13 @@
+file_apps = {{ sunshine_host_config_dir }}/apps.json
+credentials_file = {{ sunshine_host_state_dir }}/sunshine_state.json
+file_state = {{ sunshine_host_state_dir }}/sunshine_state.json
+log_path = {{ sunshine_host_state_dir }}/sunshine.log
+pkey = {{ sunshine_host_state_dir }}/cakey.pem
+cert = {{ sunshine_host_state_dir }}/cacert.pem
+csrf_allowed_origins = {{ sunshine_host_csrf_origins }}
+controller = enabled
+gamepad = xone
+encoder = vaapi
+hevc_mode = 1
+av1_mode = 1
+system_tray = disabled

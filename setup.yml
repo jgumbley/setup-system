@@ -91,6 +91,38 @@
       debug:
         msg: "Hostname: {{ current_hostname }}, applying config: {{ matched_config }}"
       tags: always
+
+    - name: Create setup-system machine configuration directory
+      ansible.builtin.file:
+        path: /etc/setup-system
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      when: current_hostname in machine_paths
+      tags: always
+
+    - name: Publish Ansible-managed machine locations for utilities
+      ansible.builtin.copy:
+        dest: "/etc/setup-system/{{ current_hostname }}-locations.mk"
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          # Managed by setup-system for {{ current_hostname }}.
+          HAL_WORKSPACE_ROOT := {{ machine_paths[current_hostname].workspace_root }}
+          HAL_OPENMW_ROOT := {{ machine_paths[current_hostname].openmw_root }}
+          HAL_GAMES_ROOT := {{ machine_paths[current_hostname].games_root }}
+      when: current_hostname in machine_paths
+      tags: always
+
+    - name: Install machine utility packages
+      ansible.builtin.apt:
+        name: "{{ machine_utility_packages[current_hostname] }}"
+        state: present
+        cache_valid_time: 3600
+      when: current_hostname in machine_utility_packages
+      tags: always
     
     - name: Apply configuration components
       include_role:

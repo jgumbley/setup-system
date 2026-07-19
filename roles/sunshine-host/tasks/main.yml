@@ -1,23 +1,19 @@
 ---
-- name: Require the supported HAL platform for Sunshine Host
+- name: Require HAL's supported Sunshine Host platform
   ansible.builtin.assert:
     that:
+      - ansible_facts['hostname'] == 'hal'
       - ansible_facts['distribution'] == 'Ubuntu'
       - ansible_facts['distribution_version'] == '24.04'
       - ansible_facts['architecture'] in ['x86_64', 'amd64']
+      - sunshine_host_workspace_root is match('^/')
+      - sunshine_host_openmw_root is match('^/')
+      - sunshine_host_games_root is match('^/')
     fail_msg: >-
-      The Sunshine role is pinned for Ubuntu 24.04 amd64; detected
+      The sunshine-host role only supports HAL on Ubuntu 24.04 amd64 with
+      fully qualified workspace locations; detected {{ ansible_facts['hostname'] }}
       {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
       {{ ansible_facts['architecture'] }}.
-
-- name: Set pinned Sunshine package facts
-  ansible.builtin.set_fact:
-    sunshine_version: "2026.516.143833"
-    sunshine_deb_path: "/var/cache/setup-system/sunshine-ubuntu-24.04-amd64-2026.516.143833.deb"
-    sunshine_deb_url: >-
-      https://github.com/LizardByte/Sunshine/releases/download/v2026.516.143833/sunshine-ubuntu-24.04-amd64.deb
-    sunshine_deb_sha256: "6df8900f23c9c056252eea51639507b8239a1d1241308ab8923cb402b0ca653b"
-    sunshine_input_user: system
 
 - name: Create setup-system package cache
   ansible.builtin.file:
@@ -29,25 +25,46 @@
 
 - name: Download the pinned Sunshine Ubuntu package
   ansible.builtin.get_url:
-    url: "{{ sunshine_deb_url }}"
-    dest: "{{ sunshine_deb_path }}"
-    checksum: "sha256:{{ sunshine_deb_sha256 }}"
+    url: "{{ sunshine_host_deb_url }}"
+    dest: "{{ sunshine_host_deb_path }}"
+    checksum: "sha256:{{ sunshine_host_deb_sha256 }}"
     owner: root
     group: root
     mode: '0644'
 
 - name: Install Sunshine as an operating-system package
   ansible.builtin.apt:
-    deb: "{{ sunshine_deb_path }}"
+    deb: "{{ sunshine_host_deb_path }}"
     state: present
+  notify: Sunshine Host configuration changed
+
+- name: Install Sunshine Host runtime and utility packages
+  ansible.builtin.apt:
+    name:
+      - curl
+      - dbus
+      - fonts-dejavu-core
+      - foot
+      - iproute2
+      - kitty
+      - make
+      - pulseaudio-utils
+      - python3
+      - python3-pil
+      - seatd
+      - sway
+      - tmux
+    state: present
+    cache_valid_time: 3600
 
 - name: Verify the native Sunshine binary
-  ansible.builtin.command: /usr/bin/sunshine --version
-  register: sunshine_version_output
+  ansible.builtin.command: "{{ sunshine_host_bin }} --version"
+  register: sunshine_host_version_output
   changed_when: false
   failed_when: >-
-    sunshine_version_output.rc != 0 or
-    sunshine_version not in (sunshine_version_output.stdout ~ sunshine_version_output.stderr)
+    sunshine_host_version_output.rc != 0 or
+    sunshine_host_version not in
+    (sunshine_host_version_output.stdout ~ sunshine_host_version_output.stderr)
 
 - name: Load uinput kernel module for Sunshine
   ansible.builtin.modprobe:
@@ -68,40 +85,32 @@
     name: input
     state: present
 
-- name: Add setup user to input group for Sunshine
+- name: Add Sunshine service user to host device groups
   ansible.builtin.user:
-    name: "{{ sunshine_input_user }}"
-    groups: input
+    name: "{{ sunshine_host_user }}"
+    groups: input,render,video,audio
     append: yes
-
-# seatd provides the seat/session that wlroots' libinput backend needs to read
-# Sunshine's uinput passthrough devices in the headless Sway session.
-- name: Install seatd for wlroots libinput session management
-  ansible.builtin.apt:
-    name: seatd
-    state: present
-    cache_valid_time: 3600
+  notify: Sunshine Host configuration changed
 
 - name: Enable and start seatd service
   ansible.builtin.systemd:
     name: seatd
     enabled: yes
     state: started
-    daemon_reload: yes
 
 - name: Remove legacy local Sunshine uinput rule
   ansible.builtin.file:
     path: /etc/udev/rules.d/85-sunshine-uinput.rules
     state: absent
-  register: sunshine_uinput_rules
+  register: sunshine_host_uinput_rules
 
 - name: Reload package-owned Sunshine udev rules
   ansible.builtin.command: udevadm control --reload-rules
-  when: sunshine_uinput_rules.changed
+  when: sunshine_host_uinput_rules.changed
 
 - name: Apply package-owned Sunshine uinput rule
   ansible.builtin.command: udevadm trigger --sysname-match=uinput
-  when: sunshine_uinput_rules.changed
+  when: sunshine_host_uinput_rules.changed
 
 - name: Ensure live uinput device uses Sunshine group ownership
   ansible.builtin.file:
@@ -109,3 +118,129 @@
     owner: root
     group: input
     mode: '0660'
+
+- name: Create Sunshine Host system directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: "{{ sunshine_host_group }}"
+    mode: '0755'
+  loop:
+    - "{{ sunshine_host_install_dir }}"
+    - "{{ sunshine_host_install_dir }}/bin"
+    - "{{ sunshine_host_config_dir }}"
+    - "{{ sunshine_host_config_dir }}/covers"
+    - "{{ sunshine_host_config_dir }}/sway"
+
+- name: Create private persistent Sunshine Host state directory
+  ansible.builtin.file:
+    path: "{{ sunshine_host_state_dir }}"
+    state: directory
+    owner: "{{ sunshine_host_user }}"
+    group: "{{ sunshine_host_group }}"
+    mode: '0700'
+
+- name: Install Sunshine Host launchers
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ sunshine_host_install_dir }}/bin/{{ item.dest }}"
+    owner: root
+    group: "{{ sunshine_host_group }}"
+    mode: '0755'
+  loop:
+    - src: run-eaadwig-openmw.sh.j2
+      dest: run-eaadwig-openmw.sh
+    - src: run-morrowind-openmw.sh.j2
+      dest: run-morrowind-openmw.sh
+    - src: run-quake3.sh.j2
+      dest: run-quake3.sh
+    - src: quest-tmux-app.sh.j2
+      dest: quest-tmux-app.sh
+    - src: run-rocknix.sh.j2
+      dest: run-rocknix.sh
+    - src: quest-ready-terminal.sh.j2
+      dest: quest-ready-terminal.sh
+  notify: Sunshine Host configuration changed
+
+- name: Install Sunshine Host socket readiness helper
+  ansible.builtin.copy:
+    src: "{{ sunshine_host_utility_dir }}/wait-runtime-sockets.sh"
+    dest: "{{ sunshine_host_install_dir }}/bin/wait-runtime-sockets.sh"
+    owner: root
+    group: "{{ sunshine_host_group }}"
+    mode: '0755'
+  notify: Sunshine Host configuration changed
+
+- name: Install Sunshine Host cover art
+  ansible.builtin.copy:
+    src: "{{ sunshine_host_utility_dir }}/covers/"
+    dest: "{{ sunshine_host_config_dir }}/covers/"
+    owner: root
+    group: "{{ sunshine_host_group }}"
+    mode: preserve
+  notify: Sunshine Host configuration changed
+
+- name: Install Sunshine Host configuration
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: root
+    group: "{{ sunshine_host_group }}"
+    mode: "{{ item.mode }}"
+  loop:
+    - src: sway.conf.j2
+      dest: "{{ sunshine_host_config_dir }}/sway/sway.conf"
+      mode: '0644'
+    - src: apps.json.j2
+      dest: "{{ sunshine_host_config_dir }}/apps.json"
+      mode: '0644'
+    - src: sunshine.conf.j2
+      dest: "{{ sunshine_host_config_dir }}/sunshine.conf"
+      mode: '0640'
+  notify: Sunshine Host configuration changed
+
+- name: Remove obsolete Sunshine-local utility locations
+  ansible.builtin.file:
+    path: "{{ sunshine_host_config_dir }}/locations.mk"
+    state: absent
+
+- name: Install Sunshine Host systemd units
+  ansible.builtin.template:
+    src: "{{ item }}.j2"
+    dest: "/etc/systemd/system/{{ item }}"
+    owner: root
+    group: root
+    mode: '0644'
+  loop:
+    - sunshine-host-sway.service
+    - sunshine-host-sunshine.service
+    - sunshine-host.target
+  notify: Sunshine Host configuration changed
+
+- name: Remove obsolete Sunshine Host launchers
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: absent
+  loop:
+    - "{{ sunshine_host_install_dir }}/bin/run-doom3.sh"
+    - "{{ sunshine_host_install_dir }}/bin/quest-philby-app.sh"
+  notify: Sunshine Host configuration changed
+
+- name: Reload systemd after installing Sunshine Host units
+  ansible.builtin.systemd:
+    daemon_reload: yes
+
+- name: Disable direct Sunshine Host child-unit enablement
+  ansible.builtin.systemd:
+    name: "{{ item }}"
+    enabled: no
+  loop:
+    - sunshine-host-sway.service
+    - sunshine-host-sunshine.service
+
+- name: Enable and start coordinated Sunshine Host target
+  ansible.builtin.systemd:
+    name: sunshine-host.target
+    enabled: yes
+    state: started

@@ -1,0 +1,30 @@
+[Unit]
+Description=Sunshine Host streaming server
+BindsTo=sunshine-host-sway.service
+PartOf=sunshine-host-sway.service
+After=sunshine-host-sway.service
+
+[Service]
+Type=simple
+User={{ sunshine_host_user }}
+Group={{ sunshine_host_group }}
+SupplementaryGroups=input render video audio
+StateDirectory=sunshine-host
+StateDirectoryMode=0700
+Environment=HOME={{ sunshine_host_state_dir }}
+Environment=PATH={{ sunshine_host_app_path }}
+Environment=XDG_RUNTIME_DIR={{ sunshine_host_runtime_dir }}
+Environment=WAYLAND_DISPLAY={{ sunshine_host_wayland_display }}
+Environment=DISPLAY=
+Environment=XDG_CURRENT_DESKTOP=sway
+Environment=DBUS_SESSION_BUS_ADDRESS=unix:path={{ sunshine_host_runtime_dir }}/bus
+Environment=PULSE_SERVER={{ sunshine_host_pulse_server }}
+ExecStartPre={{ sunshine_host_install_dir }}/bin/wait-runtime-sockets.sh 30 {{ sunshine_host_runtime_dir }}/bus {{ sunshine_host_runtime_dir }}/{{ sunshine_host_wayland_display }}
+ExecStart={{ sunshine_host_bin }} {{ sunshine_host_config_dir }}/sunshine.conf
+Restart=on-failure
+RestartSec=2
+TimeoutStartSec=45
+KillMode=control-group
+
+[Install]
+WantedBy=sunshine-host.target

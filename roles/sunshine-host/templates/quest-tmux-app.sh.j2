@@ -1,0 +1,6 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+exec /usr/bin/kitty \
+  --directory "{{ sunshine_host_home }}" \
+  /usr/bin/tmux new-session -A -s sunshine-host

@@ -1,0 +1,8 @@
+[Unit]
+Description=Sunshine Host graphical streaming stack
+Wants=sunshine-host-sway.service sunshine-host-sunshine.service
+Upholds=sunshine-host-sway.service sunshine-host-sunshine.service
+After=sunshine-host-sway.service
+
+[Install]
+WantedBy=graphical.target

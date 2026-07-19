@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export PATH="{{ sunshine_host_app_path }}"
+export SDL_VIDEODRIVER=x11
+export DISPLAY="${DISPLAY:-:0}"
+export PULSE_SERVER="{{ sunshine_host_pulse_server }}"
+export ALSOFT_DRIVERS=pulse
+export SDL_GAMECONTROLLERCONFIG_FILE=/etc/openmw/gamecontrollerdb.txt
+export MESA_LOADER_DRIVER_OVERRIDE=radeonsi
+export __GLX_VENDOR_LIBRARY_NAME=mesa
+cd "{{ sunshine_host_eaadwig_dir }}"
+
+for _ in $(seq 1 50); do
+  default_sink="$(pactl get-default-sink 2>/dev/null || true)"
+  case "$default_sink" in *sunshine*) break ;; esac
+  sleep 0.2
+done
+
+exec /usr/bin/make --no-print-directory openmw "$@"

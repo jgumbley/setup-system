@@ -1,0 +1,28 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export SDL_VIDEODRIVER=x11
+export DISPLAY="${DISPLAY:-:0}"
+export PULSE_SERVER="{{ sunshine_host_pulse_server }}"
+cd "{{ sunshine_host_quake3_engine_dir }}"
+
+for _ in $(seq 1 50); do
+  default_sink="$(pactl get-default-sink 2>/dev/null || true)"
+  case "$default_sink" in *sunshine*) break ;; esac
+  sleep 0.2
+done
+
+exec "{{ sunshine_host_quake3_binary }}" \
+  +set fs_basepath "{{ sunshine_host_quake3_data_dir }}" \
+  +set fs_homepath "{{ sunshine_host_quake3_home_dir }}" \
+  +set fs_basegame "{{ sunshine_host_quake3_basegame }}" \
+  +set in_joystick 1 \
+  +set in_joystickUseAnalog 1 \
+  +set com_introplayed 1 \
+  +set r_mode -1 \
+  +set r_customWidth 1920 \
+  +set r_customHeight 1080 \
+  +set r_fullscreen 1 \
+  +set r_swapInterval 1 \
+  +exec autoexec.cfg \
+  "$@"

@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-{{ sunshine_host_runtime_dir }}}"
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-{{ sunshine_host_wayland_display }}}"
+export PULSE_SERVER="${PULSE_SERVER:-{{ sunshine_host_pulse_server }}}"
+
+for _ in $(seq 1 50); do
+  default_sink="$(pactl get-default-sink 2>/dev/null || true)"
+  case "$default_sink" in *sunshine*) break ;; esac
+  sleep 0.2
+done
+
+exec /usr/bin/make --no-print-directory -C "{{ sunshine_host_games_root }}" rocknix-run
