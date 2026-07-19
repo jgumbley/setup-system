@@ -18,6 +18,7 @@ APPS = {
     "morrowind": ("Morrowind", "GOTY · OpenMW", "#241a0a", "#d9a441"),
     "quake3": ("Quake III Arena", "baseq3 · quake3e", "#260f0f", "#cc3329"),
     "rocknix": ("ROCKNIX", "placeholder", "#1a1026", "#8a5fd6"),
+    "steam": ("Steam", "Big Picture · Library", "#171a21", "#66c0f4"),
 }
 
 

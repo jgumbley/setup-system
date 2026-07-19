@@ -35,11 +35,11 @@ adb-check: preflight
 apk-check: adb-check
 	@test -f "$(CLIENT_APK)" || { echo "Missing Quest client APK: $(CLIENT_APK)" >&2; exit 2; }
 
-usb-check: apk-check
+usb-check: adb-check
 	@test -f "$(USB_SCRIPT)" || { echo "Missing Quest USB helper: $(USB_SCRIPT)" >&2; exit 2; }
 	bash -n "$(USB_SCRIPT)"
 
-check: usb-check
+check: usb-check apk-check
 	@echo "Quest client utility verified."
 
 devices: adb-check
@@ -51,13 +51,13 @@ usb: usb-check
 usb-pane: usb-check
 	bash "$(PANE_SH)" quest-usb $(MAKE) --no-print-directory usb
 
-install: usb
+install: apk-check usb
 	adb install -r "$(CLIENT_APK)"
 
 install-apply: install
 	@:
 
-install-pane: usb-check
+install-pane: usb-check apk-check
 	bash "$(PANE_SH)" quest-client-install $(MAKE) --no-print-directory install-apply
 
 wireless-pair: adb-check

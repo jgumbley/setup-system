@@ -52,6 +52,15 @@
       "exit-timeout": 5,
       "auto-detach": false,
       "image-path": "{{ sunshine_host_config_dir }}/covers/rocknix.png"
+    },
+    {
+      "name": "steam",
+      "detached": [
+        "/usr/bin/env HOME={{ sunshine_host_home }} DISPLAY=:0 /usr/bin/setsid steam steam://open/bigpicture"
+      ],
+      "working-dir": "{{ sunshine_host_home }}",
+      "output": "{{ sunshine_host_state_dir }}/steam.log",
+      "image-path": "{{ sunshine_host_config_dir }}/covers/steam.png"
     }
   ]
 }

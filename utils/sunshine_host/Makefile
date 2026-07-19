@@ -32,7 +32,7 @@ covers: preflight
 check: preflight
 	bash -n wait-runtime-sockets.sh
 	@python3 -B sunshine_pairings_status.py /does/not/exist >/dev/null
-	@for name in eaadwig tmux morrowind quake3 rocknix; do \
+	@for name in eaadwig tmux morrowind quake3 rocknix steam; do \
 		test -f "$(COVERS_DIR)/$$name.png" || { echo "Missing cover: $(COVERS_DIR)/$$name.png" >&2; exit 1; }; \
 	done
 
@@ -52,7 +52,8 @@ verify: preflight
 	@test -S "$(RUNTIME_DIR)/bus"
 	@test -f "$(CONFIG_DIR)/apps.json"
 	@test -f "$(STATE_DIR)/sunshine_state.json"
-	@python3 -c 'import json; data = json.load(open("$(CONFIG_DIR)/apps.json", encoding="utf-8")); assert [app["name"] for app in data["apps"]] == ["eaadwig", "tmux", "morrowind", "quake3", "rocknix"]'
+	@command -v steam >/dev/null
+	@python3 -c 'import json; data = json.load(open("$(CONFIG_DIR)/apps.json", encoding="utf-8")); assert [app["name"] for app in data["apps"]] == ["eaadwig", "tmux", "morrowind", "quake3", "rocknix", "steam"]'
 	@for launcher in /usr/lib/sunshine-host/bin/*.sh; do bash -n "$$launcher"; done
 	@ss -ltn | awk '$$4 ~ /:47990$$/ { found = 1 } END { exit !found }'
 	@! grep -R -F '/home/system/wip/platform/sunshine-host' "$(CONFIG_DIR)" /usr/lib/sunshine-host
