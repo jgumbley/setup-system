@@ -38,6 +38,7 @@ The setup process is primarily driven by `make` commands which wrap Ansible play
 *   `make term`: Runs the `terminal.yml` playbook to configure the terminal environment.
 *   `make setup`: Runs `setup.yml` to fully converge the local machine using its exact hostname, without refreshing coding agents.
 *   `make sunshine-host`: Applies only HAL's native Sunshine package and host input/seat permissions through a supervised pane.
+*   `make -C utils/hal_low_power apply`: Temporarily minimizes HAL's CPU and GPU power use until its next reboot without changing Wi-Fi.
 *   `make backup`: Ensures the NAS is mounted, then backs up the `~/wip` directory to the NAS.
 
 ## Ansible Structure

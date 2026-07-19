@@ -220,3 +220,25 @@
 # - name: Display ROCm status
 #   debug:
 #     msg: "ROCm installation completed. Reboot may be required for full functionality."
+
+# Headless host: Plymouth's splash never hands off to gdm when the GPU has no
+# connected CRTC ("amdgpu: Cannot find any crtc or sizes"), so plymouthd stays
+# attached and plymouth-quit-wait.service (TimeoutSec=0) blocks the boot
+# transaction indefinitely, stalling multi-user/graphical.target and anything
+# ordered after them (e.g. sunshine-host.target). Removing "splash" from the
+# kernel cmdline keeps plymouth-start from ever running (its unit has
+# ConditionKernelCommandLine=splash), eliminating the whole failure class.
+- name: Remove splash from GRUB_CMDLINE_LINUX_DEFAULT
+  lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet"'
+  become: yes
+  register: grub_cmdline_linux_default
+  tags: plymouth
+
+- name: Regenerate GRUB configuration
+  command: update-grub
+  become: yes
+  when: grub_cmdline_linux_default is changed
+  tags: plymouth
