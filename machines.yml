@@ -6,6 +6,9 @@ machine_paths:
     games_root: /home/system/wip/games
 
 machine_utility_packages:
+  "rocks":
+    - bluez
+
   "hal":
     - adb
     - usbutils
