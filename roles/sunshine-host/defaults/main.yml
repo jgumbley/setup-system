@@ -23,6 +23,7 @@ sunshine_host_bin: /usr/bin/sunshine
 
 # External application locations. The role configures launch contracts only;
 # content and builds remain owned by the OpenMW and games repositories.
+sunshine_host_philby_dir: "{{ sunshine_host_workspace_root }}/philby-glm"
 sunshine_host_eaadwig_dir: "{{ sunshine_host_openmw_root }}/eadwig"
 sunshine_host_morrowind_data_dir: "{{ sunshine_host_openmw_root }}/morrowind-data/Data Files"
 sunshine_host_morrowind_config_dir: "{{ sunshine_host_openmw_root }}/morrowind/config"

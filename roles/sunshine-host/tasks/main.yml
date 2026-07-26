@@ -155,13 +155,28 @@
       dest: run-morrowind-openmw.sh
     - src: run-quake3.sh.j2
       dest: run-quake3.sh
-    - src: quest-tmux-app.sh.j2
-      dest: quest-tmux-app.sh
+    - src: quest-philby-app.sh.j2
+      dest: quest-philby-app.sh
+    - src: quest-camera-app.sh.j2
+      dest: quest-camera-app.sh
     - src: run-rocknix.sh.j2
       dest: run-rocknix.sh
     - src: quest-ready-terminal.sh.j2
       dest: quest-ready-terminal.sh
   notify: Sunshine Host configuration changed
+
+- name: Install Sunshine Host camera share-link placeholder
+  ansible.builtin.copy:
+    dest: "{{ sunshine_host_state_dir }}/camera.env"
+    owner: "{{ sunshine_host_user }}"
+    group: "{{ sunshine_host_group }}"
+    mode: '0600'
+    force: no
+    content: |
+      # UniFi camera share link. Local secret: never commit to git.
+      # Create/copy the share link from UniFi Protect > Camera > Share,
+      # then uncomment:
+      # CAMERA_SHARE_URL=https://monitor.ui.com/your-share-id
 
 - name: Install Sunshine Host socket readiness helper
   ansible.builtin.copy:
@@ -224,7 +239,7 @@
     state: absent
   loop:
     - "{{ sunshine_host_install_dir }}/bin/run-doom3.sh"
-    - "{{ sunshine_host_install_dir }}/bin/quest-philby-app.sh"
+    - "{{ sunshine_host_install_dir }}/bin/quest-tmux-app.sh"
   notify: Sunshine Host configuration changed
 
 - name: Reload systemd after installing Sunshine Host units

@@ -1,0 +1,42 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Render the UniFi camera live feed fullscreen. The feed is a UniFi Protect
+# share link (https://monitor.ui.com/<share-id>) served to guests over WebRTC;
+# mpv cannot consume WebRTC, so Firefox renders the share page in kiosk mode.
+# The link is a bearer secret and stays out of git: it lives in
+# {{ sunshine_host_state_dir }}/camera.env as CAMERA_SHARE_URL=...
+env_file="{{ sunshine_host_state_dir }}/camera.env"
+if [ ! -f "$env_file" ]; then
+  printf 'Missing %s: create it with CAMERA_SHARE_URL=https://monitor.ui.com/...\n' "$env_file" >&2
+  exit 1
+fi
+
+set -a
+# shellcheck disable=SC1090
+. "$env_file"
+set +a
+
+: "${CAMERA_SHARE_URL:?Set CAMERA_SHARE_URL in $env_file (UniFi Protect share link).}"
+
+profile_dir="{{ sunshine_host_state_dir }}/firefox-camera"
+mkdir -p "$profile_dir"
+
+# Keep the kiosk free of first-run and crash-restore prompts.
+if [ ! -f "$profile_dir/user.js" ]; then
+  cat > "$profile_dir/user.js" <<'PREFS'
+user_pref("browser.shell.checkDefaultBrowser", false);
+user_pref("browser.sessionstore.resume_from_crash", false);
+user_pref("datareporting.policy.dataSubmissionPolicyBypassNotification", true);
+user_pref("trailhead.firstrun.didSeeAboutWelcome", true);
+PREFS
+fi
+
+# Native Wayland on the Sunshine Host Sway session; dedicated profile so the
+# kiosk never collides with an operator browser instance.
+export MOZ_ENABLE_WAYLAND=1
+exec /usr/bin/firefox \
+  --kiosk \
+  --new-instance \
+  --profile "$profile_dir" \
+  "$CAMERA_SHARE_URL"

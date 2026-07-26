@@ -1,4 +1,9 @@
 output HEADLESS-1 mode {{ sunshine_host_sway_resolution }}@{{ sunshine_host_sway_refresh }} bg #101820 solid_color
 set $mod Mod4
 bindsym $mod+Shift+e exit
+
+# Steam games are separate Xwayland toplevels from Big Picture. Keep the game
+# fullscreen instead of allowing Sway's default layout to tile both windows.
+for_window [class="^steam_app_[0-9]+$"] fullscreen enable
+
 exec {{ sunshine_host_install_dir }}/bin/quest-ready-terminal.sh

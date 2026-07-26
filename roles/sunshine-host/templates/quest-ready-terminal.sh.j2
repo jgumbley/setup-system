@@ -9,13 +9,14 @@ cat <<EOF
 Sunshine host is ready.
 
 Moonlight is connected to the headless Sway display.
-Launch "eaadwig", "morrowind", "quake3", "tmux", "rocknix", or "steam" from Moonlight.
+Launch "eaadwig", "philby", "camera", "morrowind", "quake3", "rocknix", or "steam" from Moonlight.
 
 Runtime logs:
   $runtime_dir/eaadwig.log
+  $runtime_dir/philby.log
+  $runtime_dir/camera.log
   $runtime_dir/morrowind.log
   $runtime_dir/quake3.log
-  $runtime_dir/tmux.log
   $runtime_dir/rocknix.log
   $runtime_dir/steam.log
 
@@ -23,9 +24,10 @@ EOF
 
 for log in \
   "$runtime_dir/eaadwig.log" \
+  "$runtime_dir/philby.log" \
+  "$runtime_dir/camera.log" \
   "$runtime_dir/morrowind.log" \
   "$runtime_dir/quake3.log" \
-  "$runtime_dir/tmux.log" \
   "$runtime_dir/rocknix.log" \
   "$runtime_dir/steam.log"; do
   if [ -s "$log" ]; then

@@ -14,14 +14,24 @@
       "image-path": "{{ sunshine_host_config_dir }}/covers/eaadwig.png"
     },
     {
-      "name": "tmux",
-      "cmd": "{{ sunshine_host_install_dir }}/bin/quest-tmux-app.sh",
-      "working-dir": "{{ sunshine_host_home }}",
-      "output": "{{ sunshine_host_state_dir }}/tmux.log",
+      "name": "philby",
+      "cmd": "{{ sunshine_host_install_dir }}/bin/quest-philby-app.sh",
+      "working-dir": "{{ sunshine_host_philby_dir }}",
+      "output": "{{ sunshine_host_state_dir }}/philby.log",
       "wait-all": true,
       "exit-timeout": 5,
       "auto-detach": false,
-      "image-path": "{{ sunshine_host_config_dir }}/covers/tmux.png"
+      "image-path": "{{ sunshine_host_config_dir }}/covers/philby.png"
+    },
+    {
+      "name": "camera",
+      "cmd": "{{ sunshine_host_install_dir }}/bin/quest-camera-app.sh",
+      "working-dir": "{{ sunshine_host_home }}",
+      "output": "{{ sunshine_host_state_dir }}/camera.log",
+      "wait-all": true,
+      "exit-timeout": 5,
+      "auto-detach": false,
+      "image-path": "{{ sunshine_host_config_dir }}/covers/camera.png"
     },
     {
       "name": "morrowind",

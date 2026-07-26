@@ -11,4 +11,28 @@ for _ in $(seq 1 50); do
   sleep 0.2
 done
 
+controller_device=""
+for _ in $(seq 1 150); do
+  for name_file in /sys/class/input/event*/device/name; do
+    [[ -r "$name_file" ]] || continue
+    case "$(<"$name_file")" in
+      Sunshine\ X-Box\ One\ \(virtual\)\ pad*)
+        event_name="${name_file#/sys/class/input/}"
+        event_name="${event_name%%/*}"
+        if [[ -r "/dev/input/$event_name" ]]; then
+          controller_device="/dev/input/$event_name"
+          break 2
+        fi
+        ;;
+    esac
+  done
+  sleep 0.2
+done
+
+[[ -n "$controller_device" ]] || {
+  echo "Timed out waiting for Sunshine's Xbox One virtual controller; enable a controller in Moonlight and press a button." >&2
+  exit 1
+}
+
+printf 'ROCKNIX controller: %s\n' "$controller_device"
 exec /usr/bin/make --no-print-directory -C "{{ sunshine_host_games_root }}" rocknix-run

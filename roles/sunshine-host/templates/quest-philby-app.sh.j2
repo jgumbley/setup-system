@@ -1,0 +1,9 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+# Launch the Philby GLM operator console. `make` in the philby-glm repo
+# bootstraps (or reattaches) the Philby-owned tmux server on the philby-glm
+# socket and runs the pi agent in the "philby" window.
+exec /usr/bin/kitty \
+  --directory "{{ sunshine_host_philby_dir }}" \
+  /usr/bin/make
