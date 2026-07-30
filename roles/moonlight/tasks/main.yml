@@ -4,26 +4,194 @@
 
 - name: Refuse to install Moonlight on non-Linux platforms
   ansible.builtin.fail:
-    msg: "Moonlight snap is only supported on Linux (detected {{ ansible_facts['system'] }})."
+    msg: "Moonlight AppImage is only supported on Linux (detected {{ ansible_facts['system'] }})."
   when: not is_linux
 
-- name: Ensure snapd is present
-  become: yes
-  ansible.builtin.package:
-    name: snapd
-    state: present
+- name: Install native Moonlight AppImage
+  vars:
+    moonlight_version: "6.1.0"
+    moonlight_appimage_name: "Moonlight-{{ moonlight_version }}-x86_64.AppImage"
+    moonlight_install_dir: /opt/moonlight
+    moonlight_appimage_path: "{{ moonlight_install_dir }}/{{ moonlight_appimage_name }}"
+    moonlight_appimage_url: "https://github.com/moonlight-stream/moonlight-qt/releases/download/v{{ moonlight_version }}/{{ moonlight_appimage_name }}"
+    moonlight_appimage_sha256: 0e855ffd22d407e18ab5fdb575fed5f01ca119a3f91993c5f0213f15ac80b400
+    moonlight_icon_url: "https://raw.githubusercontent.com/moonlight-stream/moonlight-qt/v{{ moonlight_version }}/app/res/moonlight.svg"
+    moonlight_icon_sha256: 6fd0ee4fe5b4aad5abaa5d5c9acb9f7d1bda0abadfe9d1582115de9b4ba16aa2
+    moonlight_user_home: "{{ lookup('env', 'HOME') }}"
+    moonlight_snap_config_path: "{{ moonlight_user_home }}/snap/moonlight/current/.config/Moonlight Game Streaming Project/Moonlight.conf"
+    moonlight_native_config_dir: "{{ moonlight_user_home }}/.config/Moonlight Game Streaming Project"
+    moonlight_native_config_path: "{{ moonlight_native_config_dir }}/Moonlight.conf"
+  block:
+    - name: Require the upstream AppImage architecture
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['architecture'] in ['x86_64', 'amd64']
+        fail_msg: "Moonlight AppImage supports x86_64; detected {{ ansible_facts['architecture'] }}."
 
-- name: Install Moonlight client via snap
-  become: yes
-  community.general.snap:
-    name: moonlight
-    state: present
+    - name: Check whether the Moonlight Snap is installed
+      become: yes
+      ansible.builtin.command: snap list moonlight
+      register: moonlight_snap
+      changed_when: false
+      failed_when: moonlight_snap.rc not in [0, 1]
 
-- name: Report installed Moonlight snap
-  ansible.builtin.command: snap list moonlight
-  register: moonlight_snap_list
-  changed_when: false
+    - name: Stop the running Moonlight Snap before migration
+      become: no
+      ansible.builtin.command:
+        argv:
+          - pkill
+          - --full
+          - '^/snap/moonlight/[0-9]+/usr/bin/moonlight$'
+      register: moonlight_snap_process
+      changed_when: moonlight_snap_process.rc == 0
+      failed_when: moonlight_snap_process.rc not in [0, 1]
+      when: moonlight_snap.rc == 0
 
-- name: Show installed Moonlight version
-  ansible.builtin.debug:
-    var: moonlight_snap_list.stdout_lines
+    - name: Check for Moonlight Snap configuration
+      become: no
+      ansible.builtin.stat:
+        path: "{{ moonlight_snap_config_path }}"
+      register: moonlight_snap_config
+
+    - name: Ensure native Moonlight configuration directory exists
+      become: no
+      ansible.builtin.file:
+        path: "{{ moonlight_native_config_dir }}"
+        state: directory
+        mode: '0700'
+
+    - name: Check for existing native Moonlight configuration
+      become: no
+      ansible.builtin.stat:
+        path: "{{ moonlight_native_config_path }}"
+      register: moonlight_native_config
+
+    - name: Migrate Moonlight configuration from the Snap
+      become: no
+      ansible.builtin.copy:
+        src: "{{ moonlight_snap_config_path }}"
+        dest: "{{ moonlight_native_config_path }}"
+        remote_src: yes
+        mode: '0600'
+      when:
+        - moonlight_snap_config.stat.exists
+        - not moonlight_native_config.stat.exists
+
+    - name: Verify migrated Moonlight configuration
+      become: no
+      ansible.builtin.stat:
+        path: "{{ moonlight_native_config_path }}"
+      register: moonlight_native_config_check
+      failed_when:
+        - moonlight_snap_config.stat.exists
+        - not moonlight_native_config_check.stat.exists
+
+    - name: Install AppImage runtime dependency
+      become: yes
+      ansible.builtin.apt:
+        name: libfuse2t64
+        state: present
+        cache_valid_time: 3600
+
+    - name: Ensure Moonlight install directory exists
+      become: yes
+      ansible.builtin.file:
+        path: "{{ moonlight_install_dir }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Download pinned Moonlight AppImage
+      become: yes
+      ansible.builtin.get_url:
+        url: "{{ moonlight_appimage_url }}"
+        dest: "{{ moonlight_appimage_path }}"
+        owner: root
+        group: root
+        mode: '0755'
+        checksum: "sha256:{{ moonlight_appimage_sha256 }}"
+        timeout: 60
+
+    - name: Symlink native Moonlight into PATH
+      become: yes
+      ansible.builtin.file:
+        src: "{{ moonlight_appimage_path }}"
+        dest: /usr/local/bin/moonlight
+        state: link
+        force: yes
+
+    - name: Ensure native application icon directory exists
+      become: yes
+      ansible.builtin.file:
+        path: /usr/local/share/icons/hicolor/scalable/apps
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Download pinned Moonlight application icon
+      become: yes
+      ansible.builtin.get_url:
+        url: "{{ moonlight_icon_url }}"
+        dest: /usr/local/share/icons/hicolor/scalable/apps/moonlight.svg
+        owner: root
+        group: root
+        mode: '0644'
+        checksum: "sha256:{{ moonlight_icon_sha256 }}"
+        timeout: 60
+
+    - name: Ensure native application launcher directory exists
+      become: yes
+      ansible.builtin.file:
+        path: /usr/local/share/applications
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    - name: Install native Moonlight application launcher
+      become: yes
+      ansible.builtin.copy:
+        dest: /usr/local/share/applications/com.moonlight_stream.Moonlight.desktop
+        owner: root
+        group: root
+        mode: '0644'
+        content: |
+          [Desktop Entry]
+          Name=Moonlight
+          Comment=Stream games and other applications from another PC running Sunshine or GeForce Experience
+          Exec=/usr/local/bin/moonlight
+          Icon=moonlight
+          Terminal=false
+          Type=Application
+          Categories=Qt;Game;
+          Keywords=nvidia;gamestream;stream;sunshine;remote play;
+
+    - name: Remove the Moonlight Snap
+      become: yes
+      ansible.builtin.command: snap remove moonlight
+      when: moonlight_snap.rc == 0
+
+    - name: Verify native Moonlight AppImage
+      ansible.builtin.stat:
+        path: "{{ moonlight_appimage_path }}"
+        checksum_algorithm: sha256
+      register: moonlight_appimage
+      failed_when:
+        - not moonlight_appimage.stat.exists
+          or not moonlight_appimage.stat.executable
+          or moonlight_appimage.stat.checksum != moonlight_appimage_sha256
+
+    - name: Verify native Moonlight command
+      ansible.builtin.command: readlink --canonicalize-existing /usr/local/bin/moonlight
+      register: moonlight_command
+      changed_when: false
+      failed_when: moonlight_command.stdout != moonlight_appimage_path
+
+    - name: Verify the Moonlight Snap is absent
+      become: yes
+      ansible.builtin.command: snap list moonlight
+      register: moonlight_snap_check
+      changed_when: false
+      failed_when: moonlight_snap_check.rc != 1

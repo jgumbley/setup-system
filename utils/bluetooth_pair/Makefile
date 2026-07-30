@@ -4,9 +4,10 @@ SHELL := /bin/bash
 
 HOSTNAME := rocks
 PAIR_SCRIPT := $(CURDIR)/pair.sh
+BLUEZ_INPUT_CONFIG := /etc/bluetooth/input.conf
 XBOX_PRO_CONTROLLER_NAME := Xbox Elite Wireless Controller
 
-.PHONY: help preflight check pair pair-apply pair-xbox-pro-controller
+.PHONY: help preflight check pair pair-apply pair-xbox-pro-controller xbox-pro-controller-apply configure-classic-hid
 
 help:
 	@echo "Targets:"
@@ -32,4 +33,15 @@ pair-apply: preflight
 	bash "$(PAIR_SCRIPT)" "$(DEVICE_NAME)"
 
 pair-xbox-pro-controller:
-	$(MAKE) --no-print-directory pair DEVICE_NAME="$(XBOX_PRO_CONTROLLER_NAME)"
+	bash ../../pane.sh bluetooth-pair $(MAKE) --no-print-directory xbox-pro-controller-apply
+
+xbox-pro-controller-apply: DEVICE_NAME := $(XBOX_PRO_CONTROLLER_NAME)
+xbox-pro-controller-apply: configure-classic-hid pair-apply
+
+configure-classic-hid: preflight
+	@if ! grep -Fxq 'ClassicBondedOnly=false' "$(BLUEZ_INPUT_CONFIG)"; then \
+		grep -Fxq '#ClassicBondedOnly=true' "$(BLUEZ_INPUT_CONFIG)" || { echo "Unexpected ClassicBondedOnly setting in $(BLUEZ_INPUT_CONFIG)." >&2; exit 1; }; \
+		sudo sed -i 's/^#ClassicBondedOnly=true$$/ClassicBondedOnly=false/' "$(BLUEZ_INPUT_CONFIG)"; \
+		sudo systemctl restart bluetooth.service; \
+	fi
+	@grep -Fxq 'ClassicBondedOnly=false' "$(BLUEZ_INPUT_CONFIG)"
