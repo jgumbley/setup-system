@@ -60,7 +60,7 @@ commission:
 	bash ../../pane.sh commission-legobrick $(MAKE) commission-apply
 
 commission-apply: preflight
-	ssh -tt $(SSH_HOST) "make --no-print-directory --eval 'commission: ; mkdir -p /home/system/wip; git clone $(REPOSITORY) $(REMOTE_REPO); make -C $(REMOTE_REPO) setup' commission"
+	ssh -tt $(SSH_HOST) "make --no-print-directory --eval 'commission: ; mkdir -p /home/system/wip && git clone $(REPOSITORY) $(REMOTE_REPO) && make -C $(REMOTE_REPO) setup' commission"
 
 setup:
 	bash ../../pane.sh setup-legobrick $(MAKE) setup-apply
