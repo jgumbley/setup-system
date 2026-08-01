@@ -8,3 +8,16 @@
     else
       echo "No Sway socket found; skipping reload"
     fi
+
+- name: reload kanshi
+  become: no
+  shell: |
+    sock=$(ls -1 /run/user/$(id -u)/sway-ipc.*.sock 2>/dev/null | head -n1)
+    if [ -n "$sock" ]; then
+      if pgrep -u "$(id -u)" -x kanshi >/dev/null; then
+        pkill -u "$(id -u)" -x kanshi
+      fi
+      swaymsg -s "$sock" exec kanshi
+    else
+      echo "No Sway socket found; skipping Kanshi reload"
+    fi

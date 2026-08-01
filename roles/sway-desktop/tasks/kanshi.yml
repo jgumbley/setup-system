@@ -46,4 +46,4 @@
         src: kanshi-config.j2
         dest: ~/.config/kanshi/config
         mode: '0644'
-
+      notify: reload kanshi
