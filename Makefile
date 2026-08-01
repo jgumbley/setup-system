@@ -66,6 +66,7 @@ backup: nas
 	@echo "Backing up to $(BACKUP_ROOT)/wip"
 	mkdir -p "$(BACKUP_ROOT)/wip"
 	rsync -rlptDvz --progress --update --no-group \
+		--chmod=Du+rwx,Dgo+rx,Dgo-w,Fu+rw,Fgo+r,Fgo-w \
 		--exclude='node_modules' \
 		--exclude='__pycache__' \
 		--exclude='.DS_Store' \
