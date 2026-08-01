@@ -5,6 +5,11 @@ machine_paths:
     openmw_root: /home/system/wip/mw
     games_root: /home/system/wip/games
 
+  "holly":
+    workspace_root: /home/system/wip
+    openmw_root: /home/system/wip/mw
+    games_root: /home/system/wip/games
+
 machine_utility_packages:
   "rocks":
     - bluez
@@ -24,6 +29,7 @@ machine_configs:
   "holly":
     - terminal
     - ssh_host
+    - sunshine-host
 
   # Future lean Ubuntu 26.04 Sway laptop.
   "rocks":

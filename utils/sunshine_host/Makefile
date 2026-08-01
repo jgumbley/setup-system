@@ -2,7 +2,7 @@ SHELL := /bin/bash
 .SHELLFLAGS := -eu -o pipefail -c
 .DEFAULT_GOAL := help
 
-HOSTNAME := hal
+HOSTNAME := holly
 CONFIG_DIR := /etc/sunshine-host
 STATE_DIR := /var/lib/sunshine-host
 RUNTIME_DIR := /run/sunshine-host
@@ -19,7 +19,7 @@ help:
 	@echo "Targets:"
 	@echo "  make covers                  Regenerate the committed Moonlight cover art"
 	@echo "  make check                   Check the utility source and cover inventory"
-	@echo "  make status                  Show HAL's installed Sunshine host status"
+	@echo "  make status                  Show Holly's installed Sunshine host status"
 	@echo "  make session-layout          Show live Steam and Steam-game Sway windows"
 	@echo "  make steam-game-fullscreen   Register the rule and fullscreen the live Steam game"
 	@echo "  make verify                  Verify the installed boot-time host"

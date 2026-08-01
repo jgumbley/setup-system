@@ -31,9 +31,9 @@ The setup process is primarily driven by `make` commands which wrap Ansible play
 *   `make updates`: Refreshes coding agents through `updates.yml`. This requires privilege escalation and may prompt for a password.
 *   `make nas`: Runs the `nas.yml` playbook to mount the NAS (macOS uses the current user with sudo privileges).
 *   `make term`: Runs the `terminal.yml` playbook to configure the terminal environment.
-*   `make setup`: Runs `setup.yml` to fully converge the local machine using its exact hostname, including HAL's complete Sunshine/Sway host service.
+*   `make setup`: Runs `setup.yml` to fully converge the local machine using its exact hostname, including Holly's complete Sunshine/Sway host service.
 *   `make -C utils/hal_low_power apply`: Temporarily minimizes HAL's CPU and GPU power use until its next reboot without changing Wi-Fi.
-*   `make backup`: Ensures the NAS is mounted, backs up `~/wip`, and on HAL separately protects Sunshine's pairing state and certificate/key under the host backup's `sunshine/` directory. A successful run records the completion time used by the backup status utility.
+*   `make backup`: Ensures the NAS is mounted, backs up `~/wip`, and on Holly separately protects Sunshine's pairing state and certificate/key under the host backup's `sunshine/` directory. A successful run records the completion time used by the backup status utility.
 *   `make backup-status`: Shows the last successfully completed backup date recorded for each host on the NAS.
 
 ## Ansible Structure
@@ -51,7 +51,7 @@ The configuration is managed by Ansible playbooks and roles.
 *   `core-tools`: Installs common command-line tools and system-wide shell environment support.
 *   `nas-mount`: Mounts the network-attached storage.
 *   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
-*   `sunshine-host`: Fully configures HAL's native Sunshine package, input and seat permissions, headless Sway session, launchers, application list, persistent state directory, and boot-time systemd services. External OpenMW and games content remains under the fully qualified `/home/system/wip/mw` and `/home/system/wip/games` locations.
+*   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, launchers, application list, persistent state directory, and boot-time systemd services. External OpenMW and games content remains under the fully qualified `/home/system/wip/mw` and `/home/system/wip/games` locations.
 *   `godot`: Installs the Godot Engine editor binary from https://godotengine.org/download (no extra runtime dependencies; bring your own editor/IDE).
 *   `terminal`: Configures fish, tmux, vim, git, and other terminal applications.
 
@@ -60,7 +60,7 @@ The configuration is managed by Ansible playbooks and roles.
 *   `machines.yml`: Defines which roles to apply to each exact hostname.
 *   `group_vars/all/theme.yml`: Contains a centralized color scheme used across various applications like kitty and Waybar.
 
-## Sunshine Host Operations on HAL
+## Sunshine Host Operations on Holly
 
 The Sunshine role is applied only through `make setup`. Runtime operations and
 the committed Moonlight cover-art source are self-contained under

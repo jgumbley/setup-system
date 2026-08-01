@@ -1,16 +1,16 @@
 ---
-- name: Require HAL's supported Sunshine Host platform
+- name: Require Holly's supported Sunshine Host platform
   ansible.builtin.assert:
     that:
-      - ansible_facts['hostname'] == 'hal'
+      - ansible_facts['hostname'] == 'holly'
       - ansible_facts['distribution'] == 'Ubuntu'
-      - ansible_facts['distribution_version'] == '24.04'
+      - ansible_facts['distribution_version'] == '26.04'
       - ansible_facts['architecture'] in ['x86_64', 'amd64']
       - sunshine_host_workspace_root is match('^/')
       - sunshine_host_openmw_root is match('^/')
       - sunshine_host_games_root is match('^/')
     fail_msg: >-
-      The sunshine-host role only supports HAL on Ubuntu 24.04 amd64 with
+      The sunshine-host role only supports Holly on Ubuntu 26.04 amd64 with
       fully qualified workspace locations; detected {{ ansible_facts['hostname'] }}
       {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
       {{ ansible_facts['architecture'] }}.

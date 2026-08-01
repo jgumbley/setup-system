@@ -8,7 +8,7 @@ help:
 	@echo "  make setup          Full machine setup "
 	@echo "  make vnc-viewer     Install the TigerVNC viewer"
 	@echo "  make nas            Mount NAS via Ansible playbook"
-	@echo "  make backup         Backup ~/wip and HAL's Sunshine pairing state to NAS"
+	@echo "  make backup         Backup ~/wip and Holly's Sunshine pairing state to NAS"
 	@echo "  make backup-status  Show the last successful backup date for each host"
 	@echo "  make android-usb    Format a 64 GB Lexar USB stick for Android"
 
@@ -76,7 +76,7 @@ backup: nas
 		--exclude='/platform/sunshine-host/.runtime/' \
 		--exclude='/platform/sunshine-host/.state/' \
 		~/wip/ "$(BACKUP_ROOT)/wip/"
-	@if [ "$(HOSTNAME)" = hal ]; then \
+	@if [ "$(HOSTNAME)" = holly ]; then \
 		for state_file in $(SUNSHINE_BACKUP_FILES); do \
 			test -f "$(SUNSHINE_STATE_DIR)/$$state_file" || { echo "Missing Sunshine pairing state: $(SUNSHINE_STATE_DIR)/$$state_file" >&2; exit 1; }; \
 		done; \
