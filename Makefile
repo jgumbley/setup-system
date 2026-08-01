@@ -9,6 +9,7 @@ help:
 	@echo "  make vnc-viewer     Install the TigerVNC viewer"
 	@echo "  make nas            Mount NAS via Ansible playbook"
 	@echo "  make backup         Backup ~/wip and HAL's Sunshine pairing state to NAS"
+	@echo "  make backup-status  Show the last successful backup date for each host"
 	@echo "  make android-usb    Format a 64 GB Lexar USB stick for Android"
 
 include common.mk
@@ -19,7 +20,7 @@ SUNSHINE_STATE_DIR := /var/lib/sunshine-host
 SUNSHINE_BACKUP_DIR := $(BACKUP_ROOT)/sunshine
 SUNSHINE_BACKUP_FILES := sunshine_state.json cakey.pem cacert.pem
 
-.PHONY: term updates nas setup vnc-viewer vnc-viewer-apply check backup caffeinate android-usb android-usb-inspect
+.PHONY: term updates nas setup vnc-viewer vnc-viewer-apply check backup backup-status caffeinate android-usb android-usb-inspect
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -85,6 +86,10 @@ backup: nas
 			$(foreach state_file,$(SUNSHINE_BACKUP_FILES),"$(SUNSHINE_STATE_DIR)/$(state_file)") \
 			"$(SUNSHINE_BACKUP_DIR)/"; \
 	fi
+	$(MAKE) -C utils/backup_status --no-print-directory record BACKUP_PATH="$(BACKUP_ROOT)"
+
+backup-status:
+	$(MAKE) -C utils/backup_status --no-print-directory status
 
 caffeinate:
 	sudo systemd-inhibit --what=sleep:idle:handle-lid-switch --who="Make Caffeinate" --why="Preventing system sleep and suspend" --mode=block sleep infinity
