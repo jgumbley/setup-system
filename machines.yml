@@ -20,6 +20,11 @@ machine_configs:
     - ssh_host
     - realtime-audio
 
+  # Fresh Ubuntu 26.04 replacement for HAL; expand after baseline convergence.
+  "holly":
+    - terminal
+    - ssh_host
+
   # Future lean Ubuntu 26.04 Sway laptop.
   "rocks":
     - terminal
