@@ -3,24 +3,8 @@ profile {
     output eDP-1 enable position 0,0
 }
 
-# External display profile
+# Samsung U32J59x external display profile
 profile {
-    output DP-1 enable mode 1920x1080@60Hz position 0,0
+    output "Samsung Electric Company U32J59x H4ZM700055" enable mode 3840x2160 position 0,0 scale 2
     output eDP-1 disable
-}
-
-profile {
-    output DP-2 enable mode 1920x1080@60Hz position 0,0
-    output eDP-1 disable
-}
-
-# HDMI display profile
-profile {
-    output HDMI-A-2 enable mode 3840x2160@60Hz position 0,0 scale 2
-    output eDP-1 disable
-}
-
-# Fallback profile
-profile {
-    output * enable
 }
