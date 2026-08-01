@@ -5,15 +5,15 @@ SHELL := /bin/bash
 HOSTNAME := holly
 CONFIG_DIR := /etc/sunshine-host
 STATE_DIR := /var/lib/sunshine-host
+CREDENTIALS_FILE := $(STATE_DIR)/web-manager-password
 RUNTIME_DIR := /run/sunshine-host
 COVERS_DIR := $(CURDIR)/covers
 SUNSHINE_HOST ?= localhost
 SUNSHINE_USERNAME ?= sunshine
-SUNSHINE_PASSWORD ?= $(PASSWORD)
 SUNSHINE_PIN_NAME ?= $(or $(NAME),moonlight)
 SWAY_SOCKET := $(firstword $(wildcard $(RUNTIME_DIR)/sway-ipc.*.sock))
 
-.PHONY: help preflight sway-preflight covers check status session-layout steam-game-fullscreen verify pairings pin
+.PHONY: help preflight sway-preflight covers check status session-layout steam-game-fullscreen verify pairings api-check pin
 
 help:
 	@echo "Targets:"
@@ -24,7 +24,8 @@ help:
 	@echo "  make steam-game-fullscreen   Register the rule and fullscreen the live Steam game"
 	@echo "  make verify                  Verify the installed boot-time host"
 	@echo "  make pairings                Summarize paired clients from live state"
-	@echo "  make pin PIN=1234 PASSWORD=... [NAME=client]"
+	@echo "  make api-check               Verify managed Sunshine API authentication"
+	@echo "  make pin PIN=1234 [NAME=client]"
 
 preflight:
 	@test "$$(hostname)" = "$(HOSTNAME)" || { echo "This utility only supports $(HOSTNAME)." >&2; exit 1; }
@@ -77,6 +78,9 @@ verify: preflight
 	@test -S "$(RUNTIME_DIR)/bus"
 	@test -f "$(CONFIG_DIR)/apps.json"
 	@test -f "$(STATE_DIR)/sunshine_state.json"
+	@test "$$(stat -c '%U:%G:%a' "$(STATE_DIR)/sunshine_state.json")" = system:system:600
+	@test -s "$(CREDENTIALS_FILE)"
+	@test "$$(stat -c '%U:%G:%a' "$(CREDENTIALS_FILE)")" = system:system:600
 	@test -c /dev/uinput -a -r /dev/uinput -a -w /dev/uinput
 	@test -c /dev/uhid -a -r /dev/uhid -a -w /dev/uhid
 	@grep -Fxq 'controller = enabled' "$(CONFIG_DIR)/sunshine.conf"
@@ -94,18 +98,30 @@ pairings: preflight
 	@test -f "$(STATE_DIR)/sunshine_state.json" || { echo "Missing Sunshine state: $(STATE_DIR)/sunshine_state.json" >&2; exit 1; }
 	@python3 -B sunshine_pairings_status.py "$(STATE_DIR)"
 
-pin: preflight
-	@test -n "$(PIN)" || { echo "usage: make pin PIN=1234 PASSWORD=... [NAME=client]" >&2; exit 2; }
-	@test -n "$(SUNSHINE_PASSWORD)" || { echo "PASSWORD is required." >&2; exit 2; }
+api-check: preflight
+	@test -s "$(CREDENTIALS_FILE)" || { echo "Missing managed Sunshine credential; run make setup first." >&2; exit 2; }
 	@command -v curl >/dev/null
-	@host="$(SUNSHINE_HOST)"; user="$(SUNSHINE_USERNAME)"; pass="$(SUNSHINE_PASSWORD)"; \
+	@host="$(SUNSHINE_HOST)"; user="$(SUNSHINE_USERNAME)"; pass="$$(cat "$(CREDENTIALS_FILE)")"; url="https://$$host:47990"; \
+		auth_file="$$(mktemp)"; trap 'rm -f "$$auth_file"' EXIT; \
+		printf 'user = "%s:%s"\n' "$$user" "$$pass" > "$$auth_file"; \
+		status="$$(curl -sk --config "$$auth_file" -o /dev/null -w '%{http_code}' -H "Origin: $$url" -H "Referer: $$url/" "$$url/api/config")"; \
+		test "$$status" = 200 || { echo "Sunshine API authentication returned HTTP $$status; run make setup first." >&2; exit 1; }; \
+		echo "Sunshine API authentication verified."
+
+pin: preflight
+	@test -n "$(PIN)" || { echo "usage: make pin PIN=1234 [NAME=client]" >&2; exit 2; }
+	@test "$$(printf '%s' "$(PIN)" | wc -c)" -eq 4 || { echo "PIN must contain exactly four digits." >&2; exit 2; }
+	@printf '%s' "$(PIN)" | grep -Eq '^[0-9]{4}$$' || { echo "PIN must contain exactly four digits." >&2; exit 2; }
+	@$(MAKE) --no-print-directory api-check
+	@command -v curl >/dev/null
+	@host="$(SUNSHINE_HOST)"; user="$(SUNSHINE_USERNAME)"; pass="$$(cat "$(CREDENTIALS_FILE)")"; \
 		pin="$(PIN)"; name="$(SUNSHINE_PIN_NAME)"; url="https://$$host:47990"; \
-		jar="$$(mktemp)"; trap 'rm -f "$$jar"' EXIT; \
-		response="$$(curl -sk -c "$$jar" -u "$$user:$$pass" "$$url/api/csrf-token")"; \
-		token="$$(printf '%s' "$$response" | sed -n 's/.*"csrf_token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p; s/.*"token"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p' | head -1)"; \
-		test -n "$$token" || { echo "Failed to obtain a Sunshine CSRF token." >&2; exit 1; }; \
-		body="$$(printf '{"pin":"%s","name":"%s"}' "$$pin" "$$name")"; \
-		output="$$(curl -sk -b "$$jar" -u "$$user:$$pass" -H 'Content-Type: application/json' -H "X-CSRF-Token: $$token" -X POST --data "$$body" "$$url/api/pin")"; \
+		auth_file="$$(mktemp)"; response_file="$$(mktemp)"; trap 'rm -f "$$auth_file" "$$response_file"' EXIT; \
+		printf 'user = "%s:%s"\n' "$$user" "$$pass" > "$$auth_file"; \
+		body="$$(python3 -c 'import json, sys; print(json.dumps({"pin": sys.argv[1], "name": sys.argv[2]}))' "$$pin" "$$name")"; \
+		status="$$(curl -sk --config "$$auth_file" -o "$$response_file" -w '%{http_code}' -H "Origin: $$url" -H "Referer: $$url/pin" -H 'Content-Type: application/json' -X POST --data "$$body" "$$url/api/pin")"; \
+		output="$$(cat "$$response_file")"; \
 		printf '%s\n' "$$output"; \
+		test "$$status" = 200 || { echo "Sunshine PIN API returned HTTP $$status; run make setup and retry with a fresh PIN." >&2; exit 1; }; \
 		case "$$output" in *'"status":true'*|*'"status": true'*|*'"status_code":200'*) exit 0 ;; esac; \
-		echo "Pairing did not report success." >&2; exit 1
+		echo "Sunshine rejected the PIN; generate a fresh PIN and retry." >&2; exit 1

@@ -48,6 +48,7 @@
       - iproute2
       - kitty
       - make
+      - openssl
       - pulseaudio-utils
       - python3
       - python3-pil
@@ -140,6 +141,21 @@
     owner: "{{ sunshine_host_user }}"
     group: "{{ sunshine_host_group }}"
     mode: '0700'
+
+- name: Generate private Sunshine web-manager credential
+  ansible.builtin.shell:
+    cmd: >-
+      umask 077 &&
+      openssl rand -hex 32 > "{{ sunshine_host_state_dir }}/web-manager-password"
+    creates: "{{ sunshine_host_state_dir }}/web-manager-password"
+  become: true
+  become_user: "{{ sunshine_host_user }}"
+  register: sunshine_host_web_manager_credential
+
+- name: Inspect Sunshine managed state
+  ansible.builtin.stat:
+    path: "{{ sunshine_host_state_dir }}/sunshine_state.json"
+  register: sunshine_host_managed_state
 
 - name: Install Sunshine Host launchers
   ansible.builtin.template:
@@ -245,6 +261,38 @@
 - name: Reload systemd after installing Sunshine Host units
   ansible.builtin.systemd:
     daemon_reload: yes
+
+- name: Stop the Sunshine stack before applying its new web-manager credential
+  ansible.builtin.systemd:
+    name: sunshine-host.target
+    state: stopped
+  when: >-
+    sunshine_host_web_manager_credential.changed or
+    not sunshine_host_managed_state.stat.exists
+
+- name: Apply the generated Sunshine web-manager credential
+  ansible.builtin.shell:
+    cmd: >-
+      password="$(cat "{{ sunshine_host_state_dir }}/web-manager-password")" &&
+      exec "{{ sunshine_host_bin }}"
+      "{{ sunshine_host_config_dir }}/sunshine.conf"
+      --creds sunshine "$password"
+  environment:
+    HOME: "{{ sunshine_host_state_dir }}"
+  become: true
+  become_user: "{{ sunshine_host_user }}"
+  no_log: true
+  when: >-
+    sunshine_host_web_manager_credential.changed or
+    not sunshine_host_managed_state.stat.exists
+
+- name: Keep Sunshine managed state private
+  ansible.builtin.file:
+    path: "{{ sunshine_host_state_dir }}/sunshine_state.json"
+    state: file
+    owner: "{{ sunshine_host_user }}"
+    group: "{{ sunshine_host_group }}"
+    mode: '0600'
 
 - name: Disable direct Sunshine Host child-unit enablement
   ansible.builtin.systemd:

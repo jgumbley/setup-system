@@ -70,11 +70,14 @@ the committed Moonlight cover-art source are self-contained under
 make -C utils/sunshine_host status
 make -C utils/sunshine_host verify
 make -C utils/sunshine_host pairings
-make -C utils/sunshine_host pin PIN=1234 PASSWORD='...'
+make -C utils/sunshine_host api-check
+make -C utils/sunshine_host pin PIN=1234
 ```
 
 Live pairing state remains private under `/var/lib/sunshine-host`; setup creates
-that directory but never imports or overwrites its credential files.
+that directory but never imports or overwrites its pairing files. Setup creates
+and applies a private web-manager credential there once, and the Sunshine host
+utility consumes it so PIN pairing needs no operator-managed password.
 
 ## Quest Client Operations on HAL
 

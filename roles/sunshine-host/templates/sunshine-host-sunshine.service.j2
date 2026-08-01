@@ -6,6 +6,7 @@ After=sunshine-host-sway.service
 
 [Service]
 Type=simple
+UMask=0077
 User={{ sunshine_host_user }}
 Group={{ sunshine_host_group }}
 SupplementaryGroups=input render video audio

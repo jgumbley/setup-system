@@ -32,6 +32,7 @@ machine_configs:
   "holly":
     - terminal
     - ssh_host
+    - steam
     - sunshine-host
 
   # Future lean Ubuntu 26.04 Sway laptop.
