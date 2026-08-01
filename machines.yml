@@ -50,7 +50,6 @@ machine_configs:
     - openmw
     - steam
     - wivrn
-    - openclaw
   
   # Current host (auto-detected as "system")
   "system":
