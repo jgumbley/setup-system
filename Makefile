@@ -20,7 +20,7 @@ SUNSHINE_STATE_DIR := /var/lib/sunshine-host
 SUNSHINE_BACKUP_DIR := $(BACKUP_ROOT)/sunshine
 SUNSHINE_BACKUP_FILES := sunshine_state.json cakey.pem cacert.pem
 
-.PHONY: term updates nas setup vnc-viewer vnc-viewer-apply check backup backup-status caffeinate android-usb android-usb-inspect
+.PHONY: term updates nas setup test_role test_role-apply vnc-viewer vnc-viewer-apply check backup backup-status caffeinate android-usb android-usb-inspect
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -52,6 +52,15 @@ ifeq ($(shell uname -s),Darwin)
 else
 	ansible-playbook setup.yml -c local -K
 endif
+
+# Role-development helper: apply a single role using the same current-host
+# selection as `make setup`. Rejects a role that is not assigned to this host.
+test_role:
+	@test -n "$(role)" || { echo "usage: make test_role role=<name>" >&2; exit 2; }
+	bash pane.sh test-role-$(role) $(MAKE) test_role-apply role=$(role)
+
+test_role-apply: .bootstrapped
+	ansible-playbook setup.yml -c local -K -e role_filter=$(role)
 
 vnc-viewer:
 	bash pane.sh install-vnc-viewer $(MAKE) vnc-viewer-apply

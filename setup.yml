@@ -124,10 +124,23 @@
       when: current_hostname in machine_utility_packages
       tags: always
     
+    - name: Reject a role that is not assigned to this host
+      fail:
+        msg: "Role '{{ role_filter }}' is not assigned to '{{ current_hostname }}'; assigned roles are {{ matched_config }}"
+      when:
+        - role_filter is defined
+        - role_filter not in matched_config
+      tags: always
+
+    - name: Select the components to apply
+      set_fact:
+        selected_config: "{{ [role_filter] if role_filter is defined else matched_config }}"
+      tags: always
+
     - name: Apply configuration components
       include_role:
         name: "{{ component }}"
-      loop: "{{ matched_config }}"
+      loop: "{{ selected_config }}"
       loop_control:
         loop_var: component
       tags: always

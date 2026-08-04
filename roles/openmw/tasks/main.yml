@@ -48,6 +48,57 @@
     cache_valid_time: 3600
   become: yes
 
+# Ubuntu 26.04 carries no OpenMW newer than 0.49 and the PPAs do not build for
+# resolute, so a current engine must be compiled from source. Package names are
+# taken from upstream CI/install_debian_deps.sh (groups: gcc, openmw-deps,
+# openmw-deps-dynamic) and adjusted for 26.04:
+#   libboost-system-dev  -> dropped; Boost.System is header-only and OpenMW only
+#                           requires the iostreams and program_options components
+#   libqt6opengl6-dev    -> qt6-base-dev (which Provides it)
+#   libqt6svg6-dev       -> qt6-svg-dev
+- name: Install OpenMW source build dependencies
+  ansible.builtin.apt:
+    name:
+      - build-essential
+      - ccache
+      - cmake
+      - curl
+      - git
+      - mold
+      - ninja-build
+      - pkg-config
+      - unzip
+      - libboost-iostreams-dev
+      - libboost-program-options-dev
+      - libavcodec-dev
+      - libavformat-dev
+      - libavutil-dev
+      - libswresample-dev
+      - libswscale-dev
+      - libsdl2-dev
+      - libopenal-dev
+      - qt6-base-dev
+      - qt6-svg-dev
+      - qt6-tools-dev
+      - qt6-tools-dev-tools
+      - libbullet-dev
+      - libcollada-dom-dev
+      - libicu-dev
+      - libjpeg-dev
+      - libluajit-5.1-dev
+      - liblz4-dev
+      - libmygui-dev
+      - libopenscenegraph-dev
+      - libpng-dev
+      - librecast-dev
+      - libsqlite3-dev
+      - libtinyxml-dev
+      - libunshield-dev
+      - libyaml-cpp-dev
+    state: present
+    cache_valid_time: 3600
+  become: yes
+
 - name: Install Morrowind content creation toolchain (apt)
   ansible.builtin.apt:
     name:
