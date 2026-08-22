@@ -50,6 +50,37 @@
   become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
   register: opencode_install_result
 
+- name: Remove npm-installed Hunk
+  npm:
+    name: "hunkdiff"
+    global: yes
+    state: absent
+  become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
+
+- name: Install/Update Hunk from its verified release archive
+  shell: |
+    set -o pipefail
+    curl -fsSL https://hunk.dev/install.sh | sh -s -- --no-modify-path
+  args:
+    executable: /bin/bash
+  environment:
+    HUNK_INSTALL_DIR: /usr/local/lib/hunk
+  become: yes
+  register: hunk_install_result
+  changed_when: "'Installed hunk' in hunk_install_result.stdout"
+
+- name: Link Hunk into PATH
+  file:
+    src: /usr/local/lib/hunk/hunk
+    dest: /usr/local/bin/hunk
+    state: link
+    force: yes
+  become: yes
+
+- name: Verify Hunk
+  command: /usr/local/bin/hunk --version
+  changed_when: false
+
 - name: Display Claude Code installation status
   debug:
     msg: "Claude Code {{ 'updated' if claude_install_result.changed else 'already up to date' }}"
@@ -57,6 +88,10 @@
 - name: Display OpenCode AI installation status
   debug:
     msg: "OpenCode AI {{ 'updated' if opencode_install_result.changed else 'already up to date' }}"
+
+- name: Display Hunk installation status
+  debug:
+    msg: "Hunk {{ 'updated' if hunk_install_result.changed else 'already up to date' }}"
 
 - name: Display Pi Coding Agent installation status
   debug:
