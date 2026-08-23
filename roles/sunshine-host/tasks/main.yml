@@ -15,6 +15,34 @@
       {{ ansible_facts['distribution'] }} {{ ansible_facts['distribution_version'] }}
       {{ ansible_facts['architecture'] }}.
 
+# Headless host: Plymouth's splash never hands off to gdm when the GPU has no
+# connected CRTC ("amdgpu: Cannot find any crtc or sizes"), so plymouthd stays
+# attached and plymouth-quit-wait.service (TimeoutSec=0) blocks the boot
+# transaction indefinitely, stalling multi-user/graphical.target and anything
+# ordered after them (e.g. sunshine-host.target). Removing "splash" from the
+# kernel cmdline keeps plymouth-start from ever running (its unit has
+# ConditionKernelCommandLine=splash), eliminating the whole failure class.
+- name: Remove splash from GRUB_CMDLINE_LINUX_DEFAULT
+  ansible.builtin.lineinfile:
+    path: /etc/default/grub
+    regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet"'
+  become: yes
+  register: sunshine_host_grub_cmdline
+  tags: plymouth
+
+- name: Regenerate GRUB configuration
+  ansible.builtin.command: update-grub
+  become: yes
+  when: sunshine_host_grub_cmdline is changed
+  tags: plymouth
+
+- name: Release the current Plymouth boot wait
+  ansible.builtin.command: plymouth quit
+  become: yes
+  when: sunshine_host_grub_cmdline is changed
+  tags: plymouth
+
 - name: Create setup-system package cache
   ansible.builtin.file:
     path: /var/cache/setup-system

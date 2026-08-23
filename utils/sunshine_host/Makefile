@@ -48,6 +48,9 @@ check: preflight
 	@grep -Fq 'Sunshine\ X-Box\ One\ \(virtual\)\ pad' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '[[ -r "/dev/input/$$event_name" ]]' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq 'for_window [class="^steam_app_[0-9]+$$"] fullscreen enable' ../../roles/sunshine-host/templates/sway.conf.j2
+	@grep -Fq 'GRUB_CMDLINE_LINUX_DEFAULT="quiet"' ../../roles/sunshine-host/tasks/main.yml
+	@grep -Fq 'ansible.builtin.command: plymouth quit' ../../roles/sunshine-host/tasks/main.yml
+	@! grep -Fq 'GRUB_CMDLINE_LINUX_DEFAULT' ../../roles/hal_hardware/tasks/main.yml
 	@for name in eaadwig philby camera morrowind quake3 rocknix steam; do \
 		test -f "$(COVERS_DIR)/$$name.png" || { echo "Missing cover: $(COVERS_DIR)/$$name.png" >&2; exit 1; }; \
 	done
@@ -72,8 +75,10 @@ steam-game-fullscreen: sway-preflight
 
 verify: preflight
 	@test "$$(systemctl is-enabled sunshine-host.target)" = enabled
+	@test "$$(systemctl is-active sunshine-host.target)" = active
 	@test "$$(systemctl is-active sunshine-host-sway.service)" = active
 	@test "$$(systemctl is-active sunshine-host-sunshine.service)" = active
+	@! grep -qw splash /proc/cmdline
 	@test -S "$(RUNTIME_DIR)/wayland-1"
 	@test -S "$(RUNTIME_DIR)/bus"
 	@test -f "$(CONFIG_DIR)/apps.json"
