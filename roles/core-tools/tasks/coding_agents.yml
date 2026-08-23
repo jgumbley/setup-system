@@ -42,6 +42,49 @@
   become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
   register: pi_install_result
 
+- name: Refresh Pi model catalogs
+  command: pi update --models
+
+- name: Ensure Pi agent configuration directory exists
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.pi/agent"
+    state: directory
+    mode: "0700"
+
+- name: Check for existing Pi settings
+  stat:
+    path: "{{ ansible_facts['env']['HOME'] }}/.pi/agent/settings.json"
+  register: pi_settings_file
+
+- name: Read existing Pi settings
+  slurp:
+    path: "{{ ansible_facts['env']['HOME'] }}/.pi/agent/settings.json"
+  register: pi_settings_content
+  when: pi_settings_file.stat.exists
+
+- name: Configure Pi to use OpenRouter Ox Alpha
+  copy:
+    dest: "{{ ansible_facts['env']['HOME'] }}/.pi/agent/settings.json"
+    mode: "0600"
+    content: |
+      {{
+        (
+          (
+            (pi_settings_content.content | b64decode | from_json)
+            if pi_settings_file.stat.exists
+            else {}
+          )
+          | combine(
+              {
+                'defaultProvider': 'openrouter',
+                'defaultModel': 'stealth/ox-alpha',
+                'defaultThinkingLevel': 'high'
+              }
+            )
+          | to_nice_json
+        )
+      }}
+
 - name: Install/Update OpenCode AI globally
   npm:
     name: "opencode-ai"
