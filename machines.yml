@@ -13,6 +13,9 @@ machine_paths:
 machine_utility_packages:
   "rocks":
     - bluez
+    - python3-dbus
+    - python3-evdev
+    - python3-gi
 
   "hal":
     - adb

@@ -21,3 +21,12 @@
     else
       echo "No Sway socket found; skipping Kanshi reload"
     fi
+
+- name: restart bluetooth
+  ansible.builtin.systemd:
+    name: bluetooth.service
+    state: restarted
+
+- name: reload Xbox controller udev rules
+  ansible.builtin.shell: udevadm control --reload-rules && udevadm trigger --subsystem-match=input
+  changed_when: true

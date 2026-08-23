@@ -93,6 +93,23 @@
         state: present
         cache_valid_time: 3600
 
+    - name: Install Rocks Intel VA-API decoder
+      become: yes
+      ansible.builtin.apt:
+        name:
+          - intel-media-va-driver-non-free
+          - vainfo
+        state: present
+        cache_valid_time: 3600
+      when: current_hostname == 'rocks'
+
+    - name: Verify the Rocks Intel VA-API driver
+      ansible.builtin.stat:
+        path: /usr/lib/x86_64-linux-gnu/dri/iHD_drv_video.so
+      register: moonlight_intel_va_driver
+      failed_when: not moonlight_intel_va_driver.stat.exists
+      when: current_hostname == 'rocks'
+
     - name: Ensure Moonlight install directory exists
       become: yes
       ansible.builtin.file:

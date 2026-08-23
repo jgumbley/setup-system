@@ -232,3 +232,30 @@
     src: rimworld.desktop.j2
     dest: ~/.local/share/applications/rimworld.desktop
     mode: '0644'
+
+- name: Add Xbox controller pairing launcher
+  become: no
+  ansible.builtin.template:
+    src: pair_controller.desktop.j2
+    dest: ~/.local/share/applications/pair_controller.desktop
+    mode: '0644'
+  when: current_hostname == 'rocks'
+
+- name: Configure BlueZ for the Rocks Xbox controller
+  ansible.builtin.lineinfile:
+    path: /etc/bluetooth/input.conf
+    regexp: '^#?ClassicBondedOnly='
+    line: 'ClassicBondedOnly=false'
+  notify: restart bluetooth
+  when: current_hostname == 'rocks'
+
+- name: Grant the Rocks user access to the Xbox controller input device
+  ansible.builtin.copy:
+    dest: /etc/udev/rules.d/70-xbox-controller.rules
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      SUBSYSTEM=="input", KERNEL=="event*", ATTRS{id/vendor}=="045e", ATTRS{id/product}=="0b05", GROUP="users", MODE="0660", TAG+="uaccess"
+  notify: reload Xbox controller udev rules
+  when: current_hostname == 'rocks'

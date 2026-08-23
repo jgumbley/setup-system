@@ -3,45 +3,41 @@ SHELL := /bin/bash
 .DEFAULT_GOAL := help
 
 HOSTNAME := rocks
-PAIR_SCRIPT := $(CURDIR)/pair.sh
+PYTHON := /usr/bin/python3
+CONTROLLER := $(CURDIR)/xbox_controller.py
 BLUEZ_INPUT_CONFIG := /etc/bluetooth/input.conf
-XBOX_PRO_CONTROLLER_NAME := Xbox Elite Wireless Controller
+UDEV_RULE := /etc/udev/rules.d/70-xbox-controller.rules
 
-.PHONY: help preflight check pair pair-apply pair-xbox-pro-controller xbox-pro-controller-apply configure-classic-hid
+.PHONY: help preflight check pair_controller pair_controller-run pair_controller-pane
 
 help:
 	@echo "Targets:"
-	@echo "  make check                     Verify Bluetooth pairing prerequisites"
-	@echo "  make pair DEVICE_NAME='name'   Pair one discoverable Bluetooth device"
-	@echo "  make pair-xbox-pro-controller  Pair an Xbox Elite wireless controller"
+	@echo "  make check            Verify the Xbox controller utility"
+	@echo "  make pair_controller  Pair, reconnect, and test the Xbox controller"
+	@echo "  make pair_controller-pane  Run pair_controller in an agent pane"
 
 preflight:
-	@test "$$(hostname)" = "$(HOSTNAME)" || { echo "Bluetooth pairing is only supported on $(HOSTNAME)." >&2; exit 1; }
-	@command -v bluetoothctl >/dev/null || { echo "bluetoothctl is unavailable; run make setup first." >&2; exit 127; }
+	@test "$$(hostname)" = "$(HOSTNAME)" || { echo "Xbox controller pairing is only supported on $(HOSTNAME)." >&2; exit 1; }
+	@test -x "$(PYTHON)" || { echo "$(PYTHON) is unavailable; run make setup first." >&2; exit 127; }
 	@systemctl is-active --quiet bluetooth.service || { echo "bluetooth.service is not active; run make setup first." >&2; exit 1; }
-	@bluetoothctl show >/dev/null || { echo "No Bluetooth controller is available." >&2; exit 1; }
+	@$(PYTHON) -c 'import dbus, evdev, gi' || { echo "Python Bluetooth/input dependencies are unavailable; run make setup first." >&2; exit 127; }
+	@grep -Fxq 'ClassicBondedOnly=false' "$(BLUEZ_INPUT_CONFIG)" || { echo "BlueZ Xbox support is not configured; run make setup first." >&2; exit 1; }
+	@test -f "$(UDEV_RULE)" || { echo "Xbox input permissions are not configured; run make setup first." >&2; exit 1; }
 
 check: preflight
-	bash -n "$(PAIR_SCRIPT)"
-	@echo "Bluetooth pairing utility verified."
+	@$(PYTHON) -c 'compile(open("$(CONTROLLER)", encoding="utf-8").read(), "$(CONTROLLER)", "exec")'
+	@echo "Xbox controller utility verified."
 
-pair:
-	@test -n "$(DEVICE_NAME)" || { echo "usage: make pair DEVICE_NAME='advertised device name'" >&2; exit 2; }
-	bash ../../pane.sh bluetooth-pair $(MAKE) --no-print-directory pair-apply DEVICE_NAME="$(DEVICE_NAME)"
+pair_controller:
+	@status=0; $(MAKE) --no-print-directory pair_controller-run || status=$$?; \
+		if [ "$$status" -ne 0 ]; then \
+			printf '\nThe Xbox controller utility failed. Press Enter to close.\n'; \
+			read -r _; \
+		fi; \
+		exit "$$status"
 
-pair-apply: preflight
-	bash "$(PAIR_SCRIPT)" "$(DEVICE_NAME)"
+pair_controller-run: preflight
+	"$(PYTHON)" -B "$(CONTROLLER)"
 
-pair-xbox-pro-controller:
-	bash ../../pane.sh bluetooth-pair $(MAKE) --no-print-directory xbox-pro-controller-apply
-
-xbox-pro-controller-apply: DEVICE_NAME := $(XBOX_PRO_CONTROLLER_NAME)
-xbox-pro-controller-apply: configure-classic-hid pair-apply
-
-configure-classic-hid: preflight
-	@if ! grep -Fxq 'ClassicBondedOnly=false' "$(BLUEZ_INPUT_CONFIG)"; then \
-		grep -Fxq '#ClassicBondedOnly=true' "$(BLUEZ_INPUT_CONFIG)" || { echo "Unexpected ClassicBondedOnly setting in $(BLUEZ_INPUT_CONFIG)." >&2; exit 1; }; \
-		sudo sed -i 's/^#ClassicBondedOnly=true$$/ClassicBondedOnly=false/' "$(BLUEZ_INPUT_CONFIG)"; \
-		sudo systemctl restart bluetooth.service; \
-	fi
-	@grep -Fxq 'ClassicBondedOnly=false' "$(BLUEZ_INPUT_CONFIG)"
+pair_controller-pane: preflight
+	bash ../../pane.sh pair-controller $(MAKE) --no-print-directory pair_controller-run
