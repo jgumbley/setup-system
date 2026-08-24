@@ -1,0 +1,62 @@
+---
+openmw_service_user: system
+openmw_service_group: system
+
+# Versioned OpenMW builds are installed separately. Ordinary setup prepares the
+# toolchain and runtime contract, but never compiles or changes this link.
+openmw_runtime_root: /opt/games/openmw
+openmw_runtime_current: "{{ openmw_runtime_root }}/current"
+openmw_resources_dir: "{{ openmw_runtime_current }}/share/games/openmw/resources"
+
+openmw_games_cache_dir: /var/cache/sunshine-host/games
+openmw_morrowind_state_root: /var/lib/sunshine-host/games/morrowind
+openmw_morrowind_native_root: "{{ openmw_morrowind_state_root }}/native"
+openmw_morrowind_native_config_dir: "{{ openmw_morrowind_native_root }}/config"
+openmw_morrowind_native_user_data_dir: "{{ openmw_morrowind_native_root }}/user-data"
+openmw_morrowind_native_data_local_dir: "{{ openmw_morrowind_native_root }}/data-local"
+openmw_morrowind_rocknix_root: "{{ openmw_morrowind_state_root }}/rocknix"
+openmw_morrowind_rocknix_config_dir: "{{ openmw_morrowind_rocknix_root }}/config"
+openmw_morrowind_rocknix_user_data_dir: "{{ openmw_morrowind_rocknix_root }}/user-data"
+openmw_morrowind_rocknix_data_local_dir: "{{ openmw_morrowind_rocknix_root }}/data-local"
+
+openmw_morrowind_data_dir: /usr/local/mnt/iceburg/roms/ports/openmw/data
+openmw_morrowind_julan_data_dir: /usr/local/mnt/iceburg/roms/ports/openmw/mods/julan
+openmw_morrowind_katisha_data_dir: /usr/local/mnt/iceburg/roms/ports/openmw/mods/katisha
+
+openmw_source_build_packages:
+  - build-essential
+  - ccache
+  - cmake
+  - curl
+  - git
+  - mold
+  - ninja-build
+  - pkg-config
+  - unzip
+  - libavcodec-dev
+  - libavformat-dev
+  - libavutil-dev
+  - libboost-iostreams-dev
+  - libboost-program-options-dev
+  - libbullet-dev
+  - libcollada-dom-dev
+  - libicu-dev
+  - libjpeg-dev
+  - libluajit-5.1-dev
+  - liblz4-dev
+  - libmygui-dev
+  - libopenal-dev
+  - libopenscenegraph-dev
+  - libpng-dev
+  - librecast-dev
+  - libsdl2-dev
+  - libsqlite3-dev
+  - libswresample-dev
+  - libswscale-dev
+  - libtinyxml-dev
+  - libunshield-dev
+  - libyaml-cpp-dev
+  - qt6-base-dev
+  - qt6-svg-dev
+  - qt6-tools-dev
+  - qt6-tools-dev-tools

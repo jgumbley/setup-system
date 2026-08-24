@@ -1,0 +1,111 @@
+{
+  "schema": 1,
+  "host": "holly",
+  "cache_root": "/var/cache/setup-system/game-runtimes",
+  "install_root": "/opt/games",
+  "state_root": "/var/lib/sunshine-host/games",
+  "state_cache_root": "/var/cache/sunshine-host/games",
+  "snapshot_root": "/usr/local/mnt/iceburg/backup/holly.smeg/game-state",
+  "nas": {
+    "alias": "/usr/local/mnt/iceburg",
+    "target": "/mnt/iceburg",
+    "source": "donatello.smeg:/iceburg",
+    "fstype": "nfs"
+  },
+  "runtimes": {
+    "openmw": {
+      "version": "0.51.0",
+      "revision": "f4bec41444214a7903bebd178389ca22ca13f646",
+      "url": "https://gitlab.com/OpenMW/openmw/-/archive/openmw-0.51.0/openmw-openmw-0.51.0.tar.gz",
+      "sha256": "7a65e63a5687ff0d51f319ebd529a9e93770fed3cc5408201de4588d1140f144",
+      "archive": "openmw-openmw-0.51.0.tar.gz",
+      "archive_root": "openmw-openmw-0.51.0",
+      "build_flags": "-GNinja -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX=/opt/games/openmw/0.51.0"
+    },
+    "quake3e": {
+      "version": "2025-10-14-setup-system-1",
+      "revision": "8cd90faf798d94618c871bfb2049d70d4315ad30",
+      "url": "https://github.com/ec-/Quake3e/archive/refs/tags/2025-10-14.tar.gz",
+      "sha256": "9ad020f2516774659b0b6c1e595cfc06e8bf9e5247ce002019a94c5784d86d4b",
+      "archive": "quake3e-2025-10-14.tar.gz",
+      "archive_root": "Quake3e-2025-10-14",
+      "patch": "patches/quake3e-controller.patch",
+      "patch_sha256": "74c5efe8036681625c8c169f1603839024226bc1e1633c8a9cb54e9412d4b746",
+      "build_flags": "release ARCH=x86_64"
+    },
+    "rocknix": {
+      "version": "20260801",
+      "revision": "3b9cb1f6bf48ee9ca0cf01edd9af52ca2a6b73fb",
+      "url": "https://github.com/ROCKNIX/distribution/archive/refs/tags/20260801.tar.gz",
+      "sha256": "9c4d4cb704ba24ec5d2262cc30aa3f17f12c987453ceb5b21b7671c01f71d99e",
+      "archive": "rocknix-20260801.tar.gz",
+      "archive_root": "distribution-20260801",
+      "builder": "ghcr.io/rocknix/rocknix-build@sha256:5a1bda2eb90a0d8013a70c107383c61a877bd0c753d7ca8516043b572dbae25d",
+      "docker_image": "setup-system/rocknix:20260801",
+      "build_flags": "PROJECT=ROCKNIX DEVICE=AMD64 ARCH=x86_64 CUSTOM_VERSION=20260801 CUSTOM_GIT_HASH=3b9cb1f6bf48ee9ca0cf01edd9af52ca2a6b73fb ./scripts/build_distro",
+      "rootfs_output": "build.ROCKNIX-AMD64.x86_64/image/system"
+    }
+  },
+  "content": {
+    "quake3": {
+      "destination": "/usr/local/mnt/iceburg/roms/ports/quake3/baseq3",
+      "file_count": 9,
+      "bytes": 505570007,
+      "files": {
+        "pak0.pk3": "7ce8b3910620cd50a09e4f1100f426e8c6180f68895d589f80e6bd95af54bcae",
+        "pak1.pk3": "d4ffd60b4b414c3419499e321b6f5c2e933cf082df85823ad2d6ae2f803e1682",
+        "pak2.pk3": "ccae938a2f13a03b24902d675181d516a431699701ed88023a307f34b5bcd58c",
+        "pak3.pk3": "d03c0a0e06b99f9ecca2be7389f57faed406e85f7c09b9c56afdfa53ba25e312",
+        "pak4.pk3": "af5f6d5c82fe4440ae0bb660f0648d1fa1731a9e8305a9eb652aa243428697f1",
+        "pak5.pk3": "69f87070ca7719e252a3ba97e6483f6663939c987ede550d1268d4d9a07b45bc",
+        "pak6.pk3": "bb4f0ae2bf603b050fb665436d3178ce7c1c20360e67bacf7c14d93daff38daf",
+        "pak7.pk3": "de6283ce23e3486a2622c5dbf73d3721a59f24debd380e90f43a97d952fea283",
+        "pak8.pk3": "812c9e97f231e89cefede3848c6110b7bd34245093af6f22c2cacde3e6b15663"
+      }
+    },
+    "morrowind": {
+      "source": "/usr/local/mnt/iceburg/roms/ports/openmw/Data Files",
+      "destination": "/usr/local/mnt/iceburg/roms/ports/openmw/data",
+      "file_count": 21066,
+      "bytes": 1876112737,
+      "required_files": {
+        "Morrowind.bsa": "3dcd5e6bfa08245521a53374bf733ee5c920df49103898a15aa31144ad64cf48",
+        "Tribunal.bsa": "3901e7a146f7a64a4ae9534c80d5974f7ab15adf5c48c4561d9313c0f7831d69",
+        "Bloodmoon.bsa": "7c20956791400d958cb407f0b7c1c19ceaf46719df7eb724d0b450299360bd7c",
+        "Morrowind.esm": "5c3c8c2cbd20e25901b59b3ece33d36b7ef0e3d60ad8d11828bcc61a5ead1647",
+        "Tribunal.esm": "2ace511f23cc2a9ddd5f3aa59c7919789b9378cf4b17c8ae3375dd6b782f3f2b",
+        "Bloodmoon.esm": "bd27090d0e6ad4c1bf1abc83f1a2dac56fcc82cae7bfe8263c413fb301801357"
+      }
+    },
+    "mods": {
+      "julan": {
+        "source": "/usr/local/mnt/iceburg/roms/ports/openmw/lm_plugins/Julan",
+        "destination": "/usr/local/mnt/iceburg/roms/ports/openmw/mods/julan",
+        "source_payload": ".",
+        "file_count": 188
+      },
+      "katisha": {
+        "source": "/usr/local/mnt/iceburg/roms/ports/openmw/lm_plugins/Katisha",
+        "destination": "/usr/local/mnt/iceburg/roms/ports/openmw/mods/katisha",
+        "source_payload": "Data Files",
+        "file_count": 198
+      }
+    }
+  },
+  "state_import": {
+    "native_source": "/usr/local/mnt/iceburg/backup/hal.smeg/wip/mw/morrowind",
+    "native_root": "/var/lib/sunshine-host/games/morrowind/native",
+    "native_config": "/var/lib/sunshine-host/games/morrowind/native/config",
+    "native_user_data": "/var/lib/sunshine-host/games/morrowind/native/user-data",
+    "native_data_local": "/var/lib/sunshine-host/games/morrowind/native/data-local",
+    "rocknix_frontend_root": "/var/lib/sunshine-host/games/rocknix",
+    "quake3_root": "/var/lib/sunshine-host/games/quake3",
+    "quake3_baseq3": "/var/lib/sunshine-host/games/quake3/home/baseq3",
+    "quake3_autoexec_source": "autoexec.cfg"
+  },
+  "backup_components": {
+    "morrowind": "/var/lib/sunshine-host/games/morrowind",
+    "quake3": "/var/lib/sunshine-host/games/quake3",
+    "rocknix": "/var/lib/sunshine-host/games/rocknix"
+  }
+}

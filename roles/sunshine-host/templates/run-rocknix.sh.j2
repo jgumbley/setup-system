@@ -5,34 +5,123 @@ export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-{{ sunshine_host_runtime_dir }}}"
 export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-{{ sunshine_host_wayland_display }}}"
 export PULSE_SERVER="${PULSE_SERVER:-{{ sunshine_host_pulse_server }}}"
 
+# shellcheck source=/dev/null
+source "{{ sunshine_host_install_dir }}/bin/game-session.sh"
+game_session_begin "ROCKNIX"
+game_session_require_runtime \
+  "{{ sunshine_host_rocknix_dir }}" \
+  "{{ sunshine_host_rocknix_dir }}/rootfs/usr/bin/emulationstation" \
+  "ROCKNIX"
+game_session_require_command /usr/bin/docker "ROCKNIX"
+game_session_require_nas "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_morrowind_state_dir }}" "ROCKNIX"
+game_session_require_file "{{ sunshine_host_roms_dir }}/ports/Morrowind.sh" "ROCKNIX"
+game_session_require_file "{{ sunshine_host_morrowind_data_dir }}/Morrowind.esm" "ROCKNIX"
+[[ -r "{{ sunshine_host_games_install_dir }}/openmw-portmaster/current/.setup-system-runtime" ]] || \
+  game_session_show_error "ROCKNIX: PORTMASTER RUNTIME MISSING" "Install the pinned OpenMW PortMaster runtime first."
+
+runtime_marker="{{ sunshine_host_rocknix_dir }}/.setup-system-runtime"
+marker_image="$(game_session_marker_value "${runtime_marker}" docker_image)"
+marker_image_id="$(game_session_marker_value "${runtime_marker}" docker_image_id)"
+[[ "${marker_image}" == "{{ sunshine_host_rocknix_image }}" && -n "${marker_image_id}" ]] || \
+  game_session_show_error "ROCKNIX: RUNTIME INVALID" "The ROCKNIX image contract is missing from its marker."
+live_image_id="$(/usr/bin/docker image inspect "{{ sunshine_host_rocknix_image }}" 2>/dev/null | /usr/bin/jq -er '.[0].Id' 2>/dev/null || true)"
+[[ "${live_image_id}" == "${marker_image_id}" ]] || \
+  game_session_show_error "ROCKNIX: RUNTIME INVALID" "The installed ROCKNIX Docker image does not match its marker."
+
+default_sink=""
 for _ in $(seq 1 50); do
   default_sink="$(pactl get-default-sink 2>/dev/null || true)"
-  case "$default_sink" in *sunshine*) break ;; esac
+  case "${default_sink}" in *sunshine*) break ;; esac
   sleep 0.2
 done
+case "${default_sink}" in
+  *sunshine*) ;;
+  *) game_session_show_error "ROCKNIX: AUDIO ERROR" "The Sunshine audio sink did not become ready." ;;
+esac
 
-controller_device=""
-for _ in $(seq 1 150); do
-  for name_file in /sys/class/input/event*/device/name; do
-    [[ -r "$name_file" ]] || continue
-    case "$(<"$name_file")" in
-      Sunshine\ X-Box\ One\ \(virtual\)\ pad*)
-        event_name="${name_file#/sys/class/input/}"
-        event_name="${event_name%%/*}"
-        if [[ -r "/dev/input/$event_name" ]]; then
-          controller_device="/dev/input/$event_name"
-          break 2
-        fi
-        ;;
-    esac
-  done
-  sleep 0.2
+container_name=sunshine-host-rocknix
+container_label=setup-system.game-session
+if /usr/bin/docker container inspect "${container_name}" >/dev/null 2>&1; then
+  stale_label="$(/usr/bin/docker container inspect "${container_name}" | /usr/bin/jq -r '.[0].Config.Labels["setup-system.game-session"] // ""')"
+  [[ "${stale_label}" == rocknix ]] || \
+    game_session_show_error "ROCKNIX: CONTAINER CONFLICT" "The reserved container name belongs to an unknown container."
+  /usr/bin/docker rm -f "${container_name}" >/dev/null
+fi
+
+group_args=()
+for device_group in input render video audio; do
+  device_gid="$(getent group "${device_group}" | cut -d: -f3)"
+  [[ -n "${device_gid}" ]] || \
+    game_session_show_error "ROCKNIX: DEVICE ERROR" "Required host group is missing: ${device_group}"
+  group_args+=(--group-add "${device_gid}")
 done
 
-[[ -n "$controller_device" ]] || {
-  echo "Timed out waiting for Sunshine's Xbox One virtual controller; enable a controller in Moonlight and press a button." >&2
-  exit 1
+rocknix_docker_pid=""
+cleanup_rocknix() {
+  if /usr/bin/docker container inspect "${container_name}" >/dev/null 2>&1; then
+    /usr/bin/docker stop --time 5 "${container_name}" >/dev/null 2>&1 || true
+    /usr/bin/docker rm -f "${container_name}" >/dev/null 2>&1 || true
+  fi
+  if [[ -n "${rocknix_docker_pid}" ]] && kill -0 "${rocknix_docker_pid}" 2>/dev/null; then
+    kill "${rocknix_docker_pid}" 2>/dev/null || true
+    wait "${rocknix_docker_pid}" 2>/dev/null || true
+  fi
+  rocknix_docker_pid=""
 }
 
-printf 'ROCKNIX controller: %s\n' "$controller_device"
-exec /usr/bin/make --no-print-directory -C "{{ sunshine_host_games_root }}" rocknix-run
+terminate_rocknix() {
+  cleanup_rocknix
+  exit 143
+}
+
+trap cleanup_rocknix EXIT
+trap terminate_rocknix HUP INT TERM
+
+(
+  exec 9>&-
+  exec /usr/bin/docker run \
+  --rm \
+  --init \
+  --name "${container_name}" \
+  --label "${container_label}=rocknix" \
+  --hostname rocknix \
+  --network host \
+  --ipc host \
+  --privileged \
+  --user "$(id -u):$(id -g)" \
+  "${group_args[@]}" \
+  --env HOME=/storage \
+  --env XDG_RUNTIME_DIR="{{ sunshine_host_runtime_dir }}" \
+  --env WAYLAND_DISPLAY="{{ sunshine_host_wayland_display }}" \
+  --env DISPLAY=:0 \
+  --env SDL_VIDEODRIVER=wayland \
+  --env PULSE_SERVER="{{ sunshine_host_pulse_server }}" \
+  --volume "{{ sunshine_host_runtime_dir }}:{{ sunshine_host_runtime_dir }}" \
+  --volume /run/user/1000/pulse:/run/user/1000/pulse \
+  --volume /run/udev:/run/udev:ro \
+  --volume /tmp/.X11-unix:/tmp/.X11-unix \
+  --volume "{{ sunshine_host_games_install_dir }}:{{ sunshine_host_games_install_dir }}:ro" \
+  --volume "{{ sunshine_host_roms_dir }}:/storage/roms:ro" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}:/storage" \
+  --volume "{{ sunshine_host_rocknix_morrowind_state_dir }}:{{ sunshine_host_rocknix_morrowind_state_dir }}" \
+  --volume "{{ sunshine_host_game_cache_dir }}:{{ sunshine_host_game_cache_dir }}" \
+  --workdir /storage \
+    "{{ sunshine_host_rocknix_image }}" \
+    /usr/bin/emulationstation
+) &
+rocknix_docker_pid=$!
+
+set +e
+wait "${rocknix_docker_pid}"
+rocknix_status=$?
+set -e
+rocknix_docker_pid=""
+cleanup_rocknix
+trap - EXIT HUP INT TERM
+
+if (( rocknix_status != 0 )); then
+  game_session_show_error "ROCKNIX: SESSION FAILED" "EmulationStation exited unexpectedly."
+fi
+exit 0

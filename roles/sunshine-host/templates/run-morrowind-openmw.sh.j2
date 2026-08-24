@@ -1,32 +1,79 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-{{ sunshine_host_runtime_dir }}}"
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-{{ sunshine_host_wayland_display }}}"
 export SDL_VIDEODRIVER=x11
 export DISPLAY="${DISPLAY:-:0}"
 export PULSE_SERVER="{{ sunshine_host_pulse_server }}"
 export ALSOFT_DRIVERS=pulse
-export SDL_GAMECONTROLLERCONFIG_FILE=/etc/openmw/gamecontrollerdb.txt
-export MESA_LOADER_DRIVER_OVERRIDE=radeonsi
-export __GLX_VENDOR_LIBRARY_NAME=mesa
-cd "{{ sunshine_host_morrowind_data_dir }}"
 
+# shellcheck source=/dev/null
+source "{{ sunshine_host_install_dir }}/bin/game-session.sh"
+game_session_begin "MORROWIND"
+game_session_require_runtime "{{ sunshine_host_openmw_dir }}" "{{ sunshine_host_openmw_binary }}" "MORROWIND"
+game_session_require_nas "MORROWIND"
+game_session_require_writable_dir "{{ sunshine_host_morrowind_config_dir }}" "MORROWIND"
+game_session_require_writable_dir "{{ sunshine_host_morrowind_user_data_dir }}" "MORROWIND"
+game_session_require_writable_dir "{{ sunshine_host_morrowind_data_local_dir }}" "MORROWIND"
+
+game_session_require_sha256 3dcd5e6bfa08245521a53374bf733ee5c920df49103898a15aa31144ad64cf48 "{{ sunshine_host_morrowind_data_dir }}/Morrowind.bsa" "MORROWIND"
+game_session_require_sha256 5c3c8c2cbd20e25901b59b3ece33d36b7ef0e3d60ad8d11828bcc61a5ead1647 "{{ sunshine_host_morrowind_data_dir }}/Morrowind.esm" "MORROWIND"
+game_session_require_sha256 3901e7a146f7a64a4ae9534c80d5974f7ab15adf5c48c4561d9313c0f7831d69 "{{ sunshine_host_morrowind_data_dir }}/Tribunal.bsa" "MORROWIND"
+game_session_require_sha256 2ace511f23cc2a9ddd5f3aa59c7919789b9378cf4b17c8ae3375dd6b782f3f2b "{{ sunshine_host_morrowind_data_dir }}/Tribunal.esm" "MORROWIND"
+game_session_require_sha256 7c20956791400d958cb407f0b7c1c19ceaf46719df7eb724d0b450299360bd7c "{{ sunshine_host_morrowind_data_dir }}/Bloodmoon.bsa" "MORROWIND"
+game_session_require_sha256 bd27090d0e6ad4c1bf1abc83f1a2dac56fcc82cae7bfe8263c413fb301801357 "{{ sunshine_host_morrowind_data_dir }}/Bloodmoon.esm" "MORROWIND"
+
+for content_file in \
+  adamantiumarmor.esp \
+  AreaEffectArrows.esp \
+  bcsounds.esp \
+  EBQ_Artifact.esp \
+  entertainers.esp \
+  LeFemmArmor.esp \
+  master_index.esp \
+  "Siege at Firemoth.esp"; do
+  game_session_require_file "{{ sunshine_host_morrowind_data_dir }}/${content_file}" "MORROWIND"
+done
+game_session_require_file "{{ sunshine_host_morrowind_julan_dir }}/KS_Julan_Ashlander Companion_2.0.esp" "MORROWIND"
+game_session_require_file "{{ sunshine_host_morrowind_katisha_dir }}/KS_Katisha's_Fancy_Threads_1.0.esp" "MORROWIND"
+
+default_sink=""
 for _ in $(seq 1 50); do
   default_sink="$(pactl get-default-sink 2>/dev/null || true)"
-  case "$default_sink" in *sunshine*) break ;; esac
+  case "${default_sink}" in *sunshine*) break ;; esac
   sleep 0.2
 done
+case "${default_sink}" in
+  *sunshine*) ;;
+  *) game_session_show_error "MORROWIND: AUDIO ERROR" "The Sunshine audio sink did not become ready." ;;
+esac
 
-exec /usr/games/openmw \
+cd "{{ sunshine_host_install_dir }}"
+exec "{{ sunshine_host_openmw_binary }}" \
   --config="{{ sunshine_host_morrowind_config_dir }}" \
-  --replace=data --replace=fallback-archive --replace=content \
   --user-data="{{ sunshine_host_morrowind_user_data_dir }}" \
-  --data=/usr/share/games/openmw/resources/vfs \
-  --data=/usr/share/games/openmw/resources/vfs-mw \
+  --data-local="{{ sunshine_host_morrowind_data_local_dir }}" \
+  --replace=data --replace=fallback-archive --replace=content \
+  --data="{{ sunshine_host_openmw_dir }}/share/games/openmw/resources/vfs" \
+  --data="{{ sunshine_host_openmw_dir }}/share/games/openmw/resources/vfs-mw" \
   --data="{{ sunshine_host_morrowind_data_dir }}" \
+  --data="{{ sunshine_host_morrowind_julan_dir }}" \
+  --data="{{ sunshine_host_morrowind_katisha_dir }}" \
   --fallback-archive=Morrowind.bsa \
   --fallback-archive=Tribunal.bsa \
   --fallback-archive=Bloodmoon.bsa \
   --content=Morrowind.esm \
   --content=Tribunal.esm \
   --content=Bloodmoon.esm \
+  --content=adamantiumarmor.esp \
+  --content=AreaEffectArrows.esp \
+  --content=bcsounds.esp \
+  --content=EBQ_Artifact.esp \
+  --content=entertainers.esp \
+  --content=LeFemmArmor.esp \
+  --content=master_index.esp \
+  --content="Siege at Firemoth.esp" \
+  --content="KS_Julan_Ashlander Companion_2.0.esp" \
+  --content="KS_Katisha's_Fancy_Threads_1.0.esp" \
   "$@"

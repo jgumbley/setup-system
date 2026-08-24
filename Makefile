@@ -8,7 +8,7 @@ help:
 	@echo "  make setup          Full machine setup "
 	@echo "  make vnc-viewer     Install the TigerVNC viewer"
 	@echo "  make nas            Mount NAS via Ansible playbook"
-	@echo "  make backup         Backup ~/wip and Holly's Sunshine pairing state to NAS"
+	@echo "  make backup         Back up ~/wip and Holly's persistent state to NAS"
 	@echo "  make backup-status  Show the last successful backup date for each host"
 	@echo "  make android-usb    Format a 64 GB Lexar USB stick for Android"
 
@@ -20,7 +20,7 @@ SUNSHINE_STATE_DIR := /var/lib/sunshine-host
 SUNSHINE_BACKUP_DIR := $(BACKUP_ROOT)/sunshine
 SUNSHINE_BACKUP_FILES := sunshine_state.json cakey.pem cacert.pem
 
-.PHONY: term updates nas setup test_role test_role-apply vnc-viewer vnc-viewer-apply check backup backup-status caffeinate android-usb android-usb-inspect
+.PHONY: term updates nas setup test_role test_role-apply vnc-viewer vnc-viewer-apply check backup backup-apply backup-locked backup-status caffeinate android-usb android-usb-inspect
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -71,10 +71,25 @@ vnc-viewer-apply: .bootstrapped
 check:
 	ansible-playbook setup.yml -c local --syntax-check
 
-backup: nas
+backup:
+	bash pane.sh backup $(MAKE) --no-print-directory backup-apply
+
+backup-apply:
+	@exec 8>/run/lock/setup-system-backup.lock; \
+		flock -n 8 || { echo "Another setup-system backup is already running." >&2; exit 1; }; \
+		if [ "$(HOSTNAME)" = holly ]; then \
+			test -d /run/sunshine-host || { echo "Missing Sunshine runtime directory: /run/sunshine-host" >&2; exit 1; }; \
+			exec 9>/run/sunshine-host/game-session.lock; \
+			flock -n 9 || { echo "A Sunshine game session is active; backup was not started." >&2; exit 1; }; \
+		fi; \
+		$(MAKE) --no-print-directory backup-locked BACKUP_LOCKED=1
+
+backup-locked:
+	@test "$(BACKUP_LOCKED)" = 1 || { echo "backup-locked must be invoked by make backup." >&2; exit 2; }
+	$(MAKE) --no-print-directory nas
 	@echo "Backing up to $(BACKUP_ROOT)/wip"
 	mkdir -p "$(BACKUP_ROOT)/wip"
-	rsync -rlptDvz --progress --update --no-group \
+	rsync -rlptDvz --progress --no-group \
 		--chmod=Du+rwx,Dgo+rx,Dgo-w,Fu+rw,Fgo+r,Fgo-w \
 		--exclude='node_modules' \
 		--exclude='__pycache__' \
@@ -95,6 +110,7 @@ backup: nas
 		rsync -rlptDv --progress --checksum --no-group --chmod=D700,F600 \
 			$(foreach state_file,$(SUNSHINE_BACKUP_FILES),"$(SUNSHINE_STATE_DIR)/$(state_file)") \
 			"$(SUNSHINE_BACKUP_DIR)/"; \
+		$(MAKE) -C utils/game_runtimes --no-print-directory backup-state-apply; \
 	fi
 	$(MAKE) -C utils/backup_status --no-print-directory record BACKUP_PATH="$(BACKUP_ROOT)"
 

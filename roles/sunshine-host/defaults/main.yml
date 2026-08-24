@@ -4,8 +4,6 @@ sunshine_host_user: system
 sunshine_host_group: system
 sunshine_host_home: /home/system
 sunshine_host_workspace_root: "{{ machine_paths['holly'].workspace_root }}"
-sunshine_host_openmw_root: "{{ machine_paths['holly'].openmw_root }}"
-sunshine_host_games_root: "{{ machine_paths['holly'].games_root }}"
 
 # Installed host-service locations.
 sunshine_host_install_dir: /usr/lib/sunshine-host
@@ -13,6 +11,13 @@ sunshine_host_config_dir: /etc/sunshine-host
 sunshine_host_state_dir: /var/lib/sunshine-host
 sunshine_host_runtime_dir: /run/sunshine-host
 sunshine_host_utility_dir: "{{ playbook_dir }}/utils/sunshine_host"
+sunshine_host_game_runtimes_utility_dir: "{{ playbook_dir }}/utils/game_runtimes"
+sunshine_host_games_install_dir: /opt/games
+sunshine_host_game_state_dir: "{{ sunshine_host_state_dir }}/games"
+sunshine_host_game_cache_dir: /var/cache/sunshine-host/games
+sunshine_host_nas_mount_dir: /mnt/iceburg
+sunshine_host_nas_source: donatello.smeg:/iceburg
+sunshine_host_roms_dir: /usr/local/mnt/iceburg/roms
 
 # Pinned native Sunshine package for Holly.
 sunshine_host_version: "2026.516.143833"
@@ -21,19 +26,27 @@ sunshine_host_deb_url: https://github.com/LizardByte/Sunshine/releases/download/
 sunshine_host_deb_sha256: c7e5452f8cf2609dffbdeda63ca3be7ee45f91505dc496844d65924817cb2517
 sunshine_host_bin: /usr/bin/sunshine
 
-# External application locations. The role configures launch contracts only;
-# content and builds remain owned by the OpenMW and games repositories.
+# External application locations. Runtime builds are explicit operations owned
+# by utils/game_runtimes; ordinary setup installs only these launch contracts.
 sunshine_host_philby_dir: "{{ sunshine_host_workspace_root }}/philby-glm"
-sunshine_host_eaadwig_dir: "{{ sunshine_host_openmw_root }}/eadwig"
-sunshine_host_morrowind_data_dir: "{{ sunshine_host_openmw_root }}/morrowind-data/Data Files"
-sunshine_host_morrowind_config_dir: "{{ sunshine_host_openmw_root }}/morrowind/config"
-sunshine_host_morrowind_user_data_dir: "{{ sunshine_host_openmw_root }}/morrowind/user-data"
-sunshine_host_quake3_root: "{{ sunshine_host_games_root }}/quake3"
-sunshine_host_quake3_engine_dir: "{{ sunshine_host_quake3_root }}/quake3e/build/release-linux-x86_64"
+sunshine_host_openmw_dir: "{{ sunshine_host_games_install_dir }}/openmw/current"
+sunshine_host_openmw_binary: "{{ sunshine_host_openmw_dir }}/bin/openmw"
+sunshine_host_morrowind_data_dir: "{{ sunshine_host_roms_dir }}/ports/openmw/data"
+sunshine_host_morrowind_julan_dir: "{{ sunshine_host_roms_dir }}/ports/openmw/mods/julan"
+sunshine_host_morrowind_katisha_dir: "{{ sunshine_host_roms_dir }}/ports/openmw/mods/katisha"
+sunshine_host_morrowind_state_dir: "{{ sunshine_host_game_state_dir }}/morrowind/native"
+sunshine_host_morrowind_config_dir: "{{ sunshine_host_morrowind_state_dir }}/config"
+sunshine_host_morrowind_user_data_dir: "{{ sunshine_host_morrowind_state_dir }}/user-data"
+sunshine_host_morrowind_data_local_dir: "{{ sunshine_host_morrowind_state_dir }}/data-local"
+sunshine_host_quake3_engine_dir: "{{ sunshine_host_games_install_dir }}/quake3e/current"
 sunshine_host_quake3_binary: "{{ sunshine_host_quake3_engine_dir }}/quake3e.x64"
-sunshine_host_quake3_data_dir: "{{ sunshine_host_quake3_root }}/data"
-sunshine_host_quake3_home_dir: "{{ sunshine_host_quake3_root }}/home"
+sunshine_host_quake3_data_dir: "{{ sunshine_host_roms_dir }}/ports/quake3"
+sunshine_host_quake3_home_dir: "{{ sunshine_host_game_state_dir }}/quake3/home"
 sunshine_host_quake3_basegame: baseq3
+sunshine_host_rocknix_dir: "{{ sunshine_host_games_install_dir }}/rocknix/current"
+sunshine_host_rocknix_image: setup-system/rocknix:20260801
+sunshine_host_rocknix_state_dir: "{{ sunshine_host_game_state_dir }}/rocknix"
+sunshine_host_rocknix_morrowind_state_dir: "{{ sunshine_host_game_state_dir }}/morrowind/rocknix"
 
 # Headless session and Sunshine configuration.
 sunshine_host_sway_resolution: 1920x1080

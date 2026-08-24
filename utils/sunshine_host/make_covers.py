@@ -13,7 +13,6 @@ FONT_REGULAR = "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf"
 
 # name -> (title, subtitle, background, accent)
 APPS = {
-    "eaadwig": ("Eadwig", "OpenMW · Buildwas", "#10261f", "#3fb27f"),
     "philby": ("Philby", "philby-glm · HAL", "#0d1a0d", "#4dcc4d"),
     "camera": ("Camera", "UniFi · live", "#082026", "#39c2d7"),
     "morrowind": ("Morrowind", "GOTY · OpenMW", "#241a0a", "#d9a441"),

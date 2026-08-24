@@ -1,29 +1,35 @@
 ---
-- name: Ensure add-apt-repository is available
+- name: Ensure add-apt-repository is available for existing desktop OpenMW hosts
   ansible.builtin.apt:
     name: software-properties-common
     state: present
     cache_valid_time: 3600
   become: yes
-  when: ansible_facts['distribution_version'] is version('26.04', '<')
+  when:
+    - ansible_facts['hostname'] != 'holly'
+    - ansible_facts['distribution_version'] is version('26.04', '<')
 
-- name: Add OpenMW stable PPA
+- name: Add OpenMW stable PPA for existing desktop OpenMW hosts
   ansible.builtin.apt_repository:
     repo: ppa:openmw/openmw
     state: present
     update_cache: yes
   become: yes
-  when: ansible_facts['distribution_version'] is version('26.04', '<')
+  when:
+    - ansible_facts['hostname'] != 'holly'
+    - ansible_facts['distribution_version'] is version('26.04', '<')
 
-- name: Add OpenMW daily builds PPA
+- name: Add OpenMW daily builds PPA for existing desktop OpenMW hosts
   ansible.builtin.apt_repository:
     repo: ppa:openmw/openmw-daily
     state: present
     update_cache: yes
   become: yes
-  when: ansible_facts['distribution_version'] is version('26.04', '<')
+  when:
+    - ansible_facts['hostname'] != 'holly'
+    - ansible_facts['distribution_version'] is version('26.04', '<')
 
-- name: Remove obsolete OpenMW PPAs from Ubuntu 26.04
+- name: Remove obsolete OpenMW PPAs from existing Ubuntu 26.04 desktop hosts
   ansible.builtin.shell: |
     find /etc/apt/sources.list.d -maxdepth 1 -type f \
       \( -name 'openmw-ubuntu-openmw-*.list' \
@@ -34,9 +40,11 @@
   register: openmw_ppa_cleanup
   changed_when: openmw_ppa_cleanup.stdout != ''
   become: yes
-  when: ansible_facts['distribution_version'] is version('26.04', '>=')
+  when:
+    - ansible_facts['hostname'] != 'holly'
+    - ansible_facts['distribution_version'] is version('26.04', '>=')
 
-- name: Install or upgrade OpenMW
+- name: Install or upgrade OpenMW on existing desktop hosts
   ansible.builtin.apt:
     name:
       - openmw
@@ -47,58 +55,70 @@
     state: latest
     cache_valid_time: 3600
   become: yes
+  when: ansible_facts['hostname'] != 'holly'
 
-# Ubuntu 26.04 carries no OpenMW newer than 0.49 and the PPAs do not build for
-# resolute, so a current engine must be compiled from source. Package names are
-# taken from upstream CI/install_debian_deps.sh (groups: gcc, openmw-deps,
-# openmw-deps-dynamic) and adjusted for 26.04:
-#   libboost-system-dev  -> dropped; Boost.System is header-only and OpenMW only
-#                           requires the iostreams and program_options components
-#   libqt6opengl6-dev    -> qt6-base-dev (which Provides it)
-#   libqt6svg6-dev       -> qt6-svg-dev
 - name: Install OpenMW source build dependencies
   ansible.builtin.apt:
-    name:
-      - build-essential
-      - ccache
-      - cmake
-      - curl
-      - git
-      - mold
-      - ninja-build
-      - pkg-config
-      - unzip
-      - libboost-iostreams-dev
-      - libboost-program-options-dev
-      - libavcodec-dev
-      - libavformat-dev
-      - libavutil-dev
-      - libswresample-dev
-      - libswscale-dev
-      - libsdl2-dev
-      - libopenal-dev
-      - qt6-base-dev
-      - qt6-svg-dev
-      - qt6-tools-dev
-      - qt6-tools-dev-tools
-      - libbullet-dev
-      - libcollada-dom-dev
-      - libicu-dev
-      - libjpeg-dev
-      - libluajit-5.1-dev
-      - liblz4-dev
-      - libmygui-dev
-      - libopenscenegraph-dev
-      - libpng-dev
-      - librecast-dev
-      - libsqlite3-dev
-      - libtinyxml-dev
-      - libunshield-dev
-      - libyaml-cpp-dev
+    name: "{{ openmw_source_build_packages }}"
     state: present
     cache_valid_time: 3600
-  become: yes
+  become: true
 
+- name: Create the immutable OpenMW runtime parent directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /opt/games
+    - "{{ openmw_runtime_root }}"
+  become: true
+  when: ansible_facts['hostname'] == 'holly'
+
+- name: Create OpenMW writable game directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ openmw_service_user }}"
+    group: "{{ openmw_service_group }}"
+    mode: "0700"
+  loop:
+    - /var/lib/sunshine-host
+    - /var/lib/sunshine-host/games
+    - "{{ openmw_morrowind_state_root }}"
+    - "{{ openmw_morrowind_native_root }}"
+    - "{{ openmw_morrowind_native_config_dir }}"
+    - "{{ openmw_morrowind_native_user_data_dir }}"
+    - "{{ openmw_morrowind_native_data_local_dir }}"
+    - "{{ openmw_morrowind_rocknix_root }}"
+    - "{{ openmw_morrowind_rocknix_config_dir }}"
+    - "{{ openmw_morrowind_rocknix_user_data_dir }}"
+    - "{{ openmw_morrowind_rocknix_data_local_dir }}"
+    - /var/cache/sunshine-host
+    - "{{ openmw_games_cache_dir }}"
+  become: true
+  when: ansible_facts['hostname'] == 'holly'
+
+- name: Seed the native OpenMW profile when configuration is absent
+  ansible.builtin.template:
+    src: "{{ item.src }}"
+    dest: "{{ openmw_morrowind_native_config_dir }}/{{ item.dest }}"
+    owner: "{{ openmw_service_user }}"
+    group: "{{ openmw_service_group }}"
+    mode: "0640"
+    force: false
+  loop:
+    - src: openmw.cfg.j2
+      dest: openmw.cfg
+    - src: settings.cfg.j2
+      dest: settings.cfg
+  become: true
+  when: ansible_facts['hostname'] == 'holly'
+
+# Preserve the existing Morrowind content-authoring environment. It is separate
+# from the explicitly invoked game runtime build and remains setup-managed.
 - name: Install Morrowind content creation toolchain (apt)
   ansible.builtin.apt:
     name:

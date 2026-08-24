@@ -4,16 +4,6 @@
   },
   "apps": [
     {
-      "name": "eaadwig",
-      "cmd": "{{ sunshine_host_install_dir }}/bin/run-eaadwig-openmw.sh",
-      "working-dir": "{{ sunshine_host_install_dir }}",
-      "output": "{{ sunshine_host_state_dir }}/eaadwig.log",
-      "wait-all": true,
-      "exit-timeout": 5,
-      "auto-detach": false,
-      "image-path": "{{ sunshine_host_config_dir }}/covers/eaadwig.png"
-    },
-    {
       "name": "philby",
       "cmd": "{{ sunshine_host_install_dir }}/bin/quest-philby-app.sh",
       "working-dir": "{{ sunshine_host_philby_dir }}",
@@ -36,30 +26,30 @@
     {
       "name": "morrowind",
       "cmd": "{{ sunshine_host_install_dir }}/bin/run-morrowind-openmw.sh",
-      "working-dir": "{{ sunshine_host_morrowind_data_dir }}",
-      "output": "{{ sunshine_host_state_dir }}/morrowind.log",
+      "working-dir": "{{ sunshine_host_install_dir }}",
+      "output": "{{ sunshine_host_game_cache_dir }}/morrowind/native/session.log",
       "wait-all": true,
-      "exit-timeout": 5,
+      "exit-timeout": 10,
       "auto-detach": false,
       "image-path": "{{ sunshine_host_config_dir }}/covers/morrowind.png"
     },
     {
       "name": "quake3",
       "cmd": "{{ sunshine_host_install_dir }}/bin/run-quake3.sh",
-      "working-dir": "{{ sunshine_host_quake3_engine_dir }}",
-      "output": "{{ sunshine_host_state_dir }}/quake3.log",
+      "working-dir": "{{ sunshine_host_install_dir }}",
+      "output": "{{ sunshine_host_game_cache_dir }}/quake3/session.log",
       "wait-all": true,
-      "exit-timeout": 5,
+      "exit-timeout": 10,
       "auto-detach": false,
       "image-path": "{{ sunshine_host_config_dir }}/covers/quake3.png"
     },
     {
       "name": "rocknix",
       "cmd": "{{ sunshine_host_install_dir }}/bin/run-rocknix.sh",
-      "working-dir": "{{ sunshine_host_games_root }}",
-      "output": "{{ sunshine_host_state_dir }}/rocknix.log",
+      "working-dir": "{{ sunshine_host_install_dir }}",
+      "output": "{{ sunshine_host_game_cache_dir }}/rocknix/session.log",
       "wait-all": true,
-      "exit-timeout": 5,
+      "exit-timeout": 10,
       "auto-detach": false,
       "image-path": "{{ sunshine_host_config_dir }}/covers/rocknix.png"
     },

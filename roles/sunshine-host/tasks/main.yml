@@ -7,8 +7,6 @@
       - ansible_facts['distribution_version'] == '26.04'
       - ansible_facts['architecture'] in ['x86_64', 'amd64']
       - sunshine_host_workspace_root is match('^/')
-      - sunshine_host_openmw_root is match('^/')
-      - sunshine_host_games_root is match('^/')
     fail_msg: >-
       The sunshine-host role only supports Holly on Ubuntu 26.04 amd64 with
       fully qualified workspace locations; detected {{ ansible_facts['hostname'] }}
@@ -22,11 +20,13 @@
 # ordered after them (e.g. sunshine-host.target). Removing "splash" from the
 # kernel cmdline keeps plymouth-start from ever running (its unit has
 # ConditionKernelCommandLine=splash), eliminating the whole failure class.
-- name: Remove splash from GRUB_CMDLINE_LINUX_DEFAULT
+# The headless Navi31 GPU must also remain awake: its firmware cannot recover
+# from runtime suspend, leaving renderD128 unusable and Sunshine video blank.
+- name: Configure Holly's headless GPU kernel command line
   ansible.builtin.lineinfile:
     path: /etc/default/grub
     regexp: '^GRUB_CMDLINE_LINUX_DEFAULT='
-    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet"'
+    line: 'GRUB_CMDLINE_LINUX_DEFAULT="quiet amdgpu.runpm=0"'
   become: yes
   register: sunshine_host_grub_cmdline
   tags: plymouth
@@ -37,10 +37,21 @@
   when: sunshine_host_grub_cmdline is changed
   tags: plymouth
 
+- name: Check whether Plymouth is currently running
+  ansible.builtin.command: plymouth --ping
+  become: yes
+  register: sunshine_host_plymouth_ping
+  changed_when: false
+  failed_when: sunshine_host_plymouth_ping.rc not in [0, 1]
+  when: sunshine_host_grub_cmdline is changed
+  tags: plymouth
+
 - name: Release the current Plymouth boot wait
   ansible.builtin.command: plymouth quit
   become: yes
-  when: sunshine_host_grub_cmdline is changed
+  when:
+    - sunshine_host_grub_cmdline is changed
+    - sunshine_host_plymouth_ping.rc == 0
   tags: plymouth
 
 - name: Create setup-system package cache
@@ -71,15 +82,28 @@
     name:
       - curl
       - dbus
+      - evtest
       - fonts-dejavu-core
       - foot
+      - build-essential
       - iproute2
+      - jq
       - kitty
+      - libasound2-dev
+      - libcurl4-openssl-dev
+      - libsdl2-dev
+      - libxrandr-dev
+      - libxxf86dga-dev
+      - libxxf86vm-dev
       - make
+      - mesa-common-dev
       - openssl
+      - patch
+      - pkg-config
       - pulseaudio-utils
       - python3
       - python3-pil
+      - rsync
       - seatd
       - sway
       - tmux
@@ -170,6 +194,47 @@
     group: "{{ sunshine_host_group }}"
     mode: '0700'
 
+- name: Create private local game state directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ sunshine_host_user }}"
+    group: "{{ sunshine_host_group }}"
+    mode: '0700'
+  loop:
+    - "{{ sunshine_host_game_state_dir }}"
+    - "{{ sunshine_host_quake3_home_dir }}"
+    - "{{ sunshine_host_quake3_home_dir }}/baseq3"
+    - "{{ sunshine_host_rocknix_state_dir }}"
+    - "{{ sunshine_host_rocknix_state_dir }}/frontend"
+    - "{{ sunshine_host_rocknix_state_dir }}/saves"
+    - "{{ sunshine_host_rocknix_state_dir }}/states"
+    - "{{ sunshine_host_rocknix_state_dir }}/screenshots"
+
+- name: Install managed Quake III controller configuration
+  ansible.builtin.copy:
+    src: "{{ sunshine_host_game_runtimes_utility_dir }}/autoexec.cfg"
+    dest: "{{ sunshine_host_quake3_home_dir }}/{{ sunshine_host_quake3_basegame }}/autoexec.cfg"
+    owner: "{{ sunshine_host_user }}"
+    group: "{{ sunshine_host_group }}"
+    mode: '0600'
+    force: yes
+
+- name: Create rebuildable local game cache directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ sunshine_host_user }}"
+    group: "{{ sunshine_host_group }}"
+    mode: '0700'
+  loop:
+    - "{{ sunshine_host_game_cache_dir }}"
+    - "{{ sunshine_host_game_cache_dir }}/morrowind"
+    - "{{ sunshine_host_game_cache_dir }}/morrowind/native"
+    - "{{ sunshine_host_game_cache_dir }}/morrowind/rocknix"
+    - "{{ sunshine_host_game_cache_dir }}/quake3"
+    - "{{ sunshine_host_game_cache_dir }}/rocknix"
+
 - name: Generate private Sunshine web-manager credential
   ansible.builtin.shell:
     cmd: >-
@@ -193,8 +258,8 @@
     group: "{{ sunshine_host_group }}"
     mode: '0755'
   loop:
-    - src: run-eaadwig-openmw.sh.j2
-      dest: run-eaadwig-openmw.sh
+    - src: game-session.sh.j2
+      dest: game-session.sh
     - src: run-morrowind-openmw.sh.j2
       dest: run-morrowind-openmw.sh
     - src: run-quake3.sh.j2
@@ -233,11 +298,18 @@
 
 - name: Install Sunshine Host cover art
   ansible.builtin.copy:
-    src: "{{ sunshine_host_utility_dir }}/covers/"
-    dest: "{{ sunshine_host_config_dir }}/covers/"
+    src: "{{ sunshine_host_utility_dir }}/covers/{{ item }}.png"
+    dest: "{{ sunshine_host_config_dir }}/covers/{{ item }}.png"
     owner: root
     group: "{{ sunshine_host_group }}"
     mode: preserve
+  loop:
+    - philby
+    - camera
+    - morrowind
+    - quake3
+    - rocknix
+    - steam
   notify: Sunshine Host configuration changed
 
 - name: Install Sunshine Host configuration
@@ -282,6 +354,8 @@
     path: "{{ item }}"
     state: absent
   loop:
+    - "{{ sunshine_host_install_dir }}/bin/run-eaadwig-openmw.sh"
+    - "{{ sunshine_host_config_dir }}/covers/eaadwig.png"
     - "{{ sunshine_host_install_dir }}/bin/run-doom3.sh"
     - "{{ sunshine_host_install_dir }}/bin/quest-tmux-app.sh"
   notify: Sunshine Host configuration changed

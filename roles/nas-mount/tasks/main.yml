@@ -81,15 +81,20 @@
       systemd:
         daemon_reload: yes
 
-    - name: "Activate the automount"
-      command: systemctl restart remote-fs.target
+    - name: "Ensure the generated automount is active"
+      ansible.builtin.systemd:
+        name: "mnt-{{ nas_share }}.automount"
+        state: started
 
     - name: "Trigger automount and verify active NFS mount"
       shell: |
         set -eu
-        timeout 15s ls -1 /mnt/{{ nas_share }} >/dev/null
-        source="$(findmnt -T /mnt/{{ nas_share }} -n -t nfs,nfs4 -o SOURCE)"
-        printf '%s\n' "${source}" | grep -Eq ':/{{ nas_share }}$'
+        timeout 15s bash -c '
+          set -eu
+          ls -1 /mnt/{{ nas_share }} >/dev/null
+          source="$(findmnt -T /mnt/{{ nas_share }} -n -t nfs,nfs4 -o SOURCE)"
+          test "${source}" = "{{ nas_host }}:/{{ nas_share }}"
+        '
       register: nas_mount_probe
       changed_when: false
       failed_when: nas_mount_probe.rc != 0 and (nas_mount_required | default(true) | bool)

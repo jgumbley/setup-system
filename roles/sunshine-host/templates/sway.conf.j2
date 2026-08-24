@@ -5,5 +5,9 @@ bindsym $mod+Shift+e exit
 # Steam games are separate Xwayland toplevels from Big Picture. Keep the game
 # fullscreen instead of allowing Sway's default layout to tile both windows.
 for_window [class="^steam_app_[0-9]+$"] fullscreen enable
+for_window [app_id="^game-session-controller-required$"] fullscreen enable
+for_window [app_id="^game-session-error$"] fullscreen enable
+for_window [app_id="^emulationstation$"] fullscreen enable
+for_window [class="^(openmw|OpenMW|quake3e|Quake3)$"] fullscreen enable
 
 exec {{ sunshine_host_install_dir }}/bin/quest-ready-terminal.sh

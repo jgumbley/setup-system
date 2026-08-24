@@ -1,0 +1,54 @@
+diff --git a/code/client/cl_keys.c b/code/client/cl_keys.c
+--- a/code/client/cl_keys.c
++++ b/code/client/cl_keys.c
+@@ -535,6 +535,20 @@
+ 
+ //============================================================================
+ 
++static int CL_GamepadUIKey( int key )
++{
++	switch ( key ) {
++	case K_PAD0_DPAD_UP:    return K_UPARROW;
++	case K_PAD0_DPAD_DOWN:  return K_DOWNARROW;
++	case K_PAD0_DPAD_LEFT:  return K_LEFTARROW;
++	case K_PAD0_DPAD_RIGHT: return K_RIGHTARROW;
++	case K_PAD0_A:          return K_ENTER;
++	case K_PAD0_B:
++	case K_PAD0_START:      return K_ESCAPE;
++	default:                return key;
++	}
++}
++
+ 
+ /*
+ ===================
+@@ -585,6 +599,11 @@
+ 			Cvar_Set ("nextdemo","");
+ 			key = K_ESCAPE;
+ 		}
++	}
++
++	// Start is the controller equivalent of Escape, including opening the in-game menu.
++	if ( key == K_PAD0_START ) {
++		key = K_ESCAPE;
+ 	}
+ 
+ 	// escape is always handled special
+@@ -644,7 +663,7 @@
+ 		Console_Key( key );
+ 	} else if ( Key_GetCatcher( ) & KEYCATCH_UI ) {
+ 		if ( uivm ) {
+-			VM_Call( uivm, 2, UI_KEY_EVENT, key, qtrue );
++			VM_Call( uivm, 2, UI_KEY_EVENT, CL_GamepadUIKey( key ), qtrue );
+ 		}
+ 	} else if ( Key_GetCatcher( ) & KEYCATCH_CGAME ) {
+ 		if ( cgvm ) {
+@@ -704,7 +723,7 @@
+ 
+ 	if ( Key_GetCatcher() & KEYCATCH_UI ) {
+ 		if ( uivm ) {
+-			VM_Call( uivm, 2, UI_KEY_EVENT, key, qfalse );
++			VM_Call( uivm, 2, UI_KEY_EVENT, CL_GamepadUIKey( key ), qfalse );
+ 		}
+ 	} else if ( Key_GetCatcher() & KEYCATCH_CGAME ) {
+ 		if ( cgvm ) {

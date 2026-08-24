@@ -1,18 +1,67 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
+export XDG_RUNTIME_DIR="${XDG_RUNTIME_DIR:-{{ sunshine_host_runtime_dir }}}"
+export WAYLAND_DISPLAY="${WAYLAND_DISPLAY:-{{ sunshine_host_wayland_display }}}"
 export SDL_VIDEODRIVER=x11
 export DISPLAY="${DISPLAY:-:0}"
 export PULSE_SERVER="{{ sunshine_host_pulse_server }}"
-cd "{{ sunshine_host_quake3_engine_dir }}"
 
+# shellcheck source=/dev/null
+source "{{ sunshine_host_install_dir }}/bin/game-session.sh"
+game_session_acquire "QUAKE III ARENA"
+game_session_require_runtime "{{ sunshine_host_quake3_engine_dir }}" "{{ sunshine_host_quake3_binary }}" "QUAKE III ARENA"
+game_session_require_runtime_contract \
+  "{{ sunshine_host_quake3_engine_dir }}" \
+  "QUAKE III ARENA" \
+  quake3e \
+  2025-10-14-setup-system-1 \
+  8cd90faf798d94618c871bfb2049d70d4315ad30 \
+  9ad020f2516774659b0b6c1e595cfc06e8bf9e5247ce002019a94c5784d86d4b \
+  74c5efe8036681625c8c169f1603839024226bc1e1633c8a9cb54e9412d4b746
+game_session_require_nas "QUAKE III ARENA"
+game_session_require_writable_dir "{{ sunshine_host_quake3_home_dir }}" "QUAKE III ARENA"
+game_session_require_file "{{ sunshine_host_quake3_home_dir }}/baseq3/autoexec.cfg" "QUAKE III ARENA"
+
+game_session_require_sha256 7ce8b3910620cd50a09e4f1100f426e8c6180f68895d589f80e6bd95af54bcae "{{ sunshine_host_quake3_data_dir }}/baseq3/pak0.pk3" "QUAKE III ARENA"
+game_session_require_sha256 d4ffd60b4b414c3419499e321b6f5c2e933cf082df85823ad2d6ae2f803e1682 "{{ sunshine_host_quake3_data_dir }}/baseq3/pak1.pk3" "QUAKE III ARENA"
+game_session_require_sha256 ccae938a2f13a03b24902d675181d516a431699701ed88023a307f34b5bcd58c "{{ sunshine_host_quake3_data_dir }}/baseq3/pak2.pk3" "QUAKE III ARENA"
+game_session_require_sha256 d03c0a0e06b99f9ecca2be7389f57faed406e85f7c09b9c56afdfa53ba25e312 "{{ sunshine_host_quake3_data_dir }}/baseq3/pak3.pk3" "QUAKE III ARENA"
+game_session_require_sha256 af5f6d5c82fe4440ae0bb660f0648d1fa1731a9e8305a9eb652aa243428697f1 "{{ sunshine_host_quake3_data_dir }}/baseq3/pak4.pk3" "QUAKE III ARENA"
+game_session_require_sha256 69f87070ca7719e252a3ba97e6483f6663939c987ede550d1268d4d9a07b45bc "{{ sunshine_host_quake3_data_dir }}/baseq3/pak5.pk3" "QUAKE III ARENA"
+game_session_require_sha256 bb4f0ae2bf603b050fb665436d3178ce7c1c20360e67bacf7c14d93daff38daf "{{ sunshine_host_quake3_data_dir }}/baseq3/pak6.pk3" "QUAKE III ARENA"
+game_session_require_sha256 de6283ce23e3486a2622c5dbf73d3721a59f24debd380e90f43a97d952fea283 "{{ sunshine_host_quake3_data_dir }}/baseq3/pak7.pk3" "QUAKE III ARENA"
+game_session_require_sha256 812c9e97f231e89cefede3848c6110b7bd34245093af6f22c2cacde3e6b15663 "{{ sunshine_host_quake3_data_dir }}/baseq3/pak8.pk3" "QUAKE III ARENA"
+
+default_sink=""
 for _ in $(seq 1 50); do
   default_sink="$(pactl get-default-sink 2>/dev/null || true)"
-  case "$default_sink" in *sunshine*) break ;; esac
+  case "${default_sink}" in *sunshine*) break ;; esac
   sleep 0.2
 done
+case "${default_sink}" in
+  *sunshine*) ;;
+  *) game_session_show_error "QUAKE III ARENA: AUDIO ERROR" "The Sunshine audio sink did not become ready." ;;
+esac
 
-exec "{{ sunshine_host_quake3_binary }}" \
+quake3_pid=""
+terminate_quake3() {
+  trap - HUP INT TERM
+  if [[ -n "${quake3_pid}" ]] && kill -0 "${quake3_pid}" 2>/dev/null; then
+    kill -TERM "${quake3_pid}" 2>/dev/null || true
+    for _ in {1..20}; do
+      kill -0 "${quake3_pid}" 2>/dev/null || break
+      sleep 0.1
+    done
+    kill -KILL "${quake3_pid}" 2>/dev/null || true
+    wait "${quake3_pid}" 2>/dev/null || true
+  fi
+  exit 143
+}
+trap terminate_quake3 HUP INT TERM
+
+cd "{{ sunshine_host_install_dir }}"
+"{{ sunshine_host_quake3_binary }}" \
   +set fs_basepath "{{ sunshine_host_quake3_data_dir }}" \
   +set fs_homepath "{{ sunshine_host_quake3_home_dir }}" \
   +set fs_basegame "{{ sunshine_host_quake3_basegame }}" \
@@ -25,4 +74,19 @@ exec "{{ sunshine_host_quake3_binary }}" \
   +set r_fullscreen 1 \
   +set r_swapInterval 1 \
   +exec autoexec.cfg \
-  "$@"
+  "$@" &
+quake3_pid=$!
+
+set +e
+wait "${quake3_pid}"
+quake3_status=$?
+set -e
+quake3_pid=""
+trap - HUP INT TERM
+
+if (( quake3_status != 0 )); then
+  game_session_show_error \
+    "QUAKE III ARENA: SESSION FAILED" \
+    "Quake III exited unexpectedly. Review the Quake session log on Holly."
+fi
+exit 0

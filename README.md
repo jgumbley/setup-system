@@ -33,7 +33,7 @@ The setup process is primarily driven by `make` commands which wrap Ansible play
 *   `make term`: Runs the `terminal.yml` playbook to configure the terminal environment.
 *   `make setup`: Runs `setup.yml` to fully converge the local machine using its exact hostname, including Holly's complete Sunshine/Sway host service.
 *   `make -C utils/hal_low_power apply`: Temporarily minimizes HAL's CPU and GPU power use until its next reboot without changing Wi-Fi.
-*   `make backup`: Ensures the NAS is mounted, backs up `~/wip`, and on Holly separately protects Sunshine's pairing state and certificate/key under the host backup's `sunshine/` directory. A successful run records the completion time used by the backup status utility.
+*   `make backup`: Locks Holly against game launches, verifies the persistent NAS automount, backs up `~/wip`, Sunshine pairing state, and an immutable snapshot of local game state. A successful run records the completion time used by the backup status utility.
 *   `make backup-status`: Shows the last successfully completed backup date recorded for each host on the NAS.
 
 ## Ansible Structure
@@ -51,7 +51,7 @@ The configuration is managed by Ansible playbooks and roles.
 *   `core-tools`: Installs common command-line tools and system-wide shell environment support.
 *   `nas-mount`: Mounts the network-attached storage.
 *   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
-*   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, launchers, application list, persistent state directory, and boot-time systemd services. External OpenMW and games content remains under the fully qualified `/home/system/wip/mw` and `/home/system/wip/games` locations.
+*   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, session-managed game launchers, application list, persistent state directory, and boot-time systemd services. Versioned game runtimes live under `/opt/games`, mutable state remains local, and validated content is read-only from Iceburg.
 *   `godot`: Installs the Godot Engine editor binary from https://godotengine.org/download (no extra runtime dependencies; bring your own editor/IDE).
 *   `terminal`: Configures fish, tmux, vim, git, and other terminal applications.
 
@@ -78,6 +78,24 @@ Live pairing state remains private under `/var/lib/sunshine-host`; setup creates
 that directory but never imports or overwrites its pairing files. Setup creates
 and applies a private web-manager credential there once, and the Sunshine host
 utility consumes it so PIN pairing needs no operator-managed password.
+
+## Holly Game Runtime Operations
+
+`make setup` installs build dependencies, state directories, configuration, and
+Moonlight launch contracts; it never compiles or imports a game. Bring up one
+runtime at a time. The current supported milestone is Quake III:
+
+```bash
+make -C utils/game_runtimes status-quake3
+make -C utils/game_runtimes build-quake3
+make -C utils/game_runtimes verify-quake3
+```
+
+Quake3e is installed as an immutable versioned tree under `/opt/games`. OpenMW
+is the next independent milestone and ROCKNIX follows it; neither is required by
+the Quake-only workflow. Quake III PK3 content is externally managed at
+`/usr/local/mnt/iceburg/roms/ports/quake3/baseq3`; setup validates but never
+copies or modifies it. Eaadwig is deferred and documented only in `eadwig.md`.
 
 ## Quest Client Operations on HAL
 

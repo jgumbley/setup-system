@@ -30,8 +30,11 @@ machine_configs:
 
   # Fresh Ubuntu 26.04 replacement for HAL; expand after baseline convergence.
   "holly":
+    - nas-mount
     - terminal
     - ssh_host
+    - docker
+    - openmw
     - steam
     - sunshine-host
 
