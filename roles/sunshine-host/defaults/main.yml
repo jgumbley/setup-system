@@ -17,7 +17,7 @@ sunshine_host_game_state_dir: "{{ sunshine_host_state_dir }}/games"
 sunshine_host_game_cache_dir: /var/cache/sunshine-host/games
 sunshine_host_nas_mount_dir: /mnt/iceburg
 sunshine_host_nas_source: donatello.smeg:/iceburg
-sunshine_host_roms_dir: /usr/local/mnt/iceburg/roms
+sunshine_host_roms_dir: /mnt/iceburg/roms
 
 # Pinned native Sunshine package for Holly.
 sunshine_host_version: "2026.516.143833"
@@ -44,9 +44,8 @@ sunshine_host_quake3_data_dir: "{{ sunshine_host_roms_dir }}/ports/quake3"
 sunshine_host_quake3_home_dir: "{{ sunshine_host_game_state_dir }}/quake3/home"
 sunshine_host_quake3_basegame: baseq3
 sunshine_host_rocknix_dir: "{{ sunshine_host_games_install_dir }}/rocknix/current"
-sunshine_host_rocknix_image: setup-system/rocknix:20260801
+sunshine_host_rocknix_image: setup-system/rocknix:20260718
 sunshine_host_rocknix_state_dir: "{{ sunshine_host_game_state_dir }}/rocknix"
-sunshine_host_rocknix_morrowind_state_dir: "{{ sunshine_host_game_state_dir }}/morrowind/rocknix"
 
 # Headless session and Sunshine configuration.
 sunshine_host_sway_resolution: 1920x1080
@@ -55,3 +54,4 @@ sunshine_host_wayland_display: wayland-1
 sunshine_host_pulse_server: unix:/run/user/1000/pulse/native
 sunshine_host_app_path: /usr/local/bin:/usr/bin:/bin:/usr/local/games:/usr/games:/home/system/.local/bin
 sunshine_host_csrf_origins: https://localhost:47990,https://127.0.0.1:47990,https://holly:47990
+sunshine_host_controller_preflight_enabled: false

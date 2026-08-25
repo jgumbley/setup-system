@@ -10,7 +10,7 @@ export ALSOFT_DRIVERS=pulse
 
 # shellcheck source=/dev/null
 source "{{ sunshine_host_install_dir }}/bin/game-session.sh"
-game_session_begin "MORROWIND"
+game_session_begin "MORROWIND" "{{ sunshine_host_controller_preflight_enabled | bool | lower }}"
 game_session_require_runtime "{{ sunshine_host_openmw_dir }}" "{{ sunshine_host_openmw_binary }}" "MORROWIND"
 game_session_require_nas "MORROWIND"
 game_session_require_writable_dir "{{ sunshine_host_morrowind_config_dir }}" "MORROWIND"

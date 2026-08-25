@@ -7,7 +7,7 @@ export PULSE_SERVER="${PULSE_SERVER:-{{ sunshine_host_pulse_server }}}"
 
 # shellcheck source=/dev/null
 source "{{ sunshine_host_install_dir }}/bin/game-session.sh"
-game_session_begin "ROCKNIX"
+game_session_begin "ROCKNIX" "{{ sunshine_host_controller_preflight_enabled | bool | lower }}"
 game_session_require_runtime \
   "{{ sunshine_host_rocknix_dir }}" \
   "{{ sunshine_host_rocknix_dir }}/rootfs/usr/bin/emulationstation" \
@@ -15,20 +15,67 @@ game_session_require_runtime \
 game_session_require_command /usr/bin/docker "ROCKNIX"
 game_session_require_nas "ROCKNIX"
 game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}" "ROCKNIX"
-game_session_require_writable_dir "{{ sunshine_host_rocknix_morrowind_state_dir }}" "ROCKNIX"
-game_session_require_file "{{ sunshine_host_roms_dir }}/ports/Morrowind.sh" "ROCKNIX"
-game_session_require_file "{{ sunshine_host_morrowind_data_dir }}/Morrowind.esm" "ROCKNIX"
-[[ -r "{{ sunshine_host_games_install_dir }}/openmw-portmaster/current/.setup-system-runtime" ]] || \
-  game_session_show_error "ROCKNIX: PORTMASTER RUNTIME MISSING" "Install the pinned OpenMW PortMaster runtime first."
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.config" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.cache/logs" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/joypads" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/saves" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/states" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/screenshots" "ROCKNIX"
+game_session_require_readable_dir "{{ sunshine_host_roms_dir }}" "ROCKNIX"
+game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/config" "ROCKNIX"
+game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/lib/libretro" "ROCKNIX"
+game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/share/libretro/autoconfig" "ROCKNIX"
+game_session_require_file "{{ sunshine_host_rocknix_state_dir }}/joypads/sunshine-retroarch.cfg" "ROCKNIX"
 
 runtime_marker="{{ sunshine_host_rocknix_dir }}/.setup-system-runtime"
+marker_runtime="$(game_session_marker_value "${runtime_marker}" runtime)"
+marker_version="$(game_session_marker_value "${runtime_marker}" version)"
+marker_revision="$(game_session_marker_value "${runtime_marker}" revision)"
+marker_source_sha256="$(game_session_marker_value "${runtime_marker}" source_sha256)"
 marker_image="$(game_session_marker_value "${runtime_marker}" docker_image)"
 marker_image_id="$(game_session_marker_value "${runtime_marker}" docker_image_id)"
-[[ "${marker_image}" == "{{ sunshine_host_rocknix_image }}" && -n "${marker_image_id}" ]] || \
-  game_session_show_error "ROCKNIX: RUNTIME INVALID" "The ROCKNIX image contract is missing from its marker."
-live_image_id="$(/usr/bin/docker image inspect "{{ sunshine_host_rocknix_image }}" 2>/dev/null | /usr/bin/jq -er '.[0].Id' 2>/dev/null || true)"
+[[ "${marker_runtime}" == rocknix && \
+   "${marker_version}" == 20260718 && \
+   "${marker_revision}" == 25398f713308c384528ac44fcb7a1a876fae90ea && \
+   "${marker_source_sha256}" == 1f080a6cf2425cd055a7d7de5c6de06394427298e79a3ab875469c9b7971d6ca && \
+   "${marker_image}" == "{{ sunshine_host_rocknix_image }}" && \
+   "${marker_image_id}" =~ ^sha256:[0-9a-f]{64}$ ]] || \
+  game_session_show_error "ROCKNIX: RUNTIME INVALID" "The installed runtime does not match the setup-system version contract."
+if ! live_image_id="$(/usr/bin/docker image inspect "{{ sunshine_host_rocknix_image }}" 2>/dev/null | /usr/bin/jq -er '.[0].Id')"; then
+  game_session_show_error "ROCKNIX: RUNTIME INVALID" "The installed ROCKNIX Docker image is unavailable."
+fi
 [[ "${live_image_id}" == "${marker_image_id}" ]] || \
   game_session_show_error "ROCKNIX: RUNTIME INVALID" "The installed ROCKNIX Docker image does not match its marker."
+
+rocknix_config_dir="{{ sunshine_host_rocknix_state_dir }}/.config"
+rocknix_es_dir="${rocknix_config_dir}/emulationstation"
+rocknix_config_marker="{{ sunshine_host_rocknix_state_dir }}/.sunshine-rocknix-configured"
+if [[ ! -e "${rocknix_config_marker}" ]]; then
+  /usr/bin/cp -R "{{ sunshine_host_rocknix_dir }}/rootfs/usr/config/." "${rocknix_config_dir}/"
+  /usr/bin/touch "${rocknix_config_marker}"
+fi
+/usr/bin/mkdir -p "${rocknix_es_dir}/themes" "${rocknix_config_dir}/SDL-GameControllerDB"
+for config in es_features.cfg es_systems.cfg; do
+  /usr/bin/rm -f "${rocknix_es_dir}/${config}"
+  /usr/bin/ln -s "/usr/config/emulationstation/${config}" "${rocknix_es_dir}/${config}"
+done
+/usr/bin/rm -f "${rocknix_config_dir}/SDL-GameControllerDB/gamecontrollerdb.txt"
+/usr/bin/ln -s /usr/config/SDL-GameControllerDB/gamecontrollerdb.txt \
+  "${rocknix_config_dir}/SDL-GameControllerDB/gamecontrollerdb.txt"
+/usr/bin/ln -sfn /usr/share/themes/es-theme-art-book-next \
+  "${rocknix_es_dir}/themes/system-theme"
+if [[ -e "{{ sunshine_host_rocknix_state_dir }}/.emulationstation" && \
+      ! -L "{{ sunshine_host_rocknix_state_dir }}/.emulationstation" ]]; then
+  game_session_show_error "ROCKNIX: STATE ERROR" "The managed EmulationStation state selector is not a symlink."
+fi
+/usr/bin/ln -sfn /storage/.config/emulationstation \
+  "{{ sunshine_host_rocknix_state_dir }}/.emulationstation"
+if [[ ! -s "{{ sunshine_host_rocknix_state_dir }}/.cache/systemd-machine-id" ]]; then
+  /usr/bin/dbus-uuidgen > "{{ sunshine_host_rocknix_state_dir }}/.cache/systemd-machine-id"
+fi
+retroarch_config="${rocknix_config_dir}/retroarch/retroarch.cfg"
+game_session_require_file "${retroarch_config}" "ROCKNIX"
+/usr/bin/sed -i 's/^audio_driver = .*/audio_driver = "pulse"/' "${retroarch_config}"
 
 default_sink=""
 for _ in $(seq 1 50); do
@@ -89,27 +136,47 @@ trap terminate_rocknix HUP INT TERM
   --hostname rocknix \
   --network host \
   --ipc host \
-  --privileged \
+  --read-only \
+  --cap-drop ALL \
+  --security-opt no-new-privileges \
+  --device-cgroup-rule 'c 13:* rwm' \
+  --device-cgroup-rule 'c 226:* rwm' \
   --user "$(id -u):$(id -g)" \
   "${group_args[@]}" \
   --env HOME=/storage \
+  --env XDG_CONFIG_HOME=/storage/.config \
+  --env XDG_CACHE_HOME=/storage/.cache \
+  --env XDG_DATA_HOME=/storage/.local/share \
   --env XDG_RUNTIME_DIR="{{ sunshine_host_runtime_dir }}" \
   --env WAYLAND_DISPLAY="{{ sunshine_host_wayland_display }}" \
   --env DISPLAY=:0 \
   --env SDL_VIDEODRIVER=wayland \
+  --env SDL_AUDIODRIVER=pulseaudio \
+  --env QT_QPA_PLATFORM=wayland \
+  --env SDL_GAMECONTROLLERCONFIG_FILE=/storage/.config/SDL-GameControllerDB/gamecontrollerdb.txt \
   --env PULSE_SERVER="{{ sunshine_host_pulse_server }}" \
+  --env DBUS_SESSION_BUS_ADDRESS="unix:path={{ sunshine_host_runtime_dir }}/bus" \
   --volume "{{ sunshine_host_runtime_dir }}:{{ sunshine_host_runtime_dir }}" \
   --volume /run/user/1000/pulse:/run/user/1000/pulse \
   --volume /run/udev:/run/udev:ro \
+  --volume /dev:/dev \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
-  --volume "{{ sunshine_host_games_install_dir }}:{{ sunshine_host_games_install_dir }}:ro" \
-  --volume "{{ sunshine_host_roms_dir }}:/storage/roms:ro" \
   --volume "{{ sunshine_host_rocknix_state_dir }}:/storage" \
-  --volume "{{ sunshine_host_rocknix_morrowind_state_dir }}:{{ sunshine_host_rocknix_morrowind_state_dir }}" \
-  --volume "{{ sunshine_host_game_cache_dir }}:{{ sunshine_host_game_cache_dir }}" \
+  --volume "{{ sunshine_host_roms_dir }}:/storage/roms:ro" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}/saves:/storage/roms/saves" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}/states:/storage/roms/savestates" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}/screenshots:/storage/roms/screenshots" \
+  --volume "{{ sunshine_host_rocknix_dir }}/rootfs/usr/lib/libretro:/tmp/cores:ro" \
+  --volume "{{ sunshine_host_rocknix_dir }}/rootfs/usr/share/libretro/autoconfig:/tmp/joypads:ro" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}/joypads/sunshine-retroarch.cfg:/tmp/joypads/Sunshine X-Box One (virtual) pad.cfg:ro" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}/.cache/logs:/var/log" \
+  --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777 \
+  --tmpfs /var/tmp:rw,nosuid,nodev,mode=1777 \
   --workdir /storage \
     "{{ sunshine_host_rocknix_image }}" \
-    /usr/bin/emulationstation
+    /usr/bin/emulationstation \
+      --log-path /storage/.cache/logs \
+      --no-splash
 ) &
 rocknix_docker_pid=$!
 

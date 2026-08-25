@@ -382,6 +382,16 @@ def validate_quake_content(spec: dict, root: Path) -> None:
             fail(f"Quake III hash mismatch for {root / relative}: {actual_hash}")
 
 
+def validate_rocknix_content(spec: dict) -> None:
+    root = Path(spec["root"])
+    safe_directory(root, "ROCKNIX ROM root")
+    system_directories = [
+        entry for entry in root.iterdir() if entry.is_dir() and not entry.is_symlink()
+    ]
+    if not system_directories:
+        fail(f"ROCKNIX ROM root contains no system directories: {root}")
+
+
 def validate_morrowind_content(spec: dict, root: Path) -> None:
     safe_directory(root, "Morrowind data tree")
     count, total = tree_stats(root)
@@ -757,6 +767,13 @@ def copy_file_if_absent(source: Path, destination: Path, owner: tuple[int, int])
     return True
 
 
+def validate_rocknix_state(manifest: dict) -> None:
+    root = Path(manifest["state_import"]["rocknix_root"])
+    safe_directory(root, "ROCKNIX mutable state root")
+    for name in ("saves", "states", "screenshots"):
+        safe_directory(root / name, f"ROCKNIX {name} state")
+
+
 def validate_imported_state(manifest: dict) -> None:
     state = manifest["state_import"]
     native_source = Path(state["native_source"])
@@ -784,10 +801,7 @@ def validate_imported_state(manifest: dict) -> None:
     safe_regular_file(autoexec_destination, "managed Quake III autoexec destination")
     if sha256_file(autoexec_destination) != sha256_file(autoexec_source):
         fail(f"managed Quake III autoexec differs from its repository contract: {autoexec_destination}")
-    frontend = Path(state["rocknix_frontend_root"])
-    safe_directory(frontend, "ROCKNIX frontend mutable state root")
-    for name in ("frontend", "saves", "states", "screenshots"):
-        safe_directory(frontend / name, f"ROCKNIX frontend {name} state")
+    validate_rocknix_state(manifest)
 
 
 def import_state(manifest: dict) -> None:
@@ -802,7 +816,7 @@ def import_state(manifest: dict) -> None:
     native_config = Path(state["native_config"])
     native_user_data = Path(state["native_user_data"])
     native_data_local = Path(state["native_data_local"])
-    frontend = Path(state["rocknix_frontend_root"])
+    rocknix_root = Path(state["rocknix_root"])
     quake_root = Path(state["quake3_root"])
     quake_baseq3 = Path(state["quake3_baseq3"])
     for path in (
@@ -810,13 +824,13 @@ def import_state(manifest: dict) -> None:
         native_config,
         native_user_data,
         native_data_local,
-        frontend,
+        rocknix_root,
         quake_root,
         quake_baseq3,
     ):
         safe_directory(path, "required Ansible-managed state directory")
-    for name in ("frontend", "saves", "states", "screenshots"):
-        safe_directory(frontend / name, f"Ansible-managed ROCKNIX frontend {name} state")
+    for name in ("saves", "states", "screenshots"):
+        safe_directory(rocknix_root / name, f"Ansible-managed ROCKNIX {name} state")
     for name in ("openmw.cfg", "settings.cfg"):
         safe_regular_file(native_config / name, f"Ansible-managed native {name}")
 
@@ -860,13 +874,26 @@ def ensure_archive(manifest: dict, runtime: str) -> Path:
     temporary = archive.with_name(f".{archive.name}.part")
     if temporary.exists() or temporary.is_symlink():
         fail(f"refusing stale partial download: {temporary}")
-    print(f"Downloading pinned {runtime} source: {spec['url']}", flush=True)
-    request = urllib.request.Request(spec["url"], headers={"User-Agent": "setup-system-game-runtimes/1"})
+    source_url = spec["url"]
     try:
-        with urllib.request.urlopen(request, timeout=120) as response, temporary.open("xb") as stream:
-            shutil.copyfileobj(response, stream, length=1024 * 1024)
-            stream.flush()
-            os.fsync(stream.fileno())
+        if source_url.startswith("file:///"):
+            local_source = Path(source_url.removeprefix("file://"))
+            safe_regular_file(local_source, f"pinned local {runtime} archive")
+            print(f"Copying pinned {runtime} archive: {local_source}", flush=True)
+            with local_source.open("rb") as source, temporary.open("xb") as stream:
+                shutil.copyfileobj(source, stream, length=1024 * 1024)
+                stream.flush()
+                os.fsync(stream.fileno())
+        else:
+            print(f"Downloading pinned {runtime} source: {source_url}", flush=True)
+            request = urllib.request.Request(
+                source_url,
+                headers={"User-Agent": "setup-system-game-runtimes/1"},
+            )
+            with urllib.request.urlopen(request, timeout=120) as response, temporary.open("xb") as stream:
+                shutil.copyfileobj(response, stream, length=1024 * 1024)
+                stream.flush()
+                os.fsync(stream.fileno())
         actual = sha256_file(temporary)
         if actual != spec["sha256"]:
             fail(f"downloaded {runtime} SHA256 mismatch: expected {spec['sha256']}, got {actual}")
@@ -935,7 +962,7 @@ def ensure_source(manifest: dict, runtime: str) -> Path:
         fail(f"refusing stale {runtime} source extraction: {stage}")
     stage.mkdir()
     try:
-        with tarfile.open(archive_path, mode="r:gz") as archive:
+        with tarfile.open(archive_path, mode="r:*") as archive:
             validate_tar_members(archive, spec["archive_root"])
             try:
                 archive.extractall(stage, filter="data")
@@ -1150,6 +1177,24 @@ def parse_os_release(path: Path) -> dict[str, str]:
 def validate_rocknix_rootfs(rootfs: Path, spec: dict) -> None:
     safe_directory(rootfs, "ROCKNIX rootfs")
     validate_elf(rootfs / "usr" / "bin" / "emulationstation", "ROCKNIX EmulationStation")
+    validate_elf(rootfs / "usr" / "bin" / "retroarch", "ROCKNIX RetroArch")
+    safe_directory(rootfs / "usr" / "lib" / "libretro", "ROCKNIX libretro cores")
+    safe_directory(
+        rootfs / "usr" / "share" / "libretro" / "autoconfig",
+        "ROCKNIX packaged controller profiles",
+    )
+    safe_regular_file(
+        rootfs / "usr" / "config" / "emulationstation" / "es_systems.cfg",
+        "ROCKNIX EmulationStation systems configuration",
+    )
+    safe_regular_file(
+        rootfs / "usr" / "config" / "emulationstation" / "es_features.cfg",
+        "ROCKNIX EmulationStation features configuration",
+    )
+    safe_regular_file(
+        rootfs / "usr" / "config" / "SDL-GameControllerDB" / "gamecontrollerdb.txt",
+        "ROCKNIX SDL controller database",
+    )
     release = parse_os_release(rootfs / "etc" / "os-release")
     required = {
         "OS_NAME": "ROCKNIX",
@@ -1169,24 +1214,6 @@ def validate_rocknix_rootfs(rootfs: Path, spec: dict) -> None:
     expected_release = f"AMD64.x86_64-{spec['version']}"
     if actual_release != expected_release:
         fail(f"ROCKNIX /etc/release mismatch: expected {expected_release!r}, got {actual_release!r}")
-
-
-def prepare_rocknix_git(source: Path) -> None:
-    """Supply only metadata required by upstream scripts; the archive remains authoritative."""
-    command_exists("git")
-    git_dir = source / ".git"
-    official_origin = "https://github.com/ROCKNIX/distribution.git"
-    if git_dir.exists() or git_dir.is_symlink():
-        safe_directory(git_dir, "ROCKNIX minimal Git metadata")
-        result = run(["git", "-C", str(source), "remote", "get-url", "origin"], capture=True)
-        if result.stdout.strip() != official_origin:
-            fail(
-                f"ROCKNIX source cache origin differs: expected {official_origin!r}, "
-                f"got {result.stdout.strip()!r}"
-            )
-        return
-    run(["git", "-C", str(source), "init"])
-    run(["git", "-C", str(source), "remote", "add", "origin", official_origin])
 
 
 def docker_image_id(image: str) -> str | None:
@@ -1313,10 +1340,14 @@ def build_rocknix(manifest: dict) -> None:
         return
 
     source = ensure_source(manifest, runtime)
-    safe_regular_file(source / "Makefile", "ROCKNIX official Makefile contract")
-    safe_regular_file(source / "scripts" / "build_distro", "ROCKNIX official build_distro contract", executable=True)
-    prepare_rocknix_git(source)
-    output = source / spec["rootfs_output"]
+    system_image = source / "target" / "SYSTEM"
+    checksum_file = source / "target" / "SYSTEM.md5"
+    safe_regular_file(system_image, "pinned ROCKNIX SYSTEM image")
+    safe_regular_file(checksum_file, "pinned ROCKNIX SYSTEM checksum")
+    checksum_fields = checksum_file.read_text(encoding="utf-8").strip().split()
+    if checksum_fields != [spec["system_md5"], "target/SYSTEM"]:
+        fail(f"ROCKNIX SYSTEM checksum contract differs: {checksum_fields!r}")
+    output = source / "rootfs"
     build_dir = Path(manifest["cache_root"]) / "build" / runtime / spec["version"]
     marker_path = build_dir / BUILD_MARKER
     if build_dir.exists() or build_dir.is_symlink():
@@ -1329,32 +1360,14 @@ def build_rocknix(manifest: dict) -> None:
                 f"ROCKNIX rootfs output exists without its build marker: {output}; "
                 "remove the partial cache explicitly before retrying"
             )
-        cache_root = Path(manifest["cache_root"])
-        run(["docker", "pull", spec["builder"]])
-        run(
-            [
-                "docker",
-                "run",
-                "--rm",
-                "--privileged",
-                "-v",
-                f"{cache_root}:{cache_root}",
-                "-w",
-                str(source),
-                "-e",
-                "PROJECT=ROCKNIX",
-                "-e",
-                "DEVICE=AMD64",
-                "-e",
-                "ARCH=x86_64",
-                "-e",
-                f"CUSTOM_VERSION={spec['version']}",
-                "-e",
-                f"CUSTOM_GIT_HASH={spec['revision']}",
-                spec["builder"],
-                "./scripts/build_distro",
-            ]
-        )
+        command_exists("md5sum")
+        command_exists("unsquashfs")
+        system_md5 = run(["md5sum", str(system_image)], capture=True).stdout.split()[0]
+        if system_md5 != spec["system_md5"]:
+            fail(
+                f"ROCKNIX SYSTEM MD5 mismatch: expected {spec['system_md5']}, got {system_md5}"
+            )
+        run(["unsquashfs", "-no-progress", "-d", str(output), str(system_image)])
         validate_rocknix_rootfs(output, spec)
         build_dir.mkdir(parents=True)
         write_kv_marker(marker_path, build_marker(spec, runtime))
@@ -1371,6 +1384,33 @@ def build_rocknix(manifest: dict) -> None:
     install_or_repair_rocknix_image(manifest, final)
     ensure_current(root, spec["version"])
     validate_rocknix_install(manifest)
+
+
+def clean_rocknix_cache(manifest: dict) -> None:
+    require_holly(manifest)
+    require_root()
+    runtime = "rocknix"
+    cache_root = Path(manifest["cache_root"])
+    cache_parents = (
+        cache_root / "sources" / runtime,
+        cache_root / "build" / runtime,
+    )
+    removed = 0
+    for cache_parent in cache_parents:
+        ensure_parent_not_symlink(cache_parent)
+        if not cache_parent.exists():
+            continue
+        safe_directory(cache_parent, "generated ROCKNIX cache parent")
+        for target in sorted(cache_parent.iterdir()):
+            if target.is_symlink():
+                fail(f"refusing symlinked ROCKNIX cache target: {target}")
+            safe_directory(target, "generated ROCKNIX cache target")
+            shutil.rmtree(target)
+            fsync_dir(cache_parent)
+            print(f"Removed generated ROCKNIX cache: {target}")
+            removed += 1
+    if not removed:
+        print("ROCKNIX source/build cache is already absent")
 
 
 def build_all(manifest: dict) -> None:
@@ -1565,6 +1605,7 @@ def restore_state(
 
 def verify_content(manifest: dict) -> None:
     content = manifest["content"]
+    validate_rocknix_content(content["rocknix"])
     quake = content["quake3"]
     validate_quake_content(quake, Path(quake["destination"]))
     morrowind = content["morrowind"]
@@ -1607,6 +1648,36 @@ def status_quake3(manifest: dict) -> None:
             print(f"[ OK ] {label}")
     if failures:
         fail(f"{failures} Quake III status check(s) failed")
+
+
+def verify_rocknix(manifest: dict) -> None:
+    require_holly(manifest)
+    preflight_nas(manifest)
+    validate_rocknix_content(manifest["content"]["rocknix"])
+    validate_rocknix_state(manifest)
+    validate_rocknix_install(manifest)
+    print("ROCKNIX NAS ROM root, local state, runtime marker, image, and current link verify")
+
+
+def status_rocknix(manifest: dict) -> None:
+    require_holly(manifest)
+    checks = [
+        ("NAS mount", lambda: preflight_nas(manifest)),
+        ("ROCKNIX ROM root", lambda: validate_rocknix_content(manifest["content"]["rocknix"])),
+        ("ROCKNIX state", lambda: validate_rocknix_state(manifest)),
+        ("ROCKNIX runtime", lambda: validate_rocknix_install(manifest)),
+    ]
+    failures = 0
+    for label, check in checks:
+        try:
+            check()
+        except ContractError as exc:
+            failures += 1
+            print(f"[FAIL] {label}: {exc}")
+        else:
+            print(f"[ OK ] {label}")
+    if failures:
+        fail(f"{failures} ROCKNIX status check(s) failed")
 
 
 def verify(manifest: dict) -> None:
@@ -1657,6 +1728,14 @@ def self_test(manifest: dict) -> None:
     for key, expected in exact_paths.items():
         if manifest.get(key) != expected:
             fail(f"manifest {key} must be exactly {expected!r}")
+    expected_nas = {
+        "alias": "/mnt/iceburg",
+        "target": "/mnt/iceburg",
+        "source": "donatello.smeg:/iceburg",
+        "fstype": "nfs",
+    }
+    if manifest.get("nas") != expected_nas:
+        fail("manifest NAS contract must use the direct /mnt/iceburg mount")
     expected_runtimes = {"openmw", "quake3e", "rocknix"}
     if set(manifest.get("runtimes", {})) != expected_runtimes:
         fail(f"runtime set must be exactly {sorted(expected_runtimes)}")
@@ -1680,9 +1759,9 @@ def self_test(manifest: dict) -> None:
             "8cd90faf798d94618c871bfb2049d70d4315ad30",
         ),
         "rocknix": (
-            "20260801",
-            "9c4d4cb704ba24ec5d2262cc30aa3f17f12c987453ceb5b21b7671c01f71d99e",
-            "3b9cb1f6bf48ee9ca0cf01edd9af52ca2a6b73fb",
+            "20260718",
+            "1f080a6cf2425cd055a7d7de5c6de06394427298e79a3ab875469c9b7971d6ca",
+            "25398f713308c384528ac44fcb7a1a876fae90ea",
         ),
     }
     for runtime, (version, digest, revision) in pins.items():
@@ -1707,26 +1786,36 @@ def self_test(manifest: dict) -> None:
     if runtime_marker(quake_runtime, "quake3e").get("patch_sha256") != expected_quake_patch_sha256:
         fail("Quake3e runtime marker omits its controller patch")
     rocknix = manifest["runtimes"]["rocknix"]
-    if rocknix["rootfs_output"] != "build.ROCKNIX-AMD64.x86_64/image/system":
-        fail("ROCKNIX rootfs output contract differs")
-    if rocknix["docker_image"] != "setup-system/rocknix:20260801":
-        fail("ROCKNIX Docker runtime tag differs")
-    expected_rocknix_flags = (
-        "PROJECT=ROCKNIX DEVICE=AMD64 ARCH=x86_64 CUSTOM_VERSION=20260801 "
-        "CUSTOM_GIT_HASH=3b9cb1f6bf48ee9ca0cf01edd9af52ca2a6b73fb ./scripts/build_distro"
+    expected_rocknix_url = (
+        "file:///mnt/iceburg/backup/hal.smeg/wip/games/rocknix/distribution/target/"
+        "ROCKNIX-AMD64.x86_64-20260718.tar"
     )
-    if rocknix["build_flags"] != expected_rocknix_flags:
-        fail("ROCKNIX custom version/hash build contract differs")
-    if "@sha256:" not in rocknix["builder"]:
-        fail("ROCKNIX builder must be digest-pinned")
+    if rocknix["url"] != expected_rocknix_url:
+        fail("ROCKNIX HAL release artifact path differs")
+    if rocknix["archive"] != "ROCKNIX-AMD64.x86_64-20260718.tar":
+        fail("ROCKNIX release archive name differs")
+    if rocknix["archive_root"] != "ROCKNIX-AMD64.x86_64-20260718":
+        fail("ROCKNIX release archive root differs")
+    if rocknix["docker_image"] != "setup-system/rocknix:20260718":
+        fail("ROCKNIX Docker runtime tag differs")
+    if rocknix["system_md5"] != "aa403c9beaedd7ce51d891a799eb9cf6":
+        fail("ROCKNIX SYSTEM image checksum differs")
+    if rocknix["build_flags"] != "unsquashfs -no-progress -d rootfs target/SYSTEM":
+        fail("ROCKNIX release extraction contract differs")
+    for obsolete_key in ("builder", "patch", "patch_sha256", "rootfs_output"):
+        if obsolete_key in rocknix:
+            fail(f"ROCKNIX release contract retains obsolete key: {obsolete_key}")
     if "eaadwig" in json.dumps(manifest).lower() or "eadwig" in json.dumps(manifest).lower():
         fail("Eaadwig must remain entirely outside this utility")
     if "portmaster" in json.dumps(manifest).lower():
         fail("PortMaster/OpenMW-on-ROCKNIX is out of scope for this milestone")
+    rocknix_content = manifest["content"]["rocknix"]
+    if rocknix_content != {"root": "/mnt/iceburg/roms"}:
+        fail("ROCKNIX ROM root contract differs")
     quake = manifest["content"]["quake3"]
     if "source" in quake:
         fail("Quake III content must not have a setup-system import source")
-    if quake["destination"] != "/usr/local/mnt/iceburg/roms/ports/quake3/baseq3":
+    if quake["destination"] != "/mnt/iceburg/roms/ports/quake3/baseq3":
         fail("Quake III canonical NAS destination differs")
     if quake["file_count"] != 9 or quake["bytes"] != 505570007:
         fail("Quake III exact pak count/size contract differs")
@@ -1791,6 +1880,21 @@ def self_test(manifest: dict) -> None:
     for contract in pane_contracts:
         if contract not in makefile:
             fail(f"Quake III mutating target does not use pane label/argv contract: {contract}")
+    required_rocknix_targets = (
+        "build-rocknix:",
+        "clean-rocknix-cache:",
+        "status-rocknix:",
+        "verify-rocknix:",
+    )
+    for target in required_rocknix_targets:
+        if target not in makefile:
+            fail(f"required ROCKNIX Make target is missing: {target}")
+    rocknix_pane_contract = "bash $(PANE) game-runtimes-build-rocknix $(MAKE)"
+    if rocknix_pane_contract not in makefile:
+        fail("ROCKNIX mutating target does not use its pane label/argv contract")
+    rocknix_clean_pane_contract = "bash $(PANE) game-runtimes-clean-rocknix-cache $(MAKE)"
+    if rocknix_clean_pane_contract not in makefile:
+        fail("ROCKNIX cache cleanup target does not use its pane label/argv contract")
     print("game_runtimes manifest, pin, path, marker, and backup contracts are valid")
 
 
@@ -1804,11 +1908,14 @@ def parser() -> argparse.ArgumentParser:
         "verify",
         "status-quake3",
         "verify-quake3",
+        "status-rocknix",
+        "verify-rocknix",
         "import-content",
         "import-state",
         "build-openmw",
         "build-quake3",
         "build-rocknix",
+        "clean-rocknix-cache",
         "build-all",
         "backup-state",
     ):
@@ -1831,11 +1938,14 @@ def main(argv: list[str] | None = None) -> int:
             "verify": verify,
             "status-quake3": status_quake3,
             "verify-quake3": verify_quake3,
+            "status-rocknix": status_rocknix,
+            "verify-rocknix": verify_rocknix,
             "import-content": import_content,
             "import-state": import_state,
             "build-openmw": build_openmw,
             "build-quake3": build_quake3,
             "build-rocknix": build_rocknix,
+            "clean-rocknix-cache": clean_rocknix_cache,
             "build-all": build_all,
             "backup-state": backup_state,
         }

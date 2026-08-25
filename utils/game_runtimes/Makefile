@@ -7,10 +7,11 @@ MANIFEST := manifest.json
 PANE := ../../pane.sh
 
 .PHONY: help check status verify \
-	status-quake3 verify-quake3 \
+	status-quake3 verify-quake3 status-rocknix verify-rocknix \
 	import-content import-content-apply import-state import-state-apply \
 	build build-apply build-openmw build-openmw-apply \
 	build-quake3 build-quake3-apply build-rocknix build-rocknix-apply \
+	clean-rocknix-cache clean-rocknix-cache-apply \
 	backup-state backup-state-locked-apply backup-state-apply \
 	restore-state restore-state-locked-apply restore-state-apply
 
@@ -22,6 +23,12 @@ help:
 	@echo '  2. make verify-quake3'
 	@echo '  PK3 content is externally managed under the canonical ROMs tree.'
 	@echo '  make status-quake3'
+	@echo 'ROCKNIX operator workflow:'
+	@echo '  1. make build-rocknix'
+	@echo '  2. make verify-rocknix'
+	@echo '  ROM content is read-only from /mnt/iceburg/roms.'
+	@echo '  make status-rocknix'
+	@echo '  make clean-rocknix-cache  Remove only generated ROCKNIX source/build cache'
 	@echo 'Aggregate lifecycle (not required by the Quake-only workflow):'
 	@echo '  make status'
 	@echo '  make import-content'
@@ -48,6 +55,12 @@ status-quake3:
 
 verify-quake3:
 	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) verify-quake3
+
+status-rocknix:
+	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) status-rocknix
+
+verify-rocknix:
+	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) verify-rocknix
 
 import-content:
 	@bash $(PANE) game-runtimes-import-content $(MAKE) --no-print-directory -C '$(CURDIR)' import-content-apply
@@ -78,6 +91,12 @@ build-rocknix:
 
 build-rocknix-apply:
 	@sudo $(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) build-rocknix
+
+clean-rocknix-cache:
+	@bash $(PANE) game-runtimes-clean-rocknix-cache $(MAKE) --no-print-directory -C '$(CURDIR)' clean-rocknix-cache-apply
+
+clean-rocknix-cache-apply:
+	@sudo $(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) clean-rocknix-cache
 
 build:
 	@bash $(PANE) game-runtimes-build-all $(MAKE) --no-print-directory -C '$(CURDIR)' build-apply

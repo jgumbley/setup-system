@@ -19,9 +19,9 @@ openmw_morrowind_rocknix_config_dir: "{{ openmw_morrowind_rocknix_root }}/config
 openmw_morrowind_rocknix_user_data_dir: "{{ openmw_morrowind_rocknix_root }}/user-data"
 openmw_morrowind_rocknix_data_local_dir: "{{ openmw_morrowind_rocknix_root }}/data-local"
 
-openmw_morrowind_data_dir: /usr/local/mnt/iceburg/roms/ports/openmw/data
-openmw_morrowind_julan_data_dir: /usr/local/mnt/iceburg/roms/ports/openmw/mods/julan
-openmw_morrowind_katisha_data_dir: /usr/local/mnt/iceburg/roms/ports/openmw/mods/katisha
+openmw_morrowind_data_dir: /mnt/iceburg/roms/ports/openmw/data
+openmw_morrowind_julan_data_dir: /mnt/iceburg/roms/ports/openmw/mods/julan
+openmw_morrowind_katisha_data_dir: /mnt/iceburg/roms/ports/openmw/mods/katisha
 
 openmw_source_build_packages:
   - build-essential

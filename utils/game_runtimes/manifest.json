@@ -7,7 +7,7 @@
   "state_cache_root": "/var/cache/sunshine-host/games",
   "snapshot_root": "/usr/local/mnt/iceburg/backup/holly.smeg/game-state",
   "nas": {
-    "alias": "/usr/local/mnt/iceburg",
+    "alias": "/mnt/iceburg",
     "target": "/mnt/iceburg",
     "source": "donatello.smeg:/iceburg",
     "fstype": "nfs"
@@ -34,21 +34,23 @@
       "build_flags": "release ARCH=x86_64"
     },
     "rocknix": {
-      "version": "20260801",
-      "revision": "3b9cb1f6bf48ee9ca0cf01edd9af52ca2a6b73fb",
-      "url": "https://github.com/ROCKNIX/distribution/archive/refs/tags/20260801.tar.gz",
-      "sha256": "9c4d4cb704ba24ec5d2262cc30aa3f17f12c987453ceb5b21b7671c01f71d99e",
-      "archive": "rocknix-20260801.tar.gz",
-      "archive_root": "distribution-20260801",
-      "builder": "ghcr.io/rocknix/rocknix-build@sha256:5a1bda2eb90a0d8013a70c107383c61a877bd0c753d7ca8516043b572dbae25d",
-      "docker_image": "setup-system/rocknix:20260801",
-      "build_flags": "PROJECT=ROCKNIX DEVICE=AMD64 ARCH=x86_64 CUSTOM_VERSION=20260801 CUSTOM_GIT_HASH=3b9cb1f6bf48ee9ca0cf01edd9af52ca2a6b73fb ./scripts/build_distro",
-      "rootfs_output": "build.ROCKNIX-AMD64.x86_64/image/system"
+      "version": "20260718",
+      "revision": "25398f713308c384528ac44fcb7a1a876fae90ea",
+      "url": "file:///mnt/iceburg/backup/hal.smeg/wip/games/rocknix/distribution/target/ROCKNIX-AMD64.x86_64-20260718.tar",
+      "sha256": "1f080a6cf2425cd055a7d7de5c6de06394427298e79a3ab875469c9b7971d6ca",
+      "archive": "ROCKNIX-AMD64.x86_64-20260718.tar",
+      "archive_root": "ROCKNIX-AMD64.x86_64-20260718",
+      "docker_image": "setup-system/rocknix:20260718",
+      "build_flags": "unsquashfs -no-progress -d rootfs target/SYSTEM",
+      "system_md5": "aa403c9beaedd7ce51d891a799eb9cf6"
     }
   },
   "content": {
+    "rocknix": {
+      "root": "/mnt/iceburg/roms"
+    },
     "quake3": {
-      "destination": "/usr/local/mnt/iceburg/roms/ports/quake3/baseq3",
+      "destination": "/mnt/iceburg/roms/ports/quake3/baseq3",
       "file_count": 9,
       "bytes": 505570007,
       "files": {
@@ -64,8 +66,8 @@
       }
     },
     "morrowind": {
-      "source": "/usr/local/mnt/iceburg/roms/ports/openmw/Data Files",
-      "destination": "/usr/local/mnt/iceburg/roms/ports/openmw/data",
+      "source": "/mnt/iceburg/roms/ports/openmw/Data Files",
+      "destination": "/mnt/iceburg/roms/ports/openmw/data",
       "file_count": 21066,
       "bytes": 1876112737,
       "required_files": {
@@ -79,14 +81,14 @@
     },
     "mods": {
       "julan": {
-        "source": "/usr/local/mnt/iceburg/roms/ports/openmw/lm_plugins/Julan",
-        "destination": "/usr/local/mnt/iceburg/roms/ports/openmw/mods/julan",
+        "source": "/mnt/iceburg/roms/ports/openmw/lm_plugins/Julan",
+        "destination": "/mnt/iceburg/roms/ports/openmw/mods/julan",
         "source_payload": ".",
         "file_count": 188
       },
       "katisha": {
-        "source": "/usr/local/mnt/iceburg/roms/ports/openmw/lm_plugins/Katisha",
-        "destination": "/usr/local/mnt/iceburg/roms/ports/openmw/mods/katisha",
+        "source": "/mnt/iceburg/roms/ports/openmw/lm_plugins/Katisha",
+        "destination": "/mnt/iceburg/roms/ports/openmw/mods/katisha",
         "source_payload": "Data Files",
         "file_count": 198
       }
@@ -98,7 +100,7 @@
     "native_config": "/var/lib/sunshine-host/games/morrowind/native/config",
     "native_user_data": "/var/lib/sunshine-host/games/morrowind/native/user-data",
     "native_data_local": "/var/lib/sunshine-host/games/morrowind/native/data-local",
-    "rocknix_frontend_root": "/var/lib/sunshine-host/games/rocknix",
+    "rocknix_root": "/var/lib/sunshine-host/games/rocknix",
     "quake3_root": "/var/lib/sunshine-host/games/quake3",
     "quake3_baseq3": "/var/lib/sunshine-host/games/quake3/home/baseq3",
     "quake3_autoexec_source": "autoexec.cfg"

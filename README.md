@@ -78,24 +78,33 @@ Live pairing state remains private under `/var/lib/sunshine-host`; setup creates
 that directory but never imports or overwrites its pairing files. Setup creates
 and applies a private web-manager credential there once, and the Sunshine host
 utility consumes it so PIN pairing needs no operator-managed password.
+Controller button preflight for controller-driven launchers is controlled by
+`sunshine_host_controller_preflight_enabled` and is disabled by default. When
+enabled, it waits for a readable Sunshine virtual input device before starting
+the game.
 
 ## Holly Game Runtime Operations
 
 `make setup` installs build dependencies, state directories, configuration, and
 Moonlight launch contracts; it never compiles or imports a game. Bring up one
-runtime at a time. The current supported milestone is Quake III:
+runtime at a time. Quake III and ROCKNIX have independent workflows:
 
 ```bash
 make -C utils/game_runtimes status-quake3
 make -C utils/game_runtimes build-quake3
 make -C utils/game_runtimes verify-quake3
+
+make -C utils/game_runtimes status-rocknix
+make -C utils/game_runtimes build-rocknix
+make -C utils/game_runtimes verify-rocknix
 ```
 
-Quake3e is installed as an immutable versioned tree under `/opt/games`. OpenMW
-is the next independent milestone and ROCKNIX follows it; neither is required by
-the Quake-only workflow. Quake III PK3 content is externally managed at
-`/usr/local/mnt/iceburg/roms/ports/quake3/baseq3`; setup validates but never
-copies or modifies it. Eaadwig is deferred and documented only in `eadwig.md`.
+Quake3e and ROCKNIX are installed as immutable versioned trees under
+`/opt/games`. ROCKNIX runs its pinned AMD64 rootfs through Docker and reads the
+existing ROM library directly and read-only from `/mnt/iceburg/roms`. Quake III
+PK3 content is externally managed at `/mnt/iceburg/roms/ports/quake3/baseq3`;
+setup validates but never copies or modifies ROM content. OpenMW remains an
+independent milestone. Eaadwig is deferred and documented only in `eadwig.md`.
 
 ## Quest Client Operations on HAL
 
