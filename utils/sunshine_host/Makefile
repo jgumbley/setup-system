@@ -73,13 +73,12 @@ check: preflight
 	@grep -Fq 'game_session_require_readable_dir "{{ sunshine_host_roms_dir }}" "ROCKNIX"' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '25398f713308c384528ac44fcb7a1a876fae90ea' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '1f080a6cf2425cd055a7d7de5c6de06394427298e79a3ab875469c9b7971d6ca' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
-	@grep -Fq '{{ sunshine_host_roms_dir }}:/storage/roms:ro' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq '{{ sunshine_host_roms_dir }}:/storage/roms:rw' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '{{ sunshine_host_rocknix_state_dir }}/saves:/storage/roms/saves' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '{{ sunshine_host_rocknix_state_dir }}/states:/storage/roms/savestates' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '{{ sunshine_host_rocknix_state_dir }}/screenshots:/storage/roms/screenshots' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '{{ sunshine_host_rocknix_dir }}/rootfs/usr/lib/libretro:/tmp/cores:ro' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
-	@grep -Fq '{{ sunshine_host_rocknix_dir }}/rootfs/usr/share/libretro/autoconfig:/tmp/joypads:ro' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
-	@grep -Fq 'sunshine-retroarch.cfg:/tmp/joypads/Sunshine X-Box One (virtual) pad.cfg:ro' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq '{{ sunshine_host_rocknix_state_dir }}/joypads:/tmp/joypads:ro' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '/usr/bin/cp -R "{{ sunshine_host_rocknix_dir }}/rootfs/usr/config/."' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq -- '--cap-drop ALL' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq -- '--security-opt no-new-privileges' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
@@ -189,9 +188,9 @@ verify: preflight
 	@test "$$(systemctl is-enabled docker.service)" = enabled
 	@test "$$(systemctl is-active docker.service)" = active
 	@id -nG system | tr ' ' '\n' | grep -Fxq docker
-	@grep -Fq '/mnt/iceburg/roms:/storage/roms:ro' /usr/lib/sunshine-host/bin/run-rocknix.sh
+	@grep -Fq '/mnt/iceburg/roms:/storage/roms:rw' /usr/lib/sunshine-host/bin/run-rocknix.sh
 	@grep -Fq '/opt/games/rocknix/current/rootfs/usr/lib/libretro:/tmp/cores:ro' /usr/lib/sunshine-host/bin/run-rocknix.sh
-	@grep -Fq 'sunshine-retroarch.cfg:/tmp/joypads/Sunshine X-Box One (virtual) pad.cfg:ro' /usr/lib/sunshine-host/bin/run-rocknix.sh
+	@grep -Fq '/var/lib/sunshine-host/games/rocknix/joypads:/tmp/joypads:ro' /usr/lib/sunshine-host/bin/run-rocknix.sh
 	@grep -Fq -- '--cap-drop ALL' /usr/lib/sunshine-host/bin/run-rocknix.sh
 	@! grep -Fq -- '--privileged' /usr/lib/sunshine-host/bin/run-rocknix.sh
 	@test -s "$(STATE_DIR)/games/rocknix/joypads/sunshine-retroarch.cfg"

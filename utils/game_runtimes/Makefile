@@ -26,7 +26,7 @@ help:
 	@echo 'ROCKNIX operator workflow:'
 	@echo '  1. make build-rocknix'
 	@echo '  2. make verify-rocknix'
-	@echo '  ROM content is read-only from /mnt/iceburg/roms.'
+	@echo '  ROM content is mounted from /mnt/iceburg/roms.'
 	@echo '  make status-rocknix'
 	@echo '  make clean-rocknix-cache  Remove only generated ROCKNIX source/build cache'
 	@echo 'Aggregate lifecycle (not required by the Quake-only workflow):'

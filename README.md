@@ -51,7 +51,7 @@ The configuration is managed by Ansible playbooks and roles.
 *   `core-tools`: Installs common command-line tools and system-wide shell environment support.
 *   `nas-mount`: Mounts the network-attached storage.
 *   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
-*   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, session-managed game launchers, application list, persistent state directory, and boot-time systemd services. Versioned game runtimes live under `/opt/games`, mutable state remains local, and validated content is read-only from Iceburg.
+*   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, session-managed game launchers, application list, persistent state directory, and boot-time systemd services. Versioned game runtimes live under `/opt/games`, mutable state remains local, and validated content is externally managed on Iceburg.
 *   `godot`: Installs the Godot Engine editor binary from https://godotengine.org/download (no extra runtime dependencies; bring your own editor/IDE).
 *   `terminal`: Configures fish, tmux, vim, git, and other terminal applications.
 
@@ -100,8 +100,8 @@ make -C utils/game_runtimes verify-rocknix
 ```
 
 Quake3e and ROCKNIX are installed as immutable versioned trees under
-`/opt/games`. ROCKNIX runs its pinned AMD64 rootfs through Docker and reads the
-existing ROM library directly and read-only from `/mnt/iceburg/roms`. Quake III
+`/opt/games`. ROCKNIX runs its pinned AMD64 rootfs through Docker and mounts the
+existing ROM library directly from `/mnt/iceburg/roms`. Quake III
 PK3 content is externally managed at `/mnt/iceburg/roms/ports/quake3/baseq3`;
 setup validates but never copies or modifies ROM content. OpenMW remains an
 independent milestone. Eaadwig is deferred and documented only in `eadwig.md`.

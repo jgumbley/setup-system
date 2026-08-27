@@ -24,7 +24,6 @@ game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/screens
 game_session_require_readable_dir "{{ sunshine_host_roms_dir }}" "ROCKNIX"
 game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/config" "ROCKNIX"
 game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/lib/libretro" "ROCKNIX"
-game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/share/libretro/autoconfig" "ROCKNIX"
 game_session_require_file "{{ sunshine_host_rocknix_state_dir }}/joypads/sunshine-retroarch.cfg" "ROCKNIX"
 
 runtime_marker="{{ sunshine_host_rocknix_dir }}/.setup-system-runtime"
@@ -162,13 +161,12 @@ trap terminate_rocknix HUP INT TERM
   --volume /dev:/dev \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
   --volume "{{ sunshine_host_rocknix_state_dir }}:/storage" \
-  --volume "{{ sunshine_host_roms_dir }}:/storage/roms:ro" \
+  --volume "{{ sunshine_host_roms_dir }}:/storage/roms:rw" \
   --volume "{{ sunshine_host_rocknix_state_dir }}/saves:/storage/roms/saves" \
   --volume "{{ sunshine_host_rocknix_state_dir }}/states:/storage/roms/savestates" \
   --volume "{{ sunshine_host_rocknix_state_dir }}/screenshots:/storage/roms/screenshots" \
   --volume "{{ sunshine_host_rocknix_dir }}/rootfs/usr/lib/libretro:/tmp/cores:ro" \
-  --volume "{{ sunshine_host_rocknix_dir }}/rootfs/usr/share/libretro/autoconfig:/tmp/joypads:ro" \
-  --volume "{{ sunshine_host_rocknix_state_dir }}/joypads/sunshine-retroarch.cfg:/tmp/joypads/Sunshine X-Box One (virtual) pad.cfg:ro" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}/joypads:/tmp/joypads:ro" \
   --volume "{{ sunshine_host_rocknix_state_dir }}/.cache/logs:/var/log" \
   --tmpfs /tmp:rw,exec,nosuid,nodev,mode=1777 \
   --tmpfs /var/tmp:rw,nosuid,nodev,mode=1777 \
