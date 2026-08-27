@@ -8,7 +8,7 @@ PANE := ../../pane.sh
 
 .PHONY: help check status verify \
 	status-quake3 verify-quake3 status-rocknix verify-rocknix \
-	import-content import-content-apply import-state import-state-apply \
+	import-state import-state-apply \
 	build build-apply build-openmw build-openmw-apply \
 	build-quake3 build-quake3-apply build-rocknix build-rocknix-apply \
 	clean-rocknix-cache clean-rocknix-cache-apply \
@@ -31,7 +31,6 @@ help:
 	@echo '  make clean-rocknix-cache  Remove only generated ROCKNIX source/build cache'
 	@echo 'Aggregate lifecycle (not required by the Quake-only workflow):'
 	@echo '  make status'
-	@echo '  make import-content'
 	@echo '  make import-state'
 	@echo '  make build-openmw'
 	@echo '  make build-rocknix'
@@ -61,12 +60,6 @@ status-rocknix:
 
 verify-rocknix:
 	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) verify-rocknix
-
-import-content:
-	@bash $(PANE) game-runtimes-import-content $(MAKE) --no-print-directory -C '$(CURDIR)' import-content-apply
-
-import-content-apply:
-	@sudo $(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) import-content
 
 import-state:
 	@bash $(PANE) game-runtimes-import-state $(MAKE) --no-print-directory -C '$(CURDIR)' import-state-apply

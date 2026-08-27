@@ -66,8 +66,7 @@
       }
     },
     "morrowind": {
-      "source": "/mnt/iceburg/roms/ports/openmw/Data Files",
-      "destination": "/mnt/iceburg/roms/ports/openmw/data",
+      "root": "/mnt/iceburg/roms/ports/openmw/Data Files",
       "file_count": 21066,
       "bytes": 1876112737,
       "required_files": {
@@ -82,13 +81,11 @@
     "mods": {
       "julan": {
         "source": "/mnt/iceburg/roms/ports/openmw/lm_plugins/Julan",
-        "destination": "/mnt/iceburg/roms/ports/openmw/mods/julan",
         "source_payload": ".",
         "file_count": 188
       },
       "katisha": {
         "source": "/mnt/iceburg/roms/ports/openmw/lm_plugins/Katisha",
-        "destination": "/mnt/iceburg/roms/ports/openmw/mods/katisha",
         "source_payload": "Data Files",
         "file_count": 198
       }

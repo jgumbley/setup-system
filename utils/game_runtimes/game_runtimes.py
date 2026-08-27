@@ -428,29 +428,6 @@ def validate_mod_source(name: str, spec: dict) -> tuple[Path, int, int, str]:
     return payload, count, total, digest
 
 
-def validate_mod_destination(name: str, spec: dict) -> None:
-    payload, count, total, source_digest = validate_mod_source(name, spec)
-    del payload
-    destination = Path(spec["destination"])
-    safe_directory(destination, f"{name} destination")
-    marker = require_marker(
-        destination / IMPORT_MARKER,
-        {
-            "component": name,
-            "source": spec["source"],
-            "source_payload": spec["source_payload"],
-            "source_tree_sha256": source_digest,
-            "destination_tree_sha256": source_digest,
-            "file_count": str(count),
-            "bytes": str(total),
-        },
-    )
-    del marker
-    actual_count, actual_total, actual_digest = tree_digest(destination, ignored_name=IMPORT_MARKER)
-    if (actual_count, actual_total, actual_digest) != (count, total, source_digest):
-        fail(f"{name} destination payload differs from its recorded source provenance")
-
-
 def copy_regular_tree(
     source: Path,
     destination: Path,
@@ -512,66 +489,6 @@ def validate_quake_autoexec(manifest: dict) -> None:
     safe_regular_file(destination, "managed Quake III autoexec destination")
     if sha256_file(destination) != sha256_file(source):
         fail(f"managed Quake III autoexec differs from its repository contract: {destination}")
-
-def import_content(manifest: dict) -> None:
-    require_holly(manifest)
-    require_root()
-    preflight_nas(manifest)
-    content = manifest["content"]
-    quake = content["quake3"]
-    validate_quake_content(quake, Path(quake["destination"]))
-    print(f"Quake III content is externally managed and exact: {quake['destination']}")
-
-    morrowind = content["morrowind"]
-    source = Path(morrowind["source"])
-    destination = Path(morrowind["destination"])
-    source_exists = source.exists() or source.is_symlink()
-    destination_exists = destination.exists() or destination.is_symlink()
-    if source_exists and destination_exists:
-        fail(f"ambiguous Morrowind trees exist at both {source} and {destination}")
-    if destination_exists:
-        validate_morrowind_content(morrowind, destination)
-        print(f"Morrowind content already canonical and exact: {destination}")
-    elif source_exists:
-        validate_morrowind_content(morrowind, source)
-        if source.stat().st_dev != destination.parent.stat().st_dev:
-            fail("Morrowind case canonicalization must be an atomic rename on one filesystem")
-        os.rename(source, destination)
-        fsync_dir(destination.parent)
-        validate_morrowind_content(morrowind, destination)
-        print(f"Atomically canonicalized Morrowind content to {destination}")
-    else:
-        fail(f"neither Morrowind source nor canonical destination exists: {source}, {destination}")
-
-    for name, spec in content["mods"].items():
-        destination = Path(spec["destination"])
-        if destination.exists() or destination.is_symlink():
-            validate_mod_destination(name, spec)
-            print(f"{name} already imported with exact source provenance: {destination}")
-            continue
-        payload, count, total, digest = validate_mod_source(name, spec)
-        destination.parent.mkdir(parents=True, exist_ok=True)
-        stage = destination.with_name(f".{destination.name}.setup-system-stage")
-        if stage.exists() or stage.is_symlink():
-            fail(f"refusing stale {name} import stage: {stage}")
-        copy_regular_tree(payload, stage)
-        write_kv_marker(
-            stage / IMPORT_MARKER,
-            {
-                "component": name,
-                "source": spec["source"],
-                "source_payload": spec["source_payload"],
-                "source_tree_sha256": digest,
-                "destination_tree_sha256": digest,
-                "file_count": str(count),
-                "bytes": str(total),
-            },
-        )
-        os.rename(stage, destination)
-        fsync_dir(destination.parent)
-        validate_mod_destination(name, spec)
-        print(f"Imported {name} with recorded provenance to {destination}")
-
 
 def state_owner() -> tuple[int, int]:
     try:
@@ -1609,13 +1526,9 @@ def verify_content(manifest: dict) -> None:
     quake = content["quake3"]
     validate_quake_content(quake, Path(quake["destination"]))
     morrowind = content["morrowind"]
-    source = Path(morrowind["source"])
-    destination = Path(morrowind["destination"])
-    if source.exists() or source.is_symlink():
-        fail(f"non-canonical Morrowind source still exists: {source}")
-    validate_morrowind_content(morrowind, destination)
+    validate_morrowind_content(morrowind, Path(morrowind["root"]))
     for name, spec in content["mods"].items():
-        validate_mod_destination(name, spec)
+        validate_mod_source(name, spec)
 
 
 def verify_quake3(manifest: dict) -> None:
@@ -1695,7 +1608,7 @@ def status(manifest: dict) -> None:
     require_holly(manifest)
     checks = [
         ("NAS mount", lambda: preflight_nas(manifest)),
-        ("content imports", lambda: verify_content(manifest)),
+        ("content", lambda: verify_content(manifest)),
         ("mutable state", lambda: validate_imported_state(manifest)),
         ("OpenMW", lambda: validate_openmw_install(manifest)),
         ("Quake3e", lambda: validate_quake_install(manifest)),
@@ -1823,6 +1736,19 @@ def self_test(manifest: dict) -> None:
         fail("Quake III pak0-pak8 filename contract differs")
     if not all(HASH_RE.fullmatch(value) for value in quake["files"].values()):
         fail("Quake III pak hash contract is invalid")
+    morrowind = manifest["content"]["morrowind"]
+    if morrowind["root"] != "/mnt/iceburg/roms/ports/openmw/Data Files":
+        fail("Morrowind data path differs")
+    expected_mods = {
+        "julan": ("/mnt/iceburg/roms/ports/openmw/lm_plugins/Julan", "."),
+        "katisha": ("/mnt/iceburg/roms/ports/openmw/lm_plugins/Katisha", "Data Files"),
+    }
+    for name, (source, payload) in expected_mods.items():
+        spec = manifest["content"]["mods"][name]
+        if spec["source"] != source or spec["source_payload"] != payload:
+            fail(f"{name} direct source path differs")
+        if "destination" in spec:
+            fail(f"{name} must be consumed directly without an imported copy")
     state = manifest["state_import"]
     expected_quake_state = "/var/lib/sunshine-host/games/quake3/home/baseq3"
     if state["quake3_baseq3"] != expected_quake_state:
@@ -1910,7 +1836,6 @@ def parser() -> argparse.ArgumentParser:
         "verify-quake3",
         "status-rocknix",
         "verify-rocknix",
-        "import-content",
         "import-state",
         "build-openmw",
         "build-quake3",
@@ -1940,7 +1865,6 @@ def main(argv: list[str] | None = None) -> int:
             "verify-quake3": verify_quake3,
             "status-rocknix": status_rocknix,
             "verify-rocknix": verify_rocknix,
-            "import-content": import_content,
             "import-state": import_state,
             "build-openmw": build_openmw,
             "build-quake3": build_quake3,

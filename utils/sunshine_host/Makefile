@@ -10,6 +10,7 @@ RUNTIME_DIR := /run/sunshine-host
 COVERS_DIR := $(CURDIR)/covers
 QUAKE3_AUTOEXEC_SOURCE := ../game_runtimes/autoexec.cfg
 QUAKE3_AUTOEXEC_INSTALLED := $(STATE_DIR)/games/quake3/home/baseq3/autoexec.cfg
+MORROWIND_SESSION_LOG := /var/cache/sunshine-host/games/morrowind/native/session.log
 QUAKE3_SESSION_LOG := /var/cache/sunshine-host/games/quake3/session.log
 ROCKNIX_SESSION_LOG := /var/cache/sunshine-host/games/rocknix/session.log
 SUNSHINE_HOST ?= localhost
@@ -17,13 +18,14 @@ SUNSHINE_USERNAME ?= sunshine
 SUNSHINE_PIN_NAME ?= $(or $(NAME),moonlight)
 SWAY_SOCKET := $(firstword $(wildcard $(RUNTIME_DIR)/sway-ipc.*.sock))
 
-.PHONY: help preflight sway-preflight covers check status quake3-log rocknix-log session-layout steam-game-fullscreen verify pairings api-check pin reboot reboot-apply
+.PHONY: help preflight sway-preflight covers check status morrowind-log quake3-log rocknix-log session-layout steam-game-fullscreen verify pairings api-check pin reboot reboot-apply
 
 help:
 	@echo "Targets:"
 	@echo "  make covers                  Regenerate the committed Moonlight cover art"
 	@echo "  make check                   Check the utility source and cover inventory"
 	@echo "  make status                  Show Holly's installed Sunshine host status"
+	@echo "  make morrowind-log          Show the current Morrowind Moonlight session log"
 	@echo "  make quake3-log              Show the current Quake III Moonlight session log"
 	@echo "  make rocknix-log             Show the current ROCKNIX Moonlight session log"
 	@echo "  make session-layout          Show live application windows in the Sunshine Sway session"
@@ -101,6 +103,10 @@ check: preflight
 	@grep -Fq 'sunshine-retroarch.cfg' ../../roles/sunshine-host/tasks/main.yml
 	@grep -Fq 'input_device = "Sunshine X-Box One (virtual) pad"' ../../roles/sunshine-host/tasks/main.yml
 	@grep -Fq '/openmw/current' ../../roles/sunshine-host/defaults/main.yml
+	@grep -Fq '/ports/openmw/Data Files' ../../roles/sunshine-host/defaults/main.yml
+	@grep -Fq '/ports/openmw/lm_plugins/Julan' ../../roles/sunshine-host/defaults/main.yml
+	@grep -Fq '/ports/openmw/lm_plugins/Katisha/Data Files' ../../roles/sunshine-host/defaults/main.yml
+	@! grep -Eq '/ports/openmw/(data|mods/)' ../../roles/sunshine-host/defaults/main.yml
 	@for package in build-essential libasound2-dev libcurl4-openssl-dev libsdl2-dev libxrandr-dev libxxf86dga-dev libxxf86vm-dev mesa-common-dev patch pkg-config; do \
 		grep -Fq -- "- $$package" ../../roles/sunshine-host/tasks/main.yml || { echo "Missing Quake3e build package contract: $$package" >&2; exit 1; }; \
 	done
@@ -128,6 +134,10 @@ status: preflight
 	@printf 'Wayland:  '; test -S "$(RUNTIME_DIR)/wayland-1" && echo ready || echo missing
 	@printf 'D-Bus:    '; test -S "$(RUNTIME_DIR)/bus" && echo ready || echo missing
 	@systemctl --no-pager --full status sunshine-host.target sunshine-host-sway.service sunshine-host-sunshine.service
+
+morrowind-log: preflight
+	@test -f "$(MORROWIND_SESSION_LOG)" || { echo "No Morrowind Moonlight session log exists yet." >&2; exit 1; }
+	@tail -n 240 "$(MORROWIND_SESSION_LOG)"
 
 quake3-log: preflight
 	@test -f "$(QUAKE3_SESSION_LOG)" || { echo "No Quake III Moonlight session log exists yet." >&2; exit 1; }
