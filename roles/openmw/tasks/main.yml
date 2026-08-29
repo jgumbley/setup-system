@@ -117,6 +117,25 @@
   become: true
   when: ansible_facts['hostname'] == 'holly'
 
+- name: Remove the previous native OpenMW video seed
+  ansible.builtin.replace:
+    path: "{{ openmw_morrowind_native_config_dir }}/settings.cfg"
+    regexp: '(?m)^\[Video\]\nresolution x = 1920\nresolution y = 1080\nwindow mode = 1\nvsync mode = 1\nframerate limit = 60\n\n'
+    replace: ''
+  become: true
+  when: ansible_facts['hostname'] == 'holly'
+
+- name: Manage the native OpenMW graphics profile
+  ansible.builtin.blockinfile:
+    path: "{{ openmw_morrowind_native_config_dir }}/settings.cfg"
+    marker: "# {mark} setup-system OpenMW graphics"
+    block: "{{ openmw_morrowind_native_graphics_settings }}"
+    owner: "{{ openmw_service_user }}"
+    group: "{{ openmw_service_group }}"
+    mode: "0640"
+  become: true
+  when: ansible_facts['hostname'] == 'holly'
+
 # Preserve the existing Morrowind content-authoring environment. It is separate
 # from the explicitly invoked game runtime build and remains setup-managed.
 - name: Install Morrowind content creation toolchain (apt)

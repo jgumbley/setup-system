@@ -81,6 +81,15 @@ check: preflight
 	@grep -Fq '{{ sunshine_host_rocknix_state_dir }}/screenshots:/storage/roms/screenshots' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '{{ sunshine_host_rocknix_dir }}/rootfs/usr/lib/libretro:/tmp/cores:ro' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '{{ sunshine_host_rocknix_state_dir }}/joypads:/tmp/joypads:ro' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq 'game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.local/share" "ROCKNIX"' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq 'game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.local/share/locale" "ROCKNIX"' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq -- '--env XDG_RUNTIME_DIR=/var/run/0-runtime-dir' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq -- '--env DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/rocknix-no-session-bus' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq '{{ sunshine_host_runtime_dir }}:/var/run/0-runtime-dir' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq '{{ sunshine_host_rocknix_state_dir }}/.local/share/locale:/usr/lib/locale' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq '/usr/bin/localedef --no-archive -i en_GB -f UTF-8 en_GB.UTF-8' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq 'export LANG=en_GB.UTF-8' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
+	@grep -Fq 'export LC_ALL=en_GB.UTF-8' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq '/usr/bin/cp -R "{{ sunshine_host_rocknix_dir }}/rootfs/usr/config/."' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq -- '--cap-drop ALL' ../../roles/sunshine-host/templates/run-rocknix.sh.j2
 	@grep -Fq -- '--security-opt no-new-privileges' ../../roles/sunshine-host/templates/run-rocknix.sh.j2

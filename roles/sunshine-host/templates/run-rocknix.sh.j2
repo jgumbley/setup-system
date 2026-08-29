@@ -17,6 +17,8 @@ game_session_require_nas "ROCKNIX"
 game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}" "ROCKNIX"
 game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.config" "ROCKNIX"
 game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.cache/logs" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.local/share" "ROCKNIX"
+game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/.local/share/locale" "ROCKNIX"
 game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/joypads" "ROCKNIX"
 game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/saves" "ROCKNIX"
 game_session_require_writable_dir "{{ sunshine_host_rocknix_state_dir }}/states" "ROCKNIX"
@@ -25,6 +27,9 @@ game_session_require_readable_dir "{{ sunshine_host_roms_dir }}" "ROCKNIX"
 game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/config" "ROCKNIX"
 game_session_require_readable_dir "{{ sunshine_host_rocknix_dir }}/rootfs/usr/lib/libretro" "ROCKNIX"
 game_session_require_file "{{ sunshine_host_rocknix_state_dir }}/joypads/sunshine-retroarch.cfg" "ROCKNIX"
+game_session_require_command "{{ sunshine_host_rocknix_dir }}/rootfs/usr/bin/localedef" "ROCKNIX"
+game_session_require_file "{{ sunshine_host_rocknix_dir }}/rootfs/usr/share/i18n/charmaps/UTF-8.gz" "ROCKNIX"
+game_session_require_file "{{ sunshine_host_rocknix_dir }}/rootfs/usr/share/i18n/locales/en_GB" "ROCKNIX"
 
 runtime_marker="{{ sunshine_host_rocknix_dir }}/.setup-system-runtime"
 marker_runtime="$(game_session_marker_value "${runtime_marker}" runtime)"
@@ -146,7 +151,7 @@ trap terminate_rocknix HUP INT TERM
   --env XDG_CONFIG_HOME=/storage/.config \
   --env XDG_CACHE_HOME=/storage/.cache \
   --env XDG_DATA_HOME=/storage/.local/share \
-  --env XDG_RUNTIME_DIR="{{ sunshine_host_runtime_dir }}" \
+  --env XDG_RUNTIME_DIR=/var/run/0-runtime-dir \
   --env WAYLAND_DISPLAY="{{ sunshine_host_wayland_display }}" \
   --env DISPLAY=:0 \
   --env SDL_VIDEODRIVER=wayland \
@@ -154,13 +159,14 @@ trap terminate_rocknix HUP INT TERM
   --env QT_QPA_PLATFORM=wayland \
   --env SDL_GAMECONTROLLERCONFIG_FILE=/storage/.config/SDL-GameControllerDB/gamecontrollerdb.txt \
   --env PULSE_SERVER="{{ sunshine_host_pulse_server }}" \
-  --env DBUS_SESSION_BUS_ADDRESS="unix:path={{ sunshine_host_runtime_dir }}/bus" \
-  --volume "{{ sunshine_host_runtime_dir }}:{{ sunshine_host_runtime_dir }}" \
+  --env DBUS_SESSION_BUS_ADDRESS=unix:path=/tmp/rocknix-no-session-bus \
+  --volume "{{ sunshine_host_runtime_dir }}:/var/run/0-runtime-dir" \
   --volume /run/user/1000/pulse:/run/user/1000/pulse \
   --volume /run/udev:/run/udev:ro \
   --volume /dev:/dev \
   --volume /tmp/.X11-unix:/tmp/.X11-unix \
   --volume "{{ sunshine_host_rocknix_state_dir }}:/storage" \
+  --volume "{{ sunshine_host_rocknix_state_dir }}/.local/share/locale:/usr/lib/locale" \
   --volume "{{ sunshine_host_roms_dir }}:/storage/roms:rw" \
   --volume "{{ sunshine_host_rocknix_state_dir }}/saves:/storage/roms/saves" \
   --volume "{{ sunshine_host_rocknix_state_dir }}/states:/storage/roms/savestates" \
@@ -172,9 +178,20 @@ trap terminate_rocknix HUP INT TERM
   --tmpfs /var/tmp:rw,nosuid,nodev,mode=1777 \
   --workdir /storage \
     "{{ sunshine_host_rocknix_image }}" \
-    /usr/bin/emulationstation \
-      --log-path /storage/.cache/logs \
-      --no-splash
+    /usr/bin/bash -c '
+      set -euo pipefail
+      locale_marker=/usr/lib/locale/.setup-system-en-gb-utf8
+      if [[ ! -s /usr/lib/locale/en_GB.utf8/LC_CTYPE || ! -e "${locale_marker}" ]]; then
+        /usr/bin/rm -rf /usr/lib/locale/en_GB.utf8
+        /usr/bin/localedef --no-archive -i en_GB -f UTF-8 en_GB.UTF-8
+        /usr/bin/touch "${locale_marker}"
+      fi
+      export LANG=en_GB.UTF-8
+      export LC_ALL=en_GB.UTF-8
+      exec /usr/bin/emulationstation \
+        --log-path /storage/.cache/logs \
+        --no-splash
+    '
 ) &
 rocknix_docker_pid=$!
 

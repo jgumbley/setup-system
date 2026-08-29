@@ -1094,6 +1094,7 @@ def parse_os_release(path: Path) -> dict[str, str]:
 def validate_rocknix_rootfs(rootfs: Path, spec: dict) -> None:
     safe_directory(rootfs, "ROCKNIX rootfs")
     validate_elf(rootfs / "usr" / "bin" / "emulationstation", "ROCKNIX EmulationStation")
+    validate_elf(rootfs / "usr" / "bin" / "localedef", "ROCKNIX localedef")
     validate_elf(rootfs / "usr" / "bin" / "retroarch", "ROCKNIX RetroArch")
     safe_directory(rootfs / "usr" / "lib" / "libretro", "ROCKNIX libretro cores")
     safe_directory(
@@ -1111,6 +1112,14 @@ def validate_rocknix_rootfs(rootfs: Path, spec: dict) -> None:
     safe_regular_file(
         rootfs / "usr" / "config" / "SDL-GameControllerDB" / "gamecontrollerdb.txt",
         "ROCKNIX SDL controller database",
+    )
+    safe_regular_file(
+        rootfs / "usr" / "share" / "i18n" / "charmaps" / "UTF-8.gz",
+        "ROCKNIX UTF-8 charmap",
+    )
+    safe_regular_file(
+        rootfs / "usr" / "share" / "i18n" / "locales" / "en_GB",
+        "ROCKNIX en_GB locale source",
     )
     release = parse_os_release(rootfs / "etc" / "os-release")
     required = {

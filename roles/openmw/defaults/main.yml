@@ -23,6 +23,48 @@ openmw_morrowind_data_dir: /mnt/iceburg/roms/ports/openmw/Data Files
 openmw_morrowind_julan_data_dir: /mnt/iceburg/roms/ports/openmw/lm_plugins/Julan
 openmw_morrowind_katisha_data_dir: /mnt/iceburg/roms/ports/openmw/lm_plugins/Katisha/Data Files
 
+openmw_morrowind_native_graphics_settings: |
+  [Video]
+  resolution x = 1920
+  resolution y = 1080
+  window mode = 1
+  vsync mode = 1
+  framerate limit = 60
+  antialiasing = 8
+
+  [General]
+  anisotropy = 16
+
+  [Camera]
+  viewing distance = 32768
+
+  [Terrain]
+  distant terrain = true
+  object paging = true
+  object paging active grid = true
+  composite map resolution = 1024
+
+  [Shaders]
+  lighting method = shaders
+  max lights = 32
+
+  [Shadows]
+  enable shadows = true
+  number of shadow maps = 4
+  maximum shadow map distance = 16384
+  shadow map resolution = 4096
+  actor shadows = true
+  player shadows = true
+  terrain shadows = true
+  object shadows = true
+  enable indoor shadows = false
+
+  [Water]
+  shader = true
+  rtt size = 2048
+  refraction = true
+  reflection detail = 4
+
 openmw_source_build_packages:
   - build-essential
   - ccache
