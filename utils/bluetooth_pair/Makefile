@@ -23,6 +23,7 @@ preflight:
 	@$(PYTHON) -c 'import dbus, evdev, gi' || { echo "Python Bluetooth/input dependencies are unavailable; run make setup first." >&2; exit 127; }
 	@grep -Fxq 'ClassicBondedOnly=false' "$(BLUEZ_INPUT_CONFIG)" || { echo "BlueZ Xbox support is not configured; run make setup first." >&2; exit 1; }
 	@test -f "$(UDEV_RULE)" || { echo "Xbox input permissions are not configured; run make setup first." >&2; exit 1; }
+	@grep -Fq 'ENV{ID_INPUT_JOYSTICK}="1"' "$(UDEV_RULE)" || { echo "Xbox input is not classified as a joystick; run make setup first." >&2; exit 1; }
 
 check: preflight
 	@$(PYTHON) -c 'compile(open("$(CONTROLLER)", encoding="utf-8").read(), "$(CONTROLLER)", "exec")'

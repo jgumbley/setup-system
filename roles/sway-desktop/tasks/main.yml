@@ -256,6 +256,6 @@
     group: root
     mode: '0644'
     content: |
-      SUBSYSTEM=="input", KERNEL=="event*", ATTRS{id/vendor}=="045e", ATTRS{id/product}=="0b05", GROUP="users", MODE="0660", TAG+="uaccess"
+      SUBSYSTEM=="input", KERNEL=="event*", ATTRS{id/vendor}=="045e", ATTRS{id/product}=="0b05", ENV{ID_INPUT_JOYSTICK}="1", GROUP="users", MODE="0660", TAG+="uaccess"
   notify: reload Xbox controller udev rules
   when: current_hostname == 'rocks'
