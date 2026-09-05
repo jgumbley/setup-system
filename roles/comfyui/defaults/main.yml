@@ -1,0 +1,10 @@
+---
+comfyui_root: /opt/comfyui
+comfyui_state_dir: /var/lib/comfyui
+comfyui_cache_dir: /var/cache/comfyui
+comfyui_service_user: system
+comfyui_service_group: system
+comfyui_listen: 127.0.0.1
+comfyui_port: 8188
+comfyui_utility_dir: "{{ playbook_dir }}/utils/comfyui"
+comfyui_uv: /home/system/.local/bin/uv

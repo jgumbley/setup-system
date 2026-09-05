@@ -1,0 +1,34 @@
+[Unit]
+Description=ComfyUI native ROCm image generation
+After=network.target
+StartLimitIntervalSec=120
+StartLimitBurst=3
+
+[Service]
+Type=simple
+User={{ comfyui_service_user }}
+Group={{ comfyui_service_group }}
+SupplementaryGroups=render video
+WorkingDirectory={{ comfyui_root }}/app
+Environment=PYTHONDONTWRITEBYTECODE=1
+Environment=PYTHONUNBUFFERED=1
+Environment=HIP_VISIBLE_DEVICES=0
+Environment=XDG_CACHE_HOME={{ comfyui_cache_dir }}
+Environment=HF_HOME={{ comfyui_cache_dir }}/huggingface
+Environment=TORCH_HOME={{ comfyui_cache_dir }}/torch
+Environment=HOME={{ comfyui_state_dir }}
+ExecStart={{ comfyui_root }}/venv/bin/python main.py --listen {{ comfyui_listen }} --port {{ comfyui_port }} --extra-model-paths-config /etc/comfyui/extra_model_paths.yaml --input-directory {{ comfyui_state_dir }}/input --output-directory {{ comfyui_state_dir }}/output --temp-directory {{ comfyui_state_dir }}/temp --user-directory {{ comfyui_state_dir }}/user --disable-auto-launch --disable-all-custom-nodes --disable-api-nodes
+Restart=on-failure
+RestartSec=10
+TimeoutStopSec=120
+UMask=0027
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths={{ comfyui_state_dir }} {{ comfyui_cache_dir }}
+RestrictAddressFamilies=AF_UNIX AF_INET AF_INET6 AF_NETLINK
+LimitMEMLOCK=infinity
+
+[Install]
+WantedBy=multi-user.target

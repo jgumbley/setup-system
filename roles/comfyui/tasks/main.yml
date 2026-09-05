@@ -1,0 +1,259 @@
+---
+- name: Provision Holly's native ComfyUI service
+  tags: comfyui
+  block:
+    - name: Require Holly's supported native platform
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['hostname'] == 'holly'
+          - ansible_facts['distribution'] == 'Ubuntu'
+          - ansible_facts['distribution_version'] == '26.04'
+          - ansible_facts['architecture'] == 'x86_64'
+          - ansible_facts['kernel'] is match('7\.0\.')
+        fail_msg: This pinned native ComfyUI deployment is for Holly on Ubuntu 26.04 and kernel 7.0.
+
+    - name: Load the versioned runtime and model manifests
+      ansible.builtin.set_fact:
+        comfyui_runtime: "{{ lookup('file', role_path + '/files/runtime.json') | from_json }}"
+        comfyui_models: "{{ lookup('file', comfyui_utility_dir + '/models.json') | from_json }}"
+
+    - name: Install native build and service prerequisites
+      ansible.builtin.apt:
+        name:
+          - git
+          - curl
+          - make
+          - ca-certificates
+          - python3
+          - python3-venv
+          - build-essential
+          - dkms
+          - "linux-headers-{{ ansible_facts['kernel'] }}"
+          - libnuma1
+          - libgomp1
+          - libdrm2
+          - mokutil
+        state: present
+        cache_valid_time: 3600
+
+    - name: Check Secure Boot before replacing the GPU kernel module
+      ansible.builtin.command: mokutil --sb-state
+      register: comfyui_secure_boot
+      changed_when: false
+
+    - name: Require the inspected Secure Boot state
+      ansible.builtin.assert:
+        that: "'SecureBoot disabled' in comfyui_secure_boot.stdout"
+        fail_msg: Secure Boot changed; arrange DKMS signing and key enrollment before applying this role.
+
+    - name: Create the AMD apt keyring directory
+      ansible.builtin.file:
+        path: /etc/apt/keyrings
+        state: directory
+        mode: '0755'
+
+    - name: Install the verified AMD repository signing key
+      ansible.builtin.get_url:
+        url: https://repo.radeon.com/rocm/rocm.gpg.key
+        dest: /etc/apt/keyrings/amd-comfyui.asc
+        checksum: sha256:2de99e2354646a90d9903e2a669fc4e36b02c1bbff7075c481e12d7edab2c88b
+        mode: '0644'
+
+    - name: Register the pinned AMD driver repository for Ubuntu Resolute
+      ansible.builtin.apt_repository:
+        repo: "deb [arch=amd64 signed-by=/etc/apt/keyrings/amd-comfyui.asc] https://repo.radeon.com/amdgpu/{{ comfyui_runtime.driver_release }}/ubuntu resolute main"
+        filename: comfyui-amdgpu
+        state: present
+        update_cache: true
+
+    - name: Pin the AMD driver and its firmware versions
+      ansible.builtin.copy:
+        dest: /etc/apt/preferences.d/comfyui-amdgpu
+        mode: '0644'
+        content: |
+          Package: amdgpu-dkms
+          Pin: version {{ comfyui_runtime.driver_package }}
+          Pin-Priority: 1001
+
+          Package: amdgpu-dkms-firmware
+          Pin: version {{ comfyui_runtime.driver_firmware_package }}
+          Pin-Priority: 1001
+
+    - name: Install the matching AMD kernel driver and firmware
+      ansible.builtin.apt:
+        name:
+          - "amdgpu-dkms={{ comfyui_runtime.driver_package }}"
+          - "amdgpu-dkms-firmware={{ comfyui_runtime.driver_firmware_package }}"
+        state: present
+      register: comfyui_driver_install
+
+    - name: Report the driver activation boundary
+      ansible.builtin.debug:
+        msg: AMD driver installed. Reboot is required to activate it; the currently loaded GPU module remains in use until then.
+      when: comfyui_driver_install.changed
+
+    - name: Ensure GPU access for the service account
+      ansible.builtin.user:
+        name: "{{ comfyui_service_user }}"
+        groups: render,video
+        append: true
+
+    - name: Create the immutable runtime and configuration directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+      loop:
+        - "{{ comfyui_root }}"
+        - "{{ comfyui_root }}/python"
+        - /etc/comfyui
+
+    - name: Create writable local model and ComfyUI state directories
+      ansible.builtin.file:
+        path: "{{ item }}"
+        state: directory
+        owner: "{{ comfyui_service_user }}"
+        group: "{{ comfyui_service_group }}"
+        mode: '0755'
+      loop:
+        - "{{ comfyui_models.root }}"
+        - "{{ comfyui_models.root }}/diffusion_models"
+        - "{{ comfyui_models.root }}/text_encoders"
+        - "{{ comfyui_models.root }}/vae"
+        - "{{ comfyui_state_dir }}"
+        - "{{ comfyui_state_dir }}/input"
+        - "{{ comfyui_state_dir }}/output"
+        - "{{ comfyui_state_dir }}/temp"
+        - "{{ comfyui_state_dir }}/user"
+        - "{{ comfyui_state_dir }}/user/default"
+        - "{{ comfyui_state_dir }}/user/default/workflows"
+        - "{{ comfyui_cache_dir }}"
+
+    - name: Install the pinned Python interpreter
+      ansible.builtin.command:
+        argv: ["{{ comfyui_uv }}", python, install, "{{ comfyui_runtime.python }}"]
+      environment:
+        UV_PYTHON_INSTALL_DIR: "{{ comfyui_root }}/python"
+        UV_CACHE_DIR: "{{ comfyui_cache_dir }}/uv"
+      register: comfyui_python_install
+      changed_when: "'Installed Python' in comfyui_python_install.stderr"
+
+    - name: Create ComfyUI's isolated Python environment
+      ansible.builtin.command:
+        argv: ["{{ comfyui_uv }}", venv, --python, "{{ comfyui_runtime.python }}", "{{ comfyui_root }}/venv"]
+        creates: "{{ comfyui_root }}/venv/bin/python"
+      environment:
+        UV_PYTHON_INSTALL_DIR: "{{ comfyui_root }}/python"
+        UV_CACHE_DIR: "{{ comfyui_cache_dir }}/uv"
+
+    - name: Install the pinned upstream ComfyUI source
+      ansible.builtin.git:
+        repo: "{{ comfyui_runtime.comfyui_repo }}"
+        dest: "{{ comfyui_root }}/app"
+        version: "{{ comfyui_runtime.comfyui_commit }}"
+        force: false
+      notify: Restart ComfyUI
+
+    - name: Publish the dependency lock and runtime versions
+      ansible.builtin.copy:
+        src: "{{ item }}"
+        dest: "/etc/comfyui/{{ item }}"
+        mode: '0644'
+      loop: [requirements.lock, runtime.json]
+      notify: Restart ComfyUI
+
+    - name: Synchronize the complete hash-locked native Python and ROCm environment
+      ansible.builtin.command:
+        argv:
+          - "{{ comfyui_uv }}"
+          - pip
+          - sync
+          - --python
+          - "{{ comfyui_root }}/venv/bin/python"
+          - --require-hashes
+          - --index-strategy
+          - unsafe-best-match
+          - /etc/comfyui/requirements.lock
+      environment:
+        UV_CACHE_DIR: "{{ comfyui_cache_dir }}/uv"
+      register: comfyui_python_sync
+      changed_when: "'Installed ' in comfyui_python_sync.stderr or 'Uninstalled ' in comfyui_python_sync.stderr"
+      notify: Restart ComfyUI
+
+    - name: Check installed Python dependency consistency
+      ansible.builtin.command:
+        argv: ["{{ comfyui_uv }}", pip, check, --python, "{{ comfyui_root }}/venv/bin/python"]
+      changed_when: false
+
+    - name: Download and verify models through the shared Make utility
+      ansible.builtin.command:
+        argv: [make, --no-print-directory, -C, "{{ comfyui_utility_dir }}", models]
+      become_user: "{{ comfyui_service_user }}"
+      register: comfyui_model_download
+      changed_when: "'changed=true' in comfyui_model_download.stdout"
+      notify: Restart ComfyUI
+
+    - name: Configure the shared local model directories
+      ansible.builtin.copy:
+        dest: /etc/comfyui/extra_model_paths.yaml
+        mode: '0644'
+        content: |
+          holly:
+            base_path: {{ comfyui_models.root }}
+            is_default: true
+            diffusion_models: diffusion_models/
+            text_encoders: text_encoders/
+            vae: vae/
+      notify: Restart ComfyUI
+
+    - name: Publish the model inventory and API workflows
+      ansible.builtin.copy:
+        src: "{{ comfyui_utility_dir }}/{{ item }}"
+        dest: "/etc/comfyui/{{ item | basename }}"
+        mode: '0644'
+      loop:
+        - models.json
+        - workflows/text-to-image-api.json
+        - workflows/reference-edit-api.json
+
+    - name: Install the GPU verification script
+      ansible.builtin.copy:
+        src: "{{ comfyui_utility_dir }}/gpu_check.py"
+        dest: "{{ comfyui_root }}/gpu_check.py"
+        mode: '0644'
+
+    - name: Verify native ROCm kernels as the service user
+      ansible.builtin.command: "{{ comfyui_root }}/venv/bin/python -B {{ comfyui_root }}/gpu_check.py"
+      become_user: "{{ comfyui_service_user }}"
+      environment:
+        HIP_VISIBLE_DEVICES: '0'
+        XDG_CACHE_HOME: "{{ comfyui_cache_dir }}"
+      changed_when: false
+
+    - name: Install the native persistent service
+      ansible.builtin.template:
+        src: comfyui.service.j2
+        dest: /etc/systemd/system/comfyui.service
+        mode: '0644'
+      notify: Restart ComfyUI
+
+    - name: Apply service configuration changes
+      ansible.builtin.meta: flush_handlers
+
+    - name: Enable and start ComfyUI at boot
+      ansible.builtin.systemd_service:
+        name: comfyui.service
+        daemon_reload: true
+        enabled: true
+        state: started
+
+    - name: Wait for the standard ComfyUI API
+      ansible.builtin.uri:
+        url: "http://{{ comfyui_listen }}:{{ comfyui_port }}/system_stats"
+        status_code: 200
+      register: comfyui_ready
+      retries: 30
+      delay: 2
+      until: comfyui_ready.status == 200
