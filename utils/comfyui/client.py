@@ -29,8 +29,9 @@ def configure(graph, prompt=None, seed=None, width=1024, height=1024, image=None
         if not 0 <= seed < 2**64:
             raise ValueError("Seed must be an unsigned 64-bit integer")
         result["6"]["inputs"]["noise_seed"] = seed
-    for node in ("5", "8"):
-        result[node]["inputs"].update(width=width, height=height)
+    result["5"]["inputs"].update(width=width, height=height)
+    if result["8"]["class_type"] == "Flux2Scheduler":
+        result["8"]["inputs"].update(width=width, height=height)
     if image is not None:
         result["14"]["inputs"]["image"] = image
     return result

@@ -41,12 +41,12 @@
 
 - name: Install Docker buildx plugin
   package:
-    name: docker-buildx-plugin
+    name: docker-buildx
     state: present
 
 - name: Install Docker Compose v2 plugin
   package:
-    name: docker-compose-plugin
+    name: docker-compose-v2
     state: present
 
 - name: Check if buildx builder already exists

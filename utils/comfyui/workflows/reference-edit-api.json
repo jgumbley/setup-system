@@ -1,7 +1,7 @@
 {
   "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "flux-2-klein-4b.safetensors", "weight_dtype": "default"}, "_meta": {"title": "Klein 4B distilled BF16"}},
   "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": "qwen_3_4b.safetensors", "type": "flux2", "device": "default"}},
-  "3": {"class_type": "VAELoader", "inputs": {"vae_name": "flux2-vae.safetensors"}},
+  "3": {"class_type": "VAELoader", "inputs": {"vae_name": "flux2-vae-klein.safetensors"}},
   "4": {"class_type": "CLIPTextEncode", "inputs": {"text": "Change the limestone to warm reddish sandstone while preserving the arrangement, shapes, and mortar joints. Keep the surface evenly lit, with realistic fine mineral grain.", "clip": ["2", 0]}, "_meta": {"title": "Editing prompt"}},
   "5": {"class_type": "EmptyFlux2LatentImage", "inputs": {"width": 1024, "height": 1024, "batch_size": 1}, "_meta": {"title": "Output dimensions"}},
   "6": {"class_type": "RandomNoise", "inputs": {"noise_seed": 43}, "_meta": {"title": "Seed"}},

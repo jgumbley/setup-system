@@ -28,8 +28,8 @@ Files managed by this utility:
 
 ```text
 /opt/models/
-  diffusion_models/flux-2-klein-4b.safetensors
-  text_encoders/qwen_3_4b.safetensors
+  diffusion_models/ernie-image.safetensors
+  text_encoders/ministral-3-3b.safetensors
   vae/flux2-vae.safetensors
 ```
 
@@ -41,18 +41,18 @@ make clean
 make
 ```
 
-`clean` deletes only the three explicitly listed weights and their partial
-downloads, leaving unrelated models, uploads and generated output untouched.
+`clean` deletes only the three explicitly listed ERNIE-Image weights and their
+partial downloads, leaving unrelated models, uploads and generated output
+untouched. During setup, the checksum-verified previous VAE is preserved as
+`vae/flux2-vae-klein.safetensors`; the previous Klein diffusion model and text
+encoder are also left in place for switching back.
 Deleted weights can be downloaded again. Stop generation before replacing
 weights; reapply the role afterwards to publish the new inventory and restart
 the service. If a filename changes, clean with the old manifest before editing
 it, and update the workflow loader filename as well.
 
-The Hal backup supplied the deployment pattern and older workflow examples.
-Its FLUX.2 VAE has SHA-256
-`d64f3a68e1cc4f9f4e29b6e0da38a0204fe9a49f2d4053f0ec1fa1ca02f9c4b5`,
-which differs from the requested Klein VAE. None of the archived model bytes
-are reused in this installation.
+The ERNIE-Image files are pinned to an immutable revision of
+`Comfy-Org/ERNIE-Image` and verified by size and SHA-256 before installation.
 
 ## Runtime and driver
 
@@ -106,22 +106,25 @@ UI `workflow` metadata and checks both when retrieving each PNG.
 
 ## Workflows and automation
 
-Exported native API graphs are in `workflows/text-to-image-api.json` and
-`workflows/reference-edit-api.json`. Their inputs are:
+The ERNIE-Image native API graph is in `workflows/text-to-image-api.json`. The
+previous Klein reference-editing graph is retained for switching back. Their
+inputs are:
 
 | Parameter | Node input |
 | --- | --- |
 | Prompt | `4.inputs.text` |
 | Seed | `6.inputs.noise_seed` |
-| Output width/height | `5.inputs.width/height` and `8.inputs.width/height` |
+| ERNIE output width/height | `5.inputs.width/height` |
+| Klein edit output width/height | `5.inputs.width/height` and `8.inputs.width/height` |
 | Reference image | `14.inputs.image` in the editing graph |
 
 Use dimensions divisible by 16. Upload a reference with `/upload/image`, then
 put its returned filename (including any subfolder) in node 14. Reference
 conditioning preserves the image's aspect ratio and limits it to roughly one
-megapixel; output dimensions are independently exposed. Both workflows use
-the full BF16 distilled model, batch size one, Euler sampling, CFG 1, four steps,
-and ComfyUI's default memory management.
+megapixel; output dimensions are independently exposed. The ERNIE-Image
+workflow uses the standard BF16 8B model, batch size one, Euler sampling, the
+simple scheduler, 50 steps, CFG 4, denoise 1, a fixed seed of 42, and 1376 x 768
+landscape output. ComfyUI's automatic memory management remains enabled.
 
 Post `{"prompt": <API graph>, "client_id": "<uuid>"}` to `/prompt`; listen on
 `/ws`, obtain the output descriptors from `/history/<prompt_id>`, and download
@@ -129,8 +132,8 @@ them through `/view`. The helper client implements the complete sequence:
 
 ```sh
 /opt/comfyui/venv/bin/python client.py generate --workflow text-to-image \
-  --prompt 'An evenly lit weathered limestone material study' --seed 42 \
-  --width 1024 --height 1024 --output .runtime/example
+  --prompt 'A cinematic landscape scene at golden hour' --seed 42 \
+  --width 1376 --height 768 --output .runtime/example
 
 /opt/comfyui/venv/bin/python client.py generate --workflow reference-edit \
   --image reference.png --prompt 'Change the stone to red sandstone' \

@@ -187,6 +187,35 @@
         argv: ["{{ comfyui_uv }}", pip, check, --python, "{{ comfyui_root }}/venv/bin/python"]
       changed_when: false
 
+    - name: Inspect the model VAE selected at the shared ERNIE filename
+      ansible.builtin.stat:
+        path: "{{ comfyui_models.root }}/vae/flux2-vae.safetensors"
+        checksum_algorithm: sha256
+      register: comfyui_selected_vae
+
+    - name: Inspect the preserved Klein VAE filename
+      ansible.builtin.stat:
+        path: "{{ comfyui_models.root }}/vae/flux2-vae-klein.safetensors"
+      register: comfyui_klein_vae
+
+    - name: Require an unused destination before preserving the Klein VAE
+      ansible.builtin.assert:
+        that: not comfyui_klein_vae.stat.exists
+        fail_msg: The Klein VAE preservation destination already exists; inspect both files before applying setup.
+      when:
+        - comfyui_selected_vae.stat.exists
+        - comfyui_selected_vae.stat.checksum == '868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3'
+
+    - name: Preserve the checksum-verified Klein VAE under its distinct filename
+      ansible.builtin.command:
+        argv:
+          - mv
+          - "{{ comfyui_models.root }}/vae/flux2-vae.safetensors"
+          - "{{ comfyui_models.root }}/vae/flux2-vae-klein.safetensors"
+      when:
+        - comfyui_selected_vae.stat.exists
+        - comfyui_selected_vae.stat.checksum == '868fe7b343cc8f3a19dbcfcafbc3d5f888802be3f89bd81b65b3621a066ce8f3'
+
     - name: Download and verify models through the shared Make utility
       ansible.builtin.command:
         argv: [make, --no-print-directory, -C, "{{ comfyui_utility_dir }}", models]

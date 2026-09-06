@@ -51,21 +51,33 @@ class ModelTests(unittest.TestCase):
 
 
 class WorkflowTests(unittest.TestCase):
-    def test_native_graphs_have_valid_links_and_distilled_settings(self):
+    def test_native_graphs_have_valid_links(self):
         for path in Path("workflows").glob("*-api.json"):
             with self.subTest(path=path):
                 graph = json.loads(path.read_text())
-                self.assertEqual(graph["1"]["inputs"]["unet_name"], "flux-2-klein-4b.safetensors")
-                self.assertEqual(graph["8"]["inputs"]["steps"], 4)
-                self.assertEqual(graph["10"]["inputs"]["cfg"], 1)
                 for node in graph.values():
                     for value in node["inputs"].values():
                         if isinstance(value, list):
                             self.assertIn(value[0], graph)
                             self.assertIsInstance(value[1], int)
                 if "reference" in path.name:
+                    self.assertEqual(graph["3"]["inputs"]["vae_name"], "flux2-vae-klein.safetensors")
                     self.assertEqual(graph["17"]["class_type"], "ReferenceLatent")
                     self.assertEqual(graph["18"]["class_type"], "ReferenceLatent")
+
+    def test_ernie_image_standard_defaults(self):
+        graph = json.loads(Path("workflows/text-to-image-api.json").read_text())
+        self.assertEqual(graph["1"]["inputs"], {
+            "unet_name": "ernie-image.safetensors", "weight_dtype": "default"})
+        self.assertEqual(graph["2"]["inputs"]["clip_name"], "ministral-3-3b.safetensors")
+        self.assertEqual(graph["3"]["inputs"]["vae_name"], "flux2-vae.safetensors")
+        self.assertEqual(graph["5"]["inputs"], {"width": 1376, "height": 768, "batch_size": 1})
+        self.assertEqual(graph["6"]["inputs"]["noise_seed"], 42)
+        self.assertEqual(graph["7"]["inputs"]["sampler_name"], "euler")
+        self.assertEqual(graph["8"]["inputs"]["scheduler"], "simple")
+        self.assertEqual(graph["8"]["inputs"]["steps"], 50)
+        self.assertEqual(graph["8"]["inputs"]["denoise"], 1.0)
+        self.assertEqual(graph["10"]["inputs"]["cfg"], 4.0)
 
 
 if __name__ == "__main__":
