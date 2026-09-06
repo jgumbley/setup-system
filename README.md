@@ -52,6 +52,7 @@ The configuration is managed by Ansible playbooks and roles.
 *   `nas-mount`: Mounts the network-attached storage.
 *   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
 *   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, session-managed game launchers, application list, persistent state directory, and boot-time systemd services. Versioned game runtimes live under `/opt/games`, mutable state remains local, and validated content is externally managed on Iceburg.
+*   `openmw`: Builds and selects the pinned OpenMW 0.51.0 runtime on Rocks and Holly. Rocks receives local launcher/content-editor integration and Holly keeps its separate Sunshine-managed game profile.
 *   `godot`: Installs the Godot Engine editor binary from https://godotengine.org/download (no extra runtime dependencies; bring your own editor/IDE).
 *   `terminal`: Configures fish, tmux, vim, git, and other terminal applications.
 
@@ -85,9 +86,9 @@ the game.
 
 ## Holly Game Runtime Operations
 
-`make setup` installs build dependencies, state directories, configuration, and
-Moonlight launch contracts; it never compiles or imports a game. Bring up one
-runtime at a time. Quake III and ROCKNIX have independent workflows:
+`make setup` builds the pinned OpenMW runtime, installs state directories and
+configuration, and deploys Moonlight launch contracts. It never imports a game
+or compiles Quake III or ROCKNIX. Bring those runtimes up one at a time:
 
 ```bash
 make -C utils/game_runtimes status-quake3
@@ -103,8 +104,21 @@ Quake3e and ROCKNIX are installed as immutable versioned trees under
 `/opt/games`. ROCKNIX runs its pinned AMD64 rootfs through Docker and mounts the
 existing ROM library directly from `/mnt/iceburg/roms`. Quake III
 PK3 content is externally managed at `/mnt/iceburg/roms/ports/quake3/baseq3`;
-setup validates but never copies or modifies ROM content. OpenMW remains an
-independent milestone. Eaadwig is deferred and documented only in `eadwig.md`.
+setup validates but never copies or modifies ROM content. Eaadwig is deferred
+and documented only in `eadwig.md`.
+
+## OpenMW Authoring on Rocks
+
+Rocks uses the same pinned OpenMW source revision and `/opt/games/openmw/current`
+layout as Holly, but has no Sunshine service or Sunshine game state. `make setup`
+installs the runtime, launcher, content editor, desktop entries, authoring tools,
+and the same Iceburg Morrowind content order used by Holly. Local editor projects,
+controls, settings, and saves remain under the system user's normal OpenMW paths.
+
+```bash
+make -C utils/game_runtimes status-openmw
+make -C utils/game_runtimes verify-openmw
+```
 
 ## Quest Client Operations on HAL
 

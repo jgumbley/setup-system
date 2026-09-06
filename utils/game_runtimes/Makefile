@@ -7,7 +7,7 @@ MANIFEST := manifest.json
 PANE := ../../pane.sh
 
 .PHONY: help check status verify \
-	status-quake3 verify-quake3 status-rocknix verify-rocknix \
+	status-openmw verify-openmw status-quake3 verify-quake3 status-rocknix verify-rocknix \
 	import-state import-state-apply \
 	build build-apply build-openmw build-openmw-apply \
 	build-quake3 build-quake3-apply build-rocknix build-rocknix-apply \
@@ -16,8 +16,12 @@ PANE := ../../pane.sh
 	restore-state restore-state-locked-apply restore-state-apply
 
 help:
-	@echo 'Game runtime lifecycle utility (Holly only)'
+	@echo 'Game runtime lifecycle utility (OpenMW on Rocks/Holly; full lifecycle on Holly)'
 	@echo '  make check'
+	@echo 'OpenMW workflow (normally applied automatically by the openmw role):'
+	@echo '  make build-openmw'
+	@echo '  make status-openmw'
+	@echo '  make verify-openmw'
 	@echo 'Quake III operator workflow:'
 	@echo '  1. make build-quake3'
 	@echo '  2. make verify-quake3'
@@ -32,7 +36,6 @@ help:
 	@echo 'Aggregate lifecycle (not required by the Quake-only workflow):'
 	@echo '  make status'
 	@echo '  make import-state'
-	@echo '  make build-openmw'
 	@echo '  make build-rocknix'
 	@echo '  make build'
 	@echo '  make verify'
@@ -48,6 +51,12 @@ status:
 
 verify:
 	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) verify
+
+status-openmw:
+	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) status-openmw
+
+verify-openmw:
+	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) verify-openmw
 
 status-quake3:
 	@$(PYTHON) -B $(SCRIPT) --manifest $(MANIFEST) status-quake3

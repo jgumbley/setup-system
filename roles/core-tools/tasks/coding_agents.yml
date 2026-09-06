@@ -27,6 +27,21 @@
     state: latest
   become: "{{ ansible_facts['os_family'] != 'Darwin' }}"
 
+- name: Ensure Codex configuration directory exists
+  file:
+    path: "{{ ansible_facts['env']['HOME'] }}/.codex"
+    state: directory
+    mode: "0700"
+
+- name: Enable experimental Codex context management
+  lineinfile:
+    path: "{{ ansible_facts['env']['HOME'] }}/.codex/config.toml"
+    regexp: '^features\.context_management\.experimental_mode\s*='
+    line: "features.context_management.experimental_mode = true"
+    insertbefore: BOF
+    create: yes
+    mode: "0600"
+
 - name: Remove deprecated @mariozechner/pi-coding-agent package
   npm:
     name: "@mariozechner/pi-coding-agent"

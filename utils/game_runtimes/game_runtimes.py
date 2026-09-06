@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Pinned, Holly-only lifecycle operations for locally managed game runtimes."""
+"""Pinned lifecycle operations for locally managed game runtimes."""
 
 from __future__ import annotations
 
@@ -60,6 +60,13 @@ def require_holly(manifest: dict) -> None:
     actual = short_hostname()
     if actual != expected:
         fail(f"this utility is Holly-only: expected host {expected!r}, got {actual!r}")
+
+
+def require_openmw_host(manifest: dict) -> None:
+    expected = manifest["openmw_hosts"]
+    actual = short_hostname()
+    if actual not in expected:
+        fail(f"OpenMW is restricted to hosts {expected!r}, got {actual!r}")
 
 
 def require_root() -> None:
@@ -936,18 +943,31 @@ def build_dir_contract(manifest: dict, runtime: str) -> tuple[Path, bool]:
     return build_dir, False
 
 
+def validate_openmw_payload(root: Path, description: str) -> None:
+    for name, binary_description in (
+        ("openmw", "OpenMW binary"),
+        ("openmw-launcher", "OpenMW launcher"),
+        ("openmw-cs", "OpenMW content editor"),
+    ):
+        validate_elf(root / "bin" / name, binary_description)
+    for name in ("org.openmw.launcher.desktop", "org.openmw.cs.desktop"):
+        safe_regular_file(root / "share" / "applications" / name, f"{description} desktop entry {name}")
+    for name in ("openmw.png", "openmw-cs.png"):
+        safe_regular_file(root / "share" / "pixmaps" / name, f"{description} desktop icon {name}")
+
+
 def validate_openmw_install(manifest: dict) -> None:
     runtime = "openmw"
     spec = manifest["runtimes"][runtime]
     root, final, _ = install_paths(manifest, runtime)
     safe_directory(final, "OpenMW install")
     require_marker(final / RUNTIME_MARKER, runtime_marker(spec, runtime))
-    validate_elf(final / "bin" / "openmw", "OpenMW binary")
+    validate_openmw_payload(final, "OpenMW install")
     verify_current(root, spec["version"])
 
 
 def build_openmw(manifest: dict) -> None:
-    require_holly(manifest)
+    require_openmw_host(manifest)
     require_root()
     runtime = "openmw"
     spec = manifest["runtimes"][runtime]
@@ -987,7 +1007,7 @@ def build_openmw(manifest: dict) -> None:
     run(["cmake", "--install", str(build_dir)], env=env)
     payload = destdir / final.relative_to("/")
     safe_directory(payload, "staged OpenMW install")
-    validate_elf(payload / "bin" / "openmw", "staged OpenMW binary")
+    validate_openmw_payload(payload, "staged OpenMW install")
     write_kv_marker(payload / RUNTIME_MARKER, runtime_marker(spec, runtime))
     os.rename(payload, final)
     shutil.rmtree(destdir)
@@ -1602,6 +1622,22 @@ def status_rocknix(manifest: dict) -> None:
         fail(f"{failures} ROCKNIX status check(s) failed")
 
 
+def verify_openmw(manifest: dict) -> None:
+    require_openmw_host(manifest)
+    validate_openmw_install(manifest)
+    print("OpenMW runtime, authoring tools, desktop assets, marker, and current link verify")
+
+
+def status_openmw(manifest: dict) -> None:
+    require_openmw_host(manifest)
+    try:
+        validate_openmw_install(manifest)
+    except ContractError as exc:
+        print(f"[FAIL] OpenMW: {exc}")
+        fail("OpenMW status check failed")
+    print("[ OK ] OpenMW")
+
+
 def verify(manifest: dict) -> None:
     require_holly(manifest)
     preflight_nas(manifest)
@@ -1650,6 +1686,8 @@ def self_test(manifest: dict) -> None:
     for key, expected in exact_paths.items():
         if manifest.get(key) != expected:
             fail(f"manifest {key} must be exactly {expected!r}")
+    if manifest.get("openmw_hosts") != ["holly", "rocks"]:
+        fail("OpenMW host contract must be exactly ['holly', 'rocks']")
     expected_nas = {
         "alias": "/mnt/iceburg",
         "target": "/mnt/iceburg",
@@ -1815,6 +1853,17 @@ def self_test(manifest: dict) -> None:
     for contract in pane_contracts:
         if contract not in makefile:
             fail(f"Quake III mutating target does not use pane label/argv contract: {contract}")
+    required_openmw_targets = (
+        "build-openmw:",
+        "status-openmw:",
+        "verify-openmw:",
+    )
+    for target in required_openmw_targets:
+        if target not in makefile:
+            fail(f"required OpenMW Make target is missing: {target}")
+    openmw_pane_contract = "bash $(PANE) game-runtimes-build-openmw $(MAKE)"
+    if openmw_pane_contract not in makefile:
+        fail("OpenMW mutating target does not use its pane label/argv contract")
     required_rocknix_targets = (
         "build-rocknix:",
         "clean-rocknix-cache:",
@@ -1841,6 +1890,8 @@ def parser() -> argparse.ArgumentParser:
         "self-test",
         "status",
         "verify",
+        "status-openmw",
+        "verify-openmw",
         "status-quake3",
         "verify-quake3",
         "status-rocknix",
@@ -1870,6 +1921,8 @@ def main(argv: list[str] | None = None) -> int:
             "self-test": self_test,
             "status": status,
             "verify": verify,
+            "status-openmw": status_openmw,
+            "verify-openmw": verify_openmw,
             "status-quake3": status_quake3,
             "verify-quake3": verify_quake3,
             "status-rocknix": status_rocknix,

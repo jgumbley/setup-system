@@ -2,11 +2,26 @@
 openmw_service_user: system
 openmw_service_group: system
 
-# Versioned OpenMW builds are installed separately. Ordinary setup prepares the
-# toolchain and runtime contract, but never compiles or changes this link.
+# Rocks and Holly share this pinned runtime location. The role invokes the
+# Make-owned runtime builder and keeps the selected link exact.
 openmw_runtime_root: /opt/games/openmw
 openmw_runtime_current: "{{ openmw_runtime_root }}/current"
 openmw_resources_dir: "{{ openmw_runtime_current }}/share/games/openmw/resources"
+openmw_game_runtimes_utility_dir: "{{ playbook_dir }}/utils/game_runtimes"
+
+openmw_rocks_config_dir: /home/system/.config/openmw
+openmw_rocks_data_local_dir: /home/system/.local/share/openmw/data
+openmw_rocks_legacy_runtime_dir: /opt/openmw-0.51.0-Linux-64Bit
+openmw_desktop_commands:
+  - openmw
+  - openmw-launcher
+  - openmw-cs
+openmw_desktop_entries:
+  - org.openmw.launcher.desktop
+  - org.openmw.cs.desktop
+openmw_desktop_icons:
+  - openmw.png
+  - openmw-cs.png
 
 openmw_games_cache_dir: /var/cache/sunshine-host/games
 openmw_morrowind_state_root: /var/lib/sunshine-host/games/morrowind
@@ -14,6 +29,7 @@ openmw_morrowind_native_root: "{{ openmw_morrowind_state_root }}/native"
 openmw_morrowind_native_config_dir: "{{ openmw_morrowind_native_root }}/config"
 openmw_morrowind_native_user_data_dir: "{{ openmw_morrowind_native_root }}/user-data"
 openmw_morrowind_native_data_local_dir: "{{ openmw_morrowind_native_root }}/data-local"
+openmw_profile_data_local_dir: "{{ openmw_morrowind_native_data_local_dir }}"
 openmw_morrowind_rocknix_root: "{{ openmw_morrowind_state_root }}/rocknix"
 openmw_morrowind_rocknix_config_dir: "{{ openmw_morrowind_rocknix_root }}/config"
 openmw_morrowind_rocknix_user_data_dir: "{{ openmw_morrowind_rocknix_root }}/user-data"

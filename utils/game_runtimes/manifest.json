@@ -1,6 +1,7 @@
 {
   "schema": 1,
   "host": "holly",
+  "openmw_hosts": ["holly", "rocks"],
   "cache_root": "/var/cache/setup-system/game-runtimes",
   "install_root": "/opt/games",
   "state_root": "/var/lib/sunshine-host/games",

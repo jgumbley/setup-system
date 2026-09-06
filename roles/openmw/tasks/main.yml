@@ -6,7 +6,7 @@
     cache_valid_time: 3600
   become: yes
   when:
-    - ansible_facts['hostname'] != 'holly'
+    - ansible_facts['hostname'] not in ['holly', 'rocks']
     - ansible_facts['distribution_version'] is version('26.04', '<')
 
 - name: Add OpenMW stable PPA for existing desktop OpenMW hosts
@@ -16,7 +16,7 @@
     update_cache: yes
   become: yes
   when:
-    - ansible_facts['hostname'] != 'holly'
+    - ansible_facts['hostname'] not in ['holly', 'rocks']
     - ansible_facts['distribution_version'] is version('26.04', '<')
 
 - name: Add OpenMW daily builds PPA for existing desktop OpenMW hosts
@@ -26,7 +26,7 @@
     update_cache: yes
   become: yes
   when:
-    - ansible_facts['hostname'] != 'holly'
+    - ansible_facts['hostname'] not in ['holly', 'rocks']
     - ansible_facts['distribution_version'] is version('26.04', '<')
 
 - name: Remove obsolete OpenMW PPAs from existing Ubuntu 26.04 desktop hosts
@@ -55,7 +55,7 @@
     state: latest
     cache_valid_time: 3600
   become: yes
-  when: ansible_facts['hostname'] != 'holly'
+  when: ansible_facts['hostname'] not in ['holly', 'rocks']
 
 - name: Install OpenMW source build dependencies
   ansible.builtin.apt:
@@ -75,7 +75,107 @@
     - /opt/games
     - "{{ openmw_runtime_root }}"
   become: true
-  when: ansible_facts['hostname'] == 'holly'
+  when: ansible_facts['hostname'] in ['holly', 'rocks']
+
+- name: Build and select the pinned OpenMW runtime
+  ansible.builtin.command:
+    argv:
+      - make
+      - --no-print-directory
+      - -C
+      - "{{ openmw_game_runtimes_utility_dir }}"
+      - build-openmw-apply
+  register: openmw_runtime_build
+  changed_when: "'already installed and exact' not in openmw_runtime_build.stdout"
+  become: true
+  when: ansible_facts['hostname'] in ['holly', 'rocks']
+
+- name: Remove distro OpenMW packages from Rocks
+  ansible.builtin.apt:
+    name:
+      - openmw
+      - openmw-launcher
+      - openmw-cs
+    state: absent
+    purge: true
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
+
+- name: Remove the superseded portable OpenMW runtime from Rocks
+  ansible.builtin.file:
+    path: "{{ openmw_rocks_legacy_runtime_dir }}"
+    state: absent
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
+
+- name: Create Rocks OpenMW desktop integration directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+  loop:
+    - /usr/local/bin
+    - /usr/local/share/applications
+    - /usr/local/share/pixmaps
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
+
+- name: Select the pinned OpenMW commands on Rocks
+  ansible.builtin.file:
+    src: "{{ openmw_runtime_current }}/bin/{{ item }}"
+    dest: "/usr/local/bin/{{ item }}"
+    state: link
+    force: true
+  loop: "{{ openmw_desktop_commands }}"
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
+
+- name: Install pinned OpenMW desktop entries on Rocks
+  ansible.builtin.file:
+    src: "{{ openmw_runtime_current }}/share/applications/{{ item }}"
+    dest: "/usr/local/share/applications/{{ item }}"
+    state: link
+    force: true
+  loop: "{{ openmw_desktop_entries }}"
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
+
+- name: Install pinned OpenMW desktop icons on Rocks
+  ansible.builtin.file:
+    src: "{{ openmw_runtime_current }}/share/pixmaps/{{ item }}"
+    dest: "/usr/local/share/pixmaps/{{ item }}"
+    state: link
+    force: true
+  loop: "{{ openmw_desktop_icons }}"
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
+
+- name: Create Rocks OpenMW profile directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ openmw_service_user }}"
+    group: "{{ openmw_service_group }}"
+    mode: "0755"
+  loop:
+    - "{{ openmw_rocks_config_dir }}"
+    - "{{ openmw_rocks_data_local_dir }}"
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
+
+- name: Manage Rocks OpenMW content configuration
+  ansible.builtin.template:
+    src: openmw.cfg.j2
+    dest: "{{ openmw_rocks_config_dir }}/openmw.cfg"
+    owner: "{{ openmw_service_user }}"
+    group: "{{ openmw_service_group }}"
+    mode: "0644"
+  vars:
+    openmw_profile_data_local_dir: "{{ openmw_rocks_data_local_dir }}"
+  become: true
+  when: ansible_facts['hostname'] == 'rocks'
 
 - name: Create OpenMW writable game directories
   ansible.builtin.file:
