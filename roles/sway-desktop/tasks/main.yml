@@ -70,6 +70,19 @@
     group: root
     mode: '0644'
 
+- name: Allow unattended upgrades from Mozilla
+  tags: firefox
+  become: yes
+  copy:
+    dest: /etc/apt/apt.conf.d/52unattended-upgrades-mozilla
+    content: |
+      Unattended-Upgrade::Origins-Pattern {
+          "site=packages.mozilla.org";
+      };
+    owner: root
+    group: root
+    mode: '0644'
+
 - name: Install Mozilla deb Firefox
   tags: firefox
   become: yes
