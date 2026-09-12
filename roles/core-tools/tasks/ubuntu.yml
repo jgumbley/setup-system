@@ -53,10 +53,19 @@
   become: yes
 
 - name: Convert HashiCorp GPG key to keyring (dearmor)
-  command: >-
-    gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg /usr/share/keyrings/hashicorp.asc
-  args:
-    creates: /usr/share/keyrings/hashicorp-archive-keyring.gpg
+  shell: |
+    set -eu
+    keyring=/usr/share/keyrings/hashicorp-archive-keyring.gpg
+    refreshed=$(mktemp "${keyring}.XXXXXX")
+    trap 'rm -f "$refreshed"' EXIT
+    gpg --batch --yes --dearmor --output "$refreshed" /usr/share/keyrings/hashicorp.asc
+    if ! cmp -s "$refreshed" "$keyring"; then
+      chmod 0644 "$refreshed"
+      mv -f "$refreshed" "$keyring"
+      echo updated
+    fi
+  register: hashicorp_keyring
+  changed_when: "'updated' in hashicorp_keyring.stdout_lines"
   become: yes
 
 - name: Add HashiCorp APT repository (signed-by)

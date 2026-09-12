@@ -155,7 +155,7 @@
       - sway
       - wayvnc
       - swayidle
-      - swaylock
+      - "{{ 'hyprlock' if current_hostname == 'rocks' else 'swaylock' }}"
       - waybar
       - upower
       - kitty
@@ -171,6 +171,119 @@
       - wtype
       - ydotool
     state: present
+
+- name: Configure Rocks screen locking
+  when: current_hostname == 'rocks'
+  tags: fingerprint
+  block:
+    - name: Ensure Hyprlock configuration directory exists
+      become: no
+      ansible.builtin.file:
+        path: ~/.config/hypr
+        state: directory
+        mode: '0755'
+
+    - name: Configure Hyprlock password and parallel fingerprint authentication
+      become: no
+      ansible.builtin.copy:
+        dest: ~/.config/hypr/hyprlock.conf
+        mode: '0644'
+        content: |
+          # Managed by setup-system.
+          general {
+              ignore_empty_input = true
+          }
+          auth {
+              pam {
+                  enabled = true
+                  module = hyprlock
+              }
+              fingerprint {
+                  enabled = true
+                  ready_message = Scan fingerprint to unlock
+                  present_message = Scanning fingerprint...
+              }
+          }
+          animations {
+              enabled = false
+          }
+          background {
+              monitor =
+              color = rgb(101018)
+          }
+          input-field {
+              monitor =
+              size = 600, 80
+              position = 0, 0
+              halign = center
+              valign = center
+              font_family = {{ fixed_font_family }}
+              font_color = rgb(eeeeee)
+              inner_color = rgb(202030)
+              outer_color = rgb(8888aa)
+              check_color = rgb(e0b050)
+              fail_color = rgb(ff6666)
+              capslock_color = rgb(e0b050)
+              outline_thickness = 3
+              rounding = 8
+              fade_on_empty = false
+              hide_input = false
+              dots_size = 0.3
+              dots_spacing = 0.3
+              placeholder_text = Password or fingerprint
+              fail_text = $PAMFAIL
+          }
+          label {
+              monitor =
+              text = $FPRINTPROMPT
+              font_family = {{ fixed_font_family }}
+              font_size = 18
+              color = rgb(eeeeee)
+              position = 0, -90
+              halign = center
+              valign = center
+          }
+
+    - name: Ensure local executable directory exists
+      become: no
+      ansible.builtin.file:
+        path: ~/.local/bin
+        state: directory
+        mode: '0755'
+
+    - name: Install Hyprlock launch and readiness helper
+      become: no
+      ansible.builtin.copy:
+        dest: ~/.local/bin/lock-screen
+        mode: '0755'
+        content: |
+          #!/bin/bash
+          # Managed by setup-system. Return to swayidle only after locking.
+          set -euo pipefail
+          umask 077
+          : "${XDG_RUNTIME_DIR:?A graphical user session is required}"
+          exec 9>"$XDG_RUNTIME_DIR/hyprlock-start.lock"
+          flock 9
+          log="$XDG_RUNTIME_DIR/hyprlock.log"
+          if pid=$(pgrep -u "$(id -u)" -x hyprlock); then
+              [[ "$pid" =~ ^[0-9]+$ ]] || { echo "Multiple Hyprlock processes found" >&2; exit 1; }
+          else
+              hyprlock --grace 0 --config "$HOME/.config/hypr/hyprlock.conf" >"$log" 2>&1 9>&- &
+              pid=$!
+          fi
+          # Hyprlock 0.9.2 logs this only on the compositor's locked event.
+          for ((attempt = 0; attempt < 80; attempt++)); do
+              if ! kill -0 "$pid" 2>/dev/null; then
+                  cat "$log" >&2
+                  exit 1
+              fi
+              if grep -Fq 'onLockLocked called' "$log"; then
+                  exit 0
+              fi
+              sleep 0.05
+          done
+          echo "Hyprlock did not confirm the session lock; see $log" >&2
+          exit 1
 
 - name: Ensure the sway configuration directory exists
   become: no

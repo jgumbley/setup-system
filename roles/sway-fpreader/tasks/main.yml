@@ -22,14 +22,26 @@
   ansible.builtin.command: pam-auth-update --package --disable fprintd
   when: fingerprint_common_auth.rc == 0
 
-- name: Enable fingerprint authentication for Swaylock
+- name: Remove serial fingerprint authentication from Swaylock
   tags: fingerprint
   become: yes
   ansible.builtin.lineinfile:
     path: /etc/pam.d/swaylock
-    line: auth sufficient pam_fprintd.so max-tries=1 timeout=10
-    insertbefore: '^auth include login$'
-    state: present
+    regexp: '^auth\s+sufficient\s+pam_fprintd\.so\b'
+    state: absent
+
+- name: Configure Hyprlock password authentication separately from fprintd
+  tags: fingerprint
+  become: yes
+  ansible.builtin.copy:
+    dest: /etc/pam.d/hyprlock
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      # Managed by setup-system. Hyprlock handles fingerprints in parallel.
+      @include common-auth
+      @include common-account
 
 - name: Verify the fingerprint reader is detected
   tags: fingerprint

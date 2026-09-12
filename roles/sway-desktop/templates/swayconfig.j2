@@ -64,10 +64,17 @@ output eDP-1 {
 focus_follows_mouse no
 
 ### Idle configuration
+{% if current_hostname == 'rocks' %}
+exec swayidle -w \
+    timeout 1800 '$HOME/.local/bin/lock-screen' \
+    timeout 600 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
+    before-sleep '$HOME/.local/bin/lock-screen'
+{% else %}
 exec swayidle -w \
     timeout 1800 'swaylock -f -c 000000' \
     timeout 600 'swaymsg "output * dpms off"' resume 'swaymsg "output * dpms on"' \
     before-sleep 'swaylock -f -c 000000'
+{% endif %}
 
 ### Shared input configuration
 input "type:keyboard" {
