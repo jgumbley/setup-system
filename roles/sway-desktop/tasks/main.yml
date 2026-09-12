@@ -114,6 +114,32 @@
   changed_when: false
   failed_when: firefox_snap_check.rc != 1
 
+- name: Install Flatpak for Logseq on Rocks
+  become: yes
+  ansible.builtin.apt:
+    name: flatpak
+    state: present
+    cache_valid_time: 3600
+  when: current_hostname == 'rocks'
+
+- name: Add Flathub for Logseq on Rocks
+  become: yes
+  community.general.flatpak_remote:
+    name: flathub
+    state: present
+    method: system
+    flatpakrepo_url: https://dl.flathub.org/repo/flathub.flatpakrepo
+  when: current_hostname == 'rocks'
+
+- name: Install Logseq on Rocks
+  become: yes
+  community.general.flatpak:
+    name: com.logseq.Logseq
+    state: present
+    method: system
+    remote: flathub
+  when: current_hostname == 'rocks'
+
 - name: Install TigerVNC viewer
   tags: vnc-viewer
   become: yes
@@ -238,6 +264,22 @@
     path: ~/.local/share/applications
     state: directory
     mode: '0755'
+
+- name: Add Logseq to the Rocks application launcher
+  become: no
+  ansible.builtin.copy:
+    dest: ~/.local/share/applications/com.logseq.Logseq.desktop
+    mode: '0644'
+    content: |
+      [Desktop Entry]
+      Name=Logseq
+      Comment=A privacy-first platform for knowledge management
+      Exec=/usr/bin/flatpak run com.logseq.Logseq
+      Icon=/var/lib/flatpak/exports/share/icons/hicolor/scalable/apps/com.logseq.Logseq.svg
+      Terminal=false
+      Type=Application
+      Categories=Office;Utility;
+  when: current_hostname == 'rocks'
 
 - name: Add RimWorld launcher (.desktop)
   become: no
