@@ -1,5 +1,121 @@
 - hosts: localhost
   connection: local
+  vars:
+    aws_cli_version: "2.37.7"
+    aws_cli_checksums:
+      x86_64: "7fccf7854f9f02ad81d6fc28e01098bdf48c72d1aa931eeb36784b8893e0ae14"
+      aarch64: "07fb845602caf0a1fa72d860c95f5538e96f1cfef3b659642d1ca383ec3e79d6"
   tasks:
+    - name: Install/Update GitHub CLI on Debian and Ubuntu
+      when: ansible_facts['os_family'] == 'Debian'
+      become: yes
+      block:
+        - name: Ensure APT keyring directory exists
+          file:
+            path: /etc/apt/keyrings
+            state: directory
+            mode: "0755"
+
+        - name: Refresh GitHub CLI archive signing key
+          get_url:
+            url: https://cli.github.com/packages/githubcli-archive-keyring.gpg
+            dest: /etc/apt/keyrings/githubcli-archive-keyring.gpg
+            mode: "0644"
+            force: yes
+
+        - name: Detect Debian package architecture
+          command: dpkg --print-architecture
+          register: github_cli_architecture
+          changed_when: false
+
+        - name: Configure official GitHub CLI APT repository
+          apt_repository:
+            repo: "deb [arch={{ github_cli_architecture.stdout }} signed-by=/etc/apt/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main"
+            filename: github-cli
+            state: present
+            update_cache: no
+
+        - name: Install latest CLI packages
+          apt:
+            name:
+              - gh
+            state: latest
+            update_cache: yes
+
+    # Manage the browser-login-capable release here, not in application repos.
+    - name: Install/Update upstream AWS CLI on Debian and Ubuntu
+      when: ansible_facts['os_family'] == 'Debian'
+      become: yes
+      tags: aws-cli
+      block:
+        - name: Require a supported AWS CLI architecture
+          assert:
+            that: ansible_facts['architecture'] in aws_cli_checksums
+            fail_msg: "No AWS CLI release checksum configured for this architecture."
+
+        - name: Ensure unzip is installed
+          apt:
+            name: unzip
+            state: present
+
+        - name: Download the pinned AWS CLI installer
+          get_url:
+            url: "https://awscli.amazonaws.com/awscli-exe-linux-{{ ansible_facts['architecture'] }}-{{ aws_cli_version }}.zip"
+            dest: "/var/cache/awscli-{{ aws_cli_version }}-{{ ansible_facts['architecture'] }}.zip"
+            checksum: "sha256:{{ aws_cli_checksums[ansible_facts['architecture']] }}"
+            mode: "0644"
+
+        - name: Create AWS CLI installer directory
+          file:
+            path: "/var/cache/awscli-{{ aws_cli_version }}-{{ ansible_facts['architecture'] }}"
+            state: directory
+            mode: "0755"
+
+        - name: Extract the verified AWS CLI installer
+          unarchive:
+            src: "/var/cache/awscli-{{ aws_cli_version }}-{{ ansible_facts['architecture'] }}.zip"
+            dest: "/var/cache/awscli-{{ aws_cli_version }}-{{ ansible_facts['architecture'] }}"
+            remote_src: yes
+            creates: "/var/cache/awscli-{{ aws_cli_version }}-{{ ansible_facts['architecture'] }}/aws/install"
+
+        - name: Install the upstream AWS CLI system-wide
+          command:
+            argv:
+              - "/var/cache/awscli-{{ aws_cli_version }}-{{ ansible_facts['architecture'] }}/aws/install"
+              - --install-dir
+              - /usr/local/aws-cli
+              - --bin-dir
+              - /usr/local/bin
+              - --update
+          register: aws_cli_install
+          changed_when: "'Skipping install' not in aws_cli_install.stdout"
+
+        - name: Remove the superseded distribution AWS CLI package
+          apt:
+            name: awscli
+            state: absent
+
+    - name: Install/Update GitHub CLI and AWS CLI on macOS
+      homebrew:
+        name:
+          - gh
+          - awscli
+        state: latest
+        update_homebrew: yes
+      when: ansible_facts['os_family'] == 'Darwin'
+
+    - name: Verify GitHub CLI
+      command: gh --version
+      changed_when: false
+
+    - name: Verify AWS CLI browser-login support
+      command: aws --version
+      register: aws_cli_installed
+      changed_when: false
+      failed_when: >-
+        aws_cli_installed.rc != 0 or
+        (aws_cli_installed.stdout.split()[0].split('/')[1]) is version('2.32.0', '<')
+      tags: aws-cli
+
     - name: Update coding agents
       include_tasks: roles/core-tools/tasks/coding_agents.yml
