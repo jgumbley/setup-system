@@ -53,6 +53,8 @@ The configuration is managed by Ansible playbooks and roles.
 *   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
 *   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, session-managed game launchers, application list, persistent state directory, and boot-time systemd services. Versioned game runtimes live under `/opt/games`, mutable state remains local, and validated content is externally managed on Iceburg.
 *   `openmw`: Builds and selects the pinned OpenMW 0.51.0 runtime on Rocks and Holly. Rocks receives local launcher/content-editor integration and Holly keeps its separate Sunshine-managed game profile.
+*   `comfyui`: Installs Holly's pinned native ROCm/ComfyUI environment and persistent image-generation service. Model downloads to `/opt/models` are managed through `utils/comfyui` and called by Ansible. See [the ComfyUI utility guide](utils/comfyui/README.md) for model updates, SSH access, API workflows and benchmarks.
+*   `holly-btop`: Installs Ubuntu's GPU-enabled btop together with the ROCm SMI runtime and development symlink it needs to detect Holly's Radeon RX 7900 XTX. Keeping both btop and ROCm SMI package-managed avoids source and distro builds replacing each other during updates.
 *   `godot`: Installs the Godot Engine editor binary from https://godotengine.org/download (no extra runtime dependencies; bring your own editor/IDE).
 *   `terminal`: Configures fish, tmux, vim, git, and other terminal applications.
 

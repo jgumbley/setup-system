@@ -1,0 +1,53 @@
+---
+- name: Provision Holly's AMD GPU monitor
+  tags: holly-btop
+  block:
+    - name: Require Holly's supported platform
+      ansible.builtin.assert:
+        that:
+          - ansible_facts['hostname'] == 'holly'
+          - ansible_facts['distribution'] == 'Ubuntu'
+          - ansible_facts['distribution_version'] == '26.04'
+          - ansible_facts['architecture'] == 'x86_64'
+        fail_msg: This GPU-enabled btop deployment is specifically for Holly on Ubuntu 26.04 x86_64.
+
+    - name: Install btop and its AMD GPU monitoring runtime
+      ansible.builtin.apt:
+        name:
+          - btop
+          - librocm-smi-dev
+          - rocm-smi
+        state: present
+        cache_valid_time: 3600
+
+    - name: Read btop build configuration
+      ansible.builtin.command: btop --version
+      register: holly_btop_version
+      changed_when: false
+
+    - name: Require the Ubuntu btop build with GPU support
+      ansible.builtin.assert:
+        that: "'GPU_SUPPORT=true' in holly_btop_version.stdout"
+        fail_msg: Ubuntu's installed btop was not built with GPU support.
+
+    - name: Inspect the ROCm SMI loader name used by btop
+      ansible.builtin.stat:
+        path: /usr/lib/x86_64-linux-gnu/librocm_smi64.so
+      register: holly_btop_rocm_smi_loader
+
+    - name: Require the package-managed ROCm SMI loader name
+      ansible.builtin.assert:
+        that:
+          - holly_btop_rocm_smi_loader.stat.exists
+          - holly_btop_rocm_smi_loader.stat.islnk
+        fail_msg: The unversioned ROCm SMI loader name required by btop is missing.
+
+    - name: Query Holly's AMD GPU through ROCm SMI
+      ansible.builtin.command: rocm-smi --showproductname
+      register: holly_btop_rocm_smi
+      changed_when: false
+
+    - name: Require Holly's Radeon RX 7900 XTX
+      ansible.builtin.assert:
+        that: "'Radeon RX 7900 XTX' in holly_btop_rocm_smi.stdout"
+        fail_msg: ROCm SMI did not detect Holly's Radeon RX 7900 XTX.

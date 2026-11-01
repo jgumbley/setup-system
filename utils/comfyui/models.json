@@ -1,0 +1,23 @@
+{
+  "root": "/opt/models",
+  "models": [
+    {
+      "path": "diffusion_models/ernie-image.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/ERNIE-Image/resolve/7ef6a1f4a6332c9eb1cd7eabb6df87259470c06c/diffusion_models/ernie-image.safetensors",
+      "sha256": "94a35abaa0899cccc34d2e37310abf74a0a714256526117bba782c7eb4eb91c7",
+      "size": 16067025480
+    },
+    {
+      "path": "text_encoders/ministral-3-3b.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/ERNIE-Image/resolve/7ef6a1f4a6332c9eb1cd7eabb6df87259470c06c/text_encoders/ministral-3-3b.safetensors",
+      "sha256": "49a750a128863854eac7d85e1a277a7b44bf6ec3646405b84686dfeeca3708ca",
+      "size": 7717637511
+    },
+    {
+      "path": "vae/flux2-vae.safetensors",
+      "url": "https://huggingface.co/Comfy-Org/ERNIE-Image/resolve/7ef6a1f4a6332c9eb1cd7eabb6df87259470c06c/vae/flux2-vae.safetensors",
+      "sha256": "d64f3a68e1cc4f9f4e29b6e0da38a0204fe9a49f2d4053f0ec1fa1ca02f9c4b5",
+      "size": 336213556
+    }
+  ]
+}

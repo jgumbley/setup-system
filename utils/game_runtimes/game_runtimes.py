@@ -1162,18 +1162,32 @@ def validate_rocknix_rootfs(rootfs: Path, spec: dict) -> None:
         fail(f"ROCKNIX /etc/release mismatch: expected {expected_release!r}, got {actual_release!r}")
 
 
+def parse_docker_image_inspect(
+    image: str, result: subprocess.CompletedProcess[str]
+) -> str | None:
+    if result.returncode != 0:
+        diagnostic = "\n".join(
+            value.strip() for value in (result.stderr, result.stdout) if value and value.strip()
+        )
+        if any("No such image:" in line for line in diagnostic.splitlines()):
+            return None
+        fail(
+            f"Docker image inspect failed ({result.returncode}) for {image}: "
+            f"{diagnostic or 'no diagnostic output'}"
+        )
+    value = result.stdout.strip()
+    if not re.fullmatch(r"sha256:[0-9a-f]{64}", value):
+        fail(f"Docker returned an invalid image ID for {image}: {value!r}")
+    return value
+
+
 def docker_image_id(image: str) -> str | None:
     result = run(
         ["docker", "image", "inspect", "--format", "{{.Id}}", image],
         capture=True,
         check=False,
     )
-    if result.returncode != 0:
-        return None
-    value = result.stdout.strip()
-    if not re.fullmatch(r"sha256:[0-9a-f]{64}", value):
-        fail(f"Docker returned an invalid image ID for {image}: {value!r}")
-    return value
+    return parse_docker_image_inspect(image, result)
 
 
 def import_rocknix_image(rootfs: Path, image: str) -> str:
@@ -1244,6 +1258,8 @@ def validate_rocknix_install(manifest: dict) -> None:
     if not re.fullmatch(r"sha256:[0-9a-f]{64}", marker["docker_image_id"]):
         fail("ROCKNIX marker contains an invalid Docker image ID")
     actual_id = docker_image_id(spec["docker_image"])
+    if actual_id is None:
+        fail(f"ROCKNIX Docker image is missing: {spec['docker_image']}")
     if actual_id != marker["docker_image_id"]:
         fail(
             f"ROCKNIX Docker tag resolves to {actual_id!r}, marker requires {marker['docker_image_id']!r}"
@@ -1758,6 +1774,28 @@ def self_test(manifest: dict) -> None:
         fail("ROCKNIX release archive root differs")
     if rocknix["docker_image"] != "setup-system/rocknix:20260718":
         fail("ROCKNIX Docker runtime tag differs")
+    image = rocknix["docker_image"]
+    valid_id = "sha256:" + "a" * 64
+    valid_inspect = subprocess.CompletedProcess([], 0, valid_id + "\n", "")
+    if parse_docker_image_inspect(image, valid_inspect) != valid_id:
+        fail("Docker image inspect parser rejects a valid image ID")
+    missing_inspect = subprocess.CompletedProcess(
+        [], 1, "", f"Error response from daemon: No such image: {image}\n"
+    )
+    if parse_docker_image_inspect(image, missing_inspect) is not None:
+        fail("Docker image inspect parser does not recognize an absent image")
+    for diagnostic in (
+        "permission denied while trying to connect to the docker API",
+        "Cannot connect to the Docker daemon at unix:///var/run/docker.sock",
+    ):
+        failed_inspect = subprocess.CompletedProcess([], 1, "", diagnostic + "\n")
+        try:
+            parse_docker_image_inspect(image, failed_inspect)
+        except ContractError as exc:
+            if diagnostic not in str(exc):
+                fail("Docker image inspect parser discarded its failure diagnostic")
+        else:
+            fail("Docker image inspect parser treated an operational failure as absence")
     if rocknix["system_md5"] != "aa403c9beaedd7ce51d891a799eb9cf6":
         fail("ROCKNIX SYSTEM image checksum differs")
     if rocknix["build_flags"] != "unsquashfs -no-progress -d rootfs target/SYSTEM":

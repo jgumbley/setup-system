@@ -1,0 +1,16 @@
+{
+  "1": {"class_type": "UNETLoader", "inputs": {"unet_name": "ernie-image.safetensors", "weight_dtype": "default"}, "_meta": {"title": "ERNIE-Image 8B standard BF16"}},
+  "14": {"class_type": "LoraLoaderModelOnly", "inputs": {"model": ["1", 0], "lora_name": "antigone/antigone-ernie-step500.safetensors", "strength_model": 1.0}, "_meta": {"title": "Antigone character LoRA"}},
+  "2": {"class_type": "CLIPLoader", "inputs": {"clip_name": "ministral-3-3b.safetensors", "type": "flux2", "device": "default"}},
+  "3": {"class_type": "VAELoader", "inputs": {"vae_name": "flux2-vae.safetensors"}},
+  "4": {"class_type": "CLIPTextEncode", "inputs": {"text": "A cinematic landscape scene of a windswept coast at golden hour, detailed cliffs and rolling clouds, natural light, realistic textures", "clip": ["2", 0]}, "_meta": {"title": "Prompt"}},
+  "5": {"class_type": "EmptyFlux2LatentImage", "inputs": {"width": 1376, "height": 768, "batch_size": 1}, "_meta": {"title": "Landscape dimensions"}},
+  "6": {"class_type": "RandomNoise", "inputs": {"noise_seed": 42}, "_meta": {"title": "Seed"}},
+  "7": {"class_type": "KSamplerSelect", "inputs": {"sampler_name": "euler"}},
+  "8": {"class_type": "BasicScheduler", "inputs": {"model": ["14", 0], "scheduler": "simple", "steps": 50, "denoise": 1.0}},
+  "9": {"class_type": "CLIPTextEncode", "inputs": {"text": "", "clip": ["2", 0]}, "_meta": {"title": "Negative prompt"}},
+  "10": {"class_type": "CFGGuider", "inputs": {"model": ["14", 0], "positive": ["4", 0], "negative": ["9", 0], "cfg": 4.0}},
+  "11": {"class_type": "SamplerCustomAdvanced", "inputs": {"noise": ["6", 0], "guider": ["10", 0], "sampler": ["7", 0], "sigmas": ["8", 0], "latent_image": ["5", 0]}},
+  "12": {"class_type": "VAEDecode", "inputs": {"samples": ["11", 0], "vae": ["3", 0]}},
+  "13": {"class_type": "SaveImage", "inputs": {"images": ["12", 0], "filename_prefix": "ernie-image/text-to-image"}}
+}

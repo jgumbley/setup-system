@@ -38,6 +38,8 @@ machine_configs:
     - openmw
     - steam
     - sunshine-host
+    - comfyui
+    - holly-btop
 
   # Future lean Ubuntu 26.04 Sway laptop.
   "rocks":

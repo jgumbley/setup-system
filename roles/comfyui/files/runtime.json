@@ -1,0 +1,14 @@
+{
+  "comfyui_tag": "v0.34.0",
+  "comfyui_commit": "12d5279438bfefc058a269eae805ceab6047777f",
+  "comfyui_repo": "https://github.com/Comfy-Org/ComfyUI.git",
+  "python": "3.12.13",
+  "rocm": "7.14.1",
+  "torch": "2.11.0+rocm7.14.1",
+  "torchvision": "0.26.0+rocm7.14.1",
+  "torchaudio": "2.11.0+rocm7.14.1",
+  "gpu_target": "gfx1100",
+  "driver_release": "31.40.1",
+  "driver_package": "1:6.19.14.31400100-2377056.26.04",
+  "driver_firmware_package": "1:31.40.1.0.31400100-2377056.26.04"
+}
