@@ -7,17 +7,18 @@
 
 - name: Configure git
   when: git_check.rc == 0
+  become: false
   block:
     - name: Deploy git configuration
       template:
         src: gitconfig.j2
-        dest: "{{ ansible_facts['env'].HOME }}/.gitconfig"
+        dest: ~/.gitconfig
         mode: '0644'
       tags: git
 
     - name: Ensure .ssh directory exists
       file:
-        path: "{{ ansible_facts['env'].HOME }}/.ssh"
+        path: ~/.ssh
         state: directory
         mode: '0700'
       tags: git
@@ -25,6 +26,15 @@
     - name: Deploy SSH config
       template:
         src: ssh_config.j2
-        dest: "{{ ansible_facts['env'].HOME }}/.ssh/config"
+        dest: ~/.ssh/config
         mode: '0600'
+      tags: git
+
+    - name: Trust GitHub's published Ed25519 host key on Holly
+      known_hosts:
+        path: ~/.ssh/known_hosts
+        name: github.com
+        # https://docs.github.com/en/authentication/keeping-your-account-and-data-secure/githubs-ssh-key-fingerprints
+        key: github.com ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIOMqqnkVzrm0SdG6UOoqKLsabgH5C9okWi0dh2l9GKJl
+      when: ansible_facts['hostname'] == 'holly'
       tags: git

@@ -65,6 +65,21 @@ The configuration is managed by Ansible playbooks and roles.
 
 ## Sunshine Host Operations on Holly
 
+The terminal role manages SSH and Git configuration through `make setup`.
+On Rocks, HAL, and system, connections to `holly` or `holly.smeg` forward the
+local 1Password SSH agent explicitly, even if `SSH_AUTH_SOCK` points to another
+agent. On Holly, GitHub HTTPS remotes use SSH for pushes and keep HTTPS for
+fetches. Connect with `ssh system@holly.smeg`, then push normally; authorize
+key use in 1Password on the originating desktop. Forwarding lasts for that SSH
+connection. An explicit repository `remote.*.pushurl` overrides Git's
+`pushInsteadOf` rule and must itself use SSH.
+
+Verify from the originating desktop with:
+
+```bash
+make -C utils/verify_1password_ssh verify-holly
+```
+
 The Sunshine role is applied only through `make setup`. Runtime operations and
 the committed Moonlight cover-art source are self-contained under
 `utils/sunshine_host`:

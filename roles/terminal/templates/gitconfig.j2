@@ -11,3 +11,7 @@
 	autoStash = true
 [alias]
 	lg = log --oneline --decorate --graph --all --max-count=12
+{% if ansible_facts['hostname'] == "holly" %}
+[url "git@github.com:"]
+	pushInsteadOf = https://github.com/
+{% endif %}

@@ -7,6 +7,11 @@ Host tw
   User git
 {% if ansible_facts['system'] == "Linux" and ansible_facts['hostname'] in ["system", "hal", "rocks"] %}
 
+Host holly holly.smeg
+  HostName holly.smeg
+  User system
+  ForwardAgent ~/.1password/agent.sock
+
 Host *
   IdentityAgent ~/.1password/agent.sock
 {% endif %}
