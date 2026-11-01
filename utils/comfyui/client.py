@@ -234,9 +234,36 @@ def benchmark(client, output, seed):
     print(f"Results: {output / 'benchmark.json'}", flush=True)
 
 
+def reproduce_ernie(client, output, history_path):
+    history = json.loads(history_path.read_text())
+    graph = copy.deepcopy(history["d407cee8-d5ac-4222-b933-ccd189f298a3"]["prompt"][2])
+    sampler = graph["11"]["inputs"]
+    assert graph["1"]["inputs"]["unet_name"] == "ernie-image.safetensors"
+    assert graph["5"]["inputs"] == {"width": 1376, "height": 768, "batch_size": 1}
+    assert all(sampler[key] == value for key, value in {
+        "seed": 102, "steps": 50, "cfg": 4.0, "sampler_name": "euler",
+        "scheduler": "simple", "denoise": 1.0}.items())
+    graph["13"]["inputs"]["filename_prefix"] = "ernie-diagnostics/desk-player"
+    report_path = output / "report.json"
+    reports = json.loads(report_path.read_text()) if report_path.exists() else []
+    for index, seed in enumerate((102, 103, 104, 102)):
+        if index < len(reports):
+            continue
+        sampler["seed"] = seed
+        if index == 2:
+            # Exercise text-encoder reload after diffusion, as another client
+            # changing prompts does. Seed 102 always uses the exact original.
+            graph["4"]["inputs"]["text"] += "\nWarm candlelight illuminates the writing desk."
+        reports.append(client.generate(graph, output, f"run-{index}-seed-{seed}"))
+        report_path.write_text(json.dumps(reports, indent=2) + "\n")
+        # Inspect each image before explicitly requesting the next generation.
+        return
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("action", choices=["benchmark", "generate"])
+    parser.add_argument("action", choices=["benchmark", "generate", "reproduce-ernie"])
+    parser.add_argument("--history", type=Path)
     parser.add_argument("--url", default="http://127.0.0.1:8188")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--workflow", choices=["text-to-image", "reference-edit"], default="text-to-image")
@@ -249,6 +276,10 @@ def main():
     client = Client(args.url)
     if args.action == "benchmark":
         benchmark(client, args.output, args.seed)
+    elif args.action == "reproduce-ernie":
+        if args.history is None:
+            parser.error("reproduce-ernie requires --history")
+        reproduce_ernie(client, args.output, args.history)
     else:
         graph = json.loads((WORKFLOWS / f"{args.workflow}-api.json").read_text())
         if args.workflow == "reference-edit" and args.image is None:

@@ -17,7 +17,7 @@ Environment=XDG_CACHE_HOME={{ comfyui_cache_dir }}
 Environment=HF_HOME={{ comfyui_cache_dir }}/huggingface
 Environment=TORCH_HOME={{ comfyui_cache_dir }}/torch
 Environment=HOME={{ comfyui_state_dir }}
-ExecStart={{ comfyui_root }}/venv/bin/python main.py --listen {{ comfyui_listen }} --port {{ comfyui_port }} --extra-model-paths-config /etc/comfyui/extra_model_paths.yaml --input-directory {{ comfyui_state_dir }}/input --output-directory {{ comfyui_state_dir }}/output --temp-directory {{ comfyui_state_dir }}/temp --user-directory {{ comfyui_state_dir }}/user --disable-auto-launch --disable-all-custom-nodes --disable-api-nodes
+ExecStart={{ comfyui_root }}/venv/bin/python main.py --listen {{ comfyui_listen }} --port {{ comfyui_port }} --extra-model-paths-config /etc/comfyui/extra_model_paths.yaml --input-directory {{ comfyui_state_dir }}/input --output-directory {{ comfyui_state_dir }}/output --temp-directory {{ comfyui_state_dir }}/temp --user-directory {{ comfyui_state_dir }}/user --bf16-text-enc --fp32-vae --disable-dynamic-vram --disable-async-offload --disable-auto-launch --disable-all-custom-nodes --disable-api-nodes
 Restart=on-failure
 RestartSec=10
 TimeoutStopSec=120

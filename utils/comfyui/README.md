@@ -33,6 +33,18 @@ Files managed by this utility:
   vae/flux2-vae.safetensors
 ```
 
+The role also creates `/opt/models/loras` and registers `loras: loras/` in
+`/etc/comfyui/extra_model_paths.yaml`. ComfyUI discovers supported LoRA files
+recursively there. Locally trained adapters are published separately from the
+three pinned downloads, so `make clean` does not remove them. The sibling
+`lora-char` repository's `make publish-comfyui` publishes its completed adapter
+and verifies discovery through the ComfyUI API.
+
+The role's `comfyui-model-paths` tag applies just platform/manifest checks,
+model/state directories, search paths and service activation. It uses the
+existing hostname-checked `test_role` runner and leaves runtime, package and
+driver provisioning out of a LoRA publication.
+
 To replace the model artifacts, update their URLs, sizes and SHA-256 hashes in
 `models.json`, then run:
 
@@ -107,13 +119,23 @@ UI `workflow` metadata and checks both when retrieving each PNG.
 ## Workflows and automation
 
 The ERNIE-Image native API graph is in `workflows/text-to-image-api.json`. The
-previous Klein reference-editing graph is retained for switching back. Their
-inputs are:
+previous Klein reference-editing graph is retained for switching back.
+
+The managed ERNIE graph loads `antigone/antigone-ernie-step500.safetensors`
+through node 14 (`LoraLoaderModelOnly`) at strength 1.0 by default. Both its
+scheduler and guider use that adapted model. Include `antigone` in the prompt
+to request the character; change node 14's `strength_model` to adjust the
+effect (0 disables it). The adapter must first be published from `lora-char`.
+Existing custom workflows are unaffected; clients holding an older copy of
+the managed graph need to reload `/etc/comfyui/text-to-image-api.json`.
+
+Their inputs are:
 
 | Parameter | Node input |
 | --- | --- |
 | Prompt | `4.inputs.text` |
 | Seed | `6.inputs.noise_seed` |
+| ERNIE LoRA strength | `14.inputs.strength_model` |
 | ERNIE output width/height | `5.inputs.width/height` |
 | Klein edit output width/height | `5.inputs.width/height` and `8.inputs.width/height` |
 | Reference image | `14.inputs.image` in the editing graph |

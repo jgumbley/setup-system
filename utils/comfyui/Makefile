@@ -77,3 +77,17 @@ inspect:
 
 versions:
 	/opt/comfyui/venv/bin/python -B runtime.py versions --root /opt/comfyui
+
+.PHONY: capture-ernie-repro reproduce-ernie setup-status
+capture-ernie-repro:
+	@mkdir -p .runtime/ernie-repro
+	@test ! -e .runtime/ernie-repro/original-history.json && test ! -e .runtime/ernie-repro/original.png || { echo "Original reproduction already captured; refusing to overwrite it" >&2; exit 2; }
+	curl -fsS http://127.0.0.1:8188/history/d407cee8-d5ac-4222-b933-ccd189f298a3 -o .runtime/ernie-repro/original-history.json
+	curl -fsS 'http://127.0.0.1:8188/view?filename=buildwas-r0060_00001_.png&subfolder=worldbuilding&type=output' -o .runtime/ernie-repro/original.png
+
+reproduce-ernie:
+	@test -n "$(CASE)" || { echo "usage: make reproduce-ernie CASE=<diagnostic-case>" >&2; exit 2; }
+	/opt/comfyui/venv/bin/python -B client.py reproduce-ernie --history .runtime/ernie-repro/original-history.json --output .runtime/ernie-repro/$(CASE)
+
+setup-status:
+	@tmux capture-pane -pt $(PANE) -S -65

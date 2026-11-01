@@ -79,6 +79,17 @@ class WorkflowTests(unittest.TestCase):
         self.assertEqual(graph["8"]["inputs"]["denoise"], 1.0)
         self.assertEqual(graph["10"]["inputs"]["cfg"], 4.0)
 
+    def test_ernie_sampling_uses_default_character_adapter(self):
+        graph = json.loads(Path("workflows/text-to-image-api.json").read_text())
+        adapter = graph["14"]
+        self.assertEqual(adapter["class_type"], "LoraLoaderModelOnly")
+        self.assertEqual(adapter["inputs"], {
+            "model": ["1", 0], "lora_name": "antigone/antigone-ernie-step500.safetensors",
+            "strength_model": 1.0})
+        # Both consumers must receive the adapted model, not bypass it.
+        self.assertEqual(graph["8"]["inputs"]["model"], ["14", 0])
+        self.assertEqual(graph["10"]["inputs"]["model"], ["14", 0])
+
 
 if __name__ == "__main__":
     unittest.main()

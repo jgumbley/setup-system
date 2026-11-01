@@ -3,6 +3,7 @@
   tags: comfyui
   block:
     - name: Require Holly's supported native platform
+      tags: comfyui-model-paths
       ansible.builtin.assert:
         that:
           - ansible_facts['hostname'] == 'holly'
@@ -13,6 +14,7 @@
         fail_msg: This pinned native ComfyUI deployment is for Holly on Ubuntu 26.04 and kernel 7.0.
 
     - name: Load the versioned runtime and model manifests
+      tags: comfyui-model-paths
       ansible.builtin.set_fact:
         comfyui_runtime: "{{ lookup('file', role_path + '/files/runtime.json') | from_json }}"
         comfyui_models: "{{ lookup('file', comfyui_utility_dir + '/models.json') | from_json }}"
@@ -111,6 +113,7 @@
         - /etc/comfyui
 
     - name: Create writable local model and ComfyUI state directories
+      tags: comfyui-model-paths
       ansible.builtin.file:
         path: "{{ item }}"
         state: directory
@@ -122,6 +125,7 @@
         - "{{ comfyui_models.root }}/diffusion_models"
         - "{{ comfyui_models.root }}/text_encoders"
         - "{{ comfyui_models.root }}/vae"
+        - "{{ comfyui_models.root }}/loras"
         - "{{ comfyui_state_dir }}"
         - "{{ comfyui_state_dir }}/input"
         - "{{ comfyui_state_dir }}/output"
@@ -225,6 +229,7 @@
       notify: Restart ComfyUI
 
     - name: Configure the shared local model directories
+      tags: comfyui-model-paths
       ansible.builtin.copy:
         dest: /etc/comfyui/extra_model_paths.yaml
         mode: '0644'
@@ -235,9 +240,11 @@
             diffusion_models: diffusion_models/
             text_encoders: text_encoders/
             vae: vae/
+            loras: loras/
       notify: Restart ComfyUI
 
     - name: Publish the model inventory and API workflows
+      tags: comfyui-model-paths
       ansible.builtin.copy:
         src: "{{ comfyui_utility_dir }}/{{ item }}"
         dest: "/etc/comfyui/{{ item | basename }}"
@@ -269,9 +276,11 @@
       notify: Restart ComfyUI
 
     - name: Apply service configuration changes
+      tags: comfyui-model-paths
       ansible.builtin.meta: flush_handlers
 
     - name: Enable and start ComfyUI at boot
+      tags: comfyui-model-paths
       ansible.builtin.systemd_service:
         name: comfyui.service
         daemon_reload: true
@@ -279,6 +288,7 @@
         state: started
 
     - name: Wait for the standard ComfyUI API
+      tags: comfyui-model-paths
       ansible.builtin.uri:
         url: "http://{{ comfyui_listen }}:{{ comfyui_port }}/system_stats"
         status_code: 200
