@@ -20,7 +20,7 @@ SUNSHINE_STATE_DIR := /var/lib/sunshine-host
 SUNSHINE_BACKUP_DIR := $(BACKUP_ROOT)/sunshine
 SUNSHINE_BACKUP_FILES := sunshine_state.json cakey.pem cacert.pem
 
-.PHONY: term updates nas setup test_role test_role-apply vnc-viewer vnc-viewer-apply check backup backup-apply backup-locked backup-status caffeinate android-usb android-usb-inspect
+.PHONY: term updates nas setup test_role test_role-apply vnc-viewer vnc-viewer-apply check backup backup-locked backup-status caffeinate android-usb android-usb-inspect
 
 .bootstrapped:
 ifeq ($(shell uname -s),Darwin)
@@ -72,9 +72,6 @@ check:
 	ansible-playbook setup.yml -c local --syntax-check
 
 backup:
-	bash pane.sh backup $(MAKE) --no-print-directory backup-apply
-
-backup-apply:
 	@exec 8>/run/lock/setup-system-backup.lock; \
 		flock -n 8 || { echo "Another setup-system backup is already running." >&2; exit 1; }; \
 		if [ "$(HOSTNAME)" = holly ]; then \
