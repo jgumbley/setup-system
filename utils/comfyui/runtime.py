@@ -21,6 +21,7 @@ def prepare(role, root, uv):
     run(uv, "pip", "sync", "--python", str(root / "venv/bin/python"),
         "--require-hashes", "--index-strategy", "unsafe-best-match",
         str(role / "files/requirements.lock"))
+    run(str(root / "venv/bin/python"), "-B", "-m", "rocm_sdk", "init")
     app = root / "app"
     if not app.exists():
         run("git", "clone", "--branch", pins["comfyui_tag"], "--depth", "1", pins["comfyui_repo"], str(app))

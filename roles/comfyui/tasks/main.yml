@@ -191,6 +191,40 @@
         argv: ["{{ comfyui_uv }}", pip, check, --python, "{{ comfyui_root }}/venv/bin/python"]
       changed_when: false
 
+    - name: Inspect the ROCm development SDK initialization state
+      ansible.builtin.command:
+        argv:
+          - "{{ comfyui_root }}/venv/bin/python"
+          - -B
+          - -c
+          - "import importlib.util; print(importlib.util.find_spec('_rocm_sdk_devel') is not None)"
+      register: comfyui_sdk_initialized
+      changed_when: false
+
+    - name: Initialize the pinned ROCm development SDK
+      ansible.builtin.command:
+        argv: ["{{ comfyui_root }}/venv/bin/python", -B, -m, rocm_sdk, init]
+      changed_when: comfyui_python_sync.changed or comfyui_sdk_initialized.stdout != 'True'
+
+    - name: Verify the ROCm development files are readable by the service user
+      ansible.builtin.command:
+        argv:
+          - "{{ comfyui_root }}/venv/bin/python"
+          - -B
+          - -c
+          - |
+            import importlib.util
+            import os
+            from pathlib import Path
+            root = Path(importlib.util.find_spec('_rocm_sdk_devel').origin).parent
+            files = ['lib/cmake/hip/hip-config.cmake', 'lib/cmake/hipblas/hipblas-config.cmake', 'lib/cmake/rocblas/rocblas-config.cmake', 'include/hip/hip_runtime.h', 'include/hipblas/hipblas.h', 'include/rocblas/rocblas.h']
+            for file in files:
+                assert (root / file).is_file() and os.access(root / file, os.R_OK), file
+            assert os.access(root / 'lib/llvm/bin/clang++', os.X_OK), 'HIP compiler'
+            print(root)
+      become_user: "{{ comfyui_service_user }}"
+      changed_when: false
+
     - name: Inspect the model VAE selected at the shared ERNIE filename
       ansible.builtin.stat:
         path: "{{ comfyui_models.root }}/vae/flux2-vae.safetensors"

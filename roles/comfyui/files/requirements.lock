@@ -1732,7 +1732,9 @@ rich==15.0.0 \
     # via typer
 rocm==7.14.1 \
     --hash=sha256:ffea97f6a9da9987a9260f9e635995b27a44dd6985d1b2b1663431356aaf669b
-    # via torch
+    # via
+    #   -r /home/system/wip/setup-system/roles/comfyui/files/requirements.in
+    #   torch
 rocm-bootstrap==0.2.0 \
     --hash=sha256:3e23c2621597a133f4d5074461b1678367042a8b8a001ef8cc89dd8785ff9292
     # via
@@ -1740,6 +1742,9 @@ rocm-bootstrap==0.2.0 \
     #   torchvision
 rocm-sdk-core==7.14.1 \
     --hash=sha256:da1f9c960a55a64c3134004ba1346d2424090cc3e2336ccfec94e9f62169cf85
+    # via rocm
+rocm-sdk-devel==7.14.1 \
+    --hash=sha256:858088ac949d45be6621557e5d7b7f020235e12068c62b6be2bfd0b4234be3dd
     # via rocm
 rocm-sdk-device-gfx1100==7.14.1 \
     --hash=sha256:0f9beb9faa55a6a86dab844f6e8da246e4410b2be5d0b65ef2dc010dda6bb8bf

@@ -81,6 +81,18 @@ PyTorch 2.11.0, torchvision 0.26.0 and torchaudio 2.11.0. The runtime is under
 `/opt/comfyui`; mutable state is under `/var/lib/comfyui` and caches under
 `/var/cache/comfyui`.
 
+The same lock includes `rocm[devel]==7.14.1`. Setup and `make prepare` initialize
+its development tree under the environment's `site-packages/_rocm_sdk_devel`,
+providing the HIP compiler, headers and HIP/hipBLAS/rocBLAS CMake packages for
+external builds such as the Philby models pane's llama.cpp. Setup owns this SDK;
+consuming workspaces own their source, builds and runtime configuration. Keep
+the SDK in place while those binaries depend on its libraries.
+
+`rocm-sdk init` and `rocm-sdk path` can expand files and update package records;
+run initialization through setup, not from a consuming workspace. Read-only
+inspection can locate the initialized `_rocm_sdk_devel` package and check its
+files directly. No separate global ROCm APT repository is used for this SDK.
+
 AMD's available Ubuntu Resolute driver repository is pinned to 31.40.1 with its
 matching firmware. On 2026-09-05 the newer documented 31.50.0 repository URL
 returned HTTP 404. Installing the DKMS driver prepares the next boot; the role
