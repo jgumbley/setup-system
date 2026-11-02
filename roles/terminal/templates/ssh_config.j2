@@ -1,11 +1,23 @@
 Host jg
   HostName github.com
   User git
+{% if ansible_facts['system'] == "Darwin" %}
+  IdentityFile ~/.ssh/id_jg.pub
+  IdentitiesOnly yes
+{% endif %}
 
 Host tw
   HostName github.com
   User git
-{% if ansible_facts['system'] == "Linux" and ansible_facts['hostname'] in ["system", "hal", "rocks"] %}
+{% if ansible_facts['system'] == "Darwin" %}
+  IdentityFile ~/.ssh/id_tw.pub
+  IdentitiesOnly yes
+{% endif %}
+{% if ansible_facts['system'] == "Darwin" %}
+
+Host *
+  IdentityAgent "~/Library/Group Containers/2BUA8C4S2C.com.1password/t/agent.sock"
+{% elif ansible_facts['system'] == "Linux" and ansible_facts['hostname'] in ["system", "hal", "rocks"] %}
 
 Host holly holly.smeg
   HostName holly.smeg

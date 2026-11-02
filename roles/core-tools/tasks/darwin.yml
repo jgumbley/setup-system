@@ -19,15 +19,37 @@
     name: hashicorp/tap
     state: present
 
+- name: Ensure OpenClaw Homebrew tap is added
+  homebrew_tap:
+    name: openclaw/tap
+    state: present
+
 - name: Update Homebrew package list
   homebrew:
     update_homebrew: yes
+
+- name: Trust declared third-party formulae
+  command:
+    argv:
+      - brew
+      - trust
+      - --formula
+      - hashicorp/tap/terraform
+      - openclaw/tap/gogcli
+  register: formula_trust
+  changed_when: >-
+    formula_trust.stdout_lines | select('match', '^Trusted formula: ') | list | length > 0
 
 - name: Install core packages with Homebrew
   homebrew:
     name: "{{ item }}"
     state: present
   loop: "{{ core_packages }}"
+
+- name: Install the latest Google Workspace CLI
+  homebrew:
+    name: openclaw/tap/gogcli
+    state: latest
 
 - name: Install uv with Homebrew
   homebrew:

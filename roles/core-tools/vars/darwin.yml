@@ -12,6 +12,7 @@ core_packages:
   - npm
   - python
   - uv
+  - rust
   - lazygit
   - ripgrep
   - htop

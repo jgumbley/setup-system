@@ -48,7 +48,7 @@ The configuration is managed by Ansible playbooks and roles.
 
 ### Roles
 
-*   `core-tools`: Installs common command-line tools and system-wide shell environment support.
+*   `core-tools`: Installs common command-line tools and system-wide shell environment support. On macOS, installs or upgrades the latest `openclaw/tap/gogcli` release through Homebrew, providing `gog` on `PATH` for Philby's Google Workspace tools. Google account authorization stays with the calling user and is not part of machine setup.
 *   `nas-mount`: Mounts the network-attached storage.
 *   `sway-desktop`: Sets up the Sway tiling window manager and related tools for a graphical Linux environment.
 *   `sunshine-host`: Fully configures Holly's native Sunshine package, input and seat permissions, headless Sway session, session-managed game launchers, application list, persistent state directory, and boot-time systemd services. Versioned game runtimes live under `/opt/games`, mutable state remains local, and validated content is externally managed on Iceburg.
