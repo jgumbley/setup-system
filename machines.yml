@@ -11,6 +11,9 @@ machine_paths:
     games_root: /home/system/wip/games
 
 machine_utility_packages:
+  "holly":
+    - tshark
+
   "rocks":
     - bluez
     - elektroid
