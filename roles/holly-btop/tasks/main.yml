@@ -51,3 +51,50 @@
       ansible.builtin.assert:
         that: "'Radeon RX 7900 XTX' in holly_btop_rocm_smi.stdout"
         fail_msg: ROCm SMI did not detect Holly's Radeon RX 7900 XTX.
+
+    - name: Create the unprivileged btop SSH account
+      ansible.builtin.user:
+        name: btop
+        home: /home/btop
+        shell: /bin/sh
+        create_home: true
+        password_lock: true
+        groups: ''
+        state: present
+
+    - name: Create the btop SSH key directory
+      ansible.builtin.file:
+        path: /home/btop/.ssh
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+
+    # ssh_host runs first, so this includes the same keys accepted for system.
+    - name: Synchronize system's authorized public keys to btop
+      ansible.builtin.copy:
+        src: /home/system/.ssh/authorized_keys
+        dest: /home/btop/.ssh/authorized_keys
+        remote_src: true
+        owner: root
+        group: root
+        mode: '0644'
+
+    - name: Restrict btop SSH sessions to the monitor
+      ansible.builtin.blockinfile:
+        path: /etc/ssh/sshd_config
+        insertafter: EOF
+        marker: '# {mark} ANSIBLE MANAGED BTOP SESSION'
+        block: |
+          Match User btop
+              AuthenticationMethods publickey
+              PasswordAuthentication no
+              KbdInteractiveAuthentication no
+              AuthorizedKeysFile /home/btop/.ssh/authorized_keys
+              ForceCommand exec /usr/bin/btop
+              DisableForwarding yes
+              PermitTTY yes
+              PermitUserRC no
+          Match all
+        validate: /usr/sbin/sshd -t -f %s
+      notify: restart ssh
